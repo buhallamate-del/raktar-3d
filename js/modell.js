@@ -343,6 +343,12 @@ export function epitModell(D0, C) {
       }
     }
   }
+  // Áru a polcokon (megjelenítéshez és ütközéshez): a helykódból képzett, mindenkinél azonos
+  // „véletlen” kitöltés. A raklapos zónákban raklap + áru, a polcos T2-ben kisebb dobozok.
+  const aruk = aruKiosztas(helyek, C);
+  if (C.megjelenes?.aruUtkozik !== false) {
+    for (const a of aruk) utkozok.push({ x0: a.x - a.hx, x1: a.x + a.hx, y0: a.y - a.hy, y1: a.y + a.hy, z0: a.z0, z1: a.z1, allvany: true });
+  }
   for (const g of C.gepek || []) {
     const r = Number(g.r ?? 0.5);
     utkozok.push({ x0: g.x - r, y0: g.y - r, x1: g.x + r, y1: g.y + r, z0: 0, z1: 2.6 });
@@ -355,7 +361,7 @@ export function epitModell(D0, C) {
   for (const [x1, y1, x2, y2] of falak) { xs.push(x1, x2); ys.push(y1, y2); }
   const hatar = { x0: Math.min(...xs), x1: Math.max(...xs), y0: Math.min(...ys), y1: Math.max(...ys) };
 
-  const modell = { helyek, folyosok, csoportok, falak, valaszfalak, utkozok, racs, hatar, figyelmeztetesek, adat: D, nyilasok, rekeszek };
+  const modell = { helyek, folyosok, csoportok, falak, valaszfalak, utkozok, racs, hatar, figyelmeztetesek, adat: D, nyilasok, rekeszek, aruk };
   modell.feltetelezesek = feltetelezesek(D, C, modell);
   modell.modellFeltetelezesek = modellFeltetelezesek(C, helyek);
   return modell;
@@ -364,6 +370,43 @@ export function epitModell(D0, C) {
 // ---------------------------------------------------------------------
 // Ütközés: kör (a gyalogos) és tengelyhez igazított téglalapok
 // ---------------------------------------------------------------------
+// Determinisztikus álvéletlen [0, 1) egy szövegből (mindenkinél ugyanaz az eredmény).
+export function hashSzam(s) {
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+  h ^= h >>> 13; h = Math.imul(h, 0x5bd1e995); h ^= h >>> 15;
+  return (h >>> 0) / 4294967296;
+}
+
+// Raklapok és áru a tárolószinteken.
+export function aruKiosztas(helyek, C) {
+  const tolt = Number(C.megjelenes?.toltottseg ?? 0);
+  const ki = [];
+  if (!(tolt > 0)) return ki;
+  for (const h of helyek) {
+    const polcos = h.zonaFo === 'T2';
+    const koz = h.H / h.L;
+    const ax = h.irany === 'X';
+    const futas = h.w, mely = 2 * h.h;
+    for (let k = 0; k < h.L; k++) {
+      if (hashSzam(`${h.kod}#${k}`) >= tolt) continue;
+      const alap = k === 0 ? 0.08 : k * koz + 0.045;
+      const hely = koz - (k === 0 ? 0.08 : 0.045) - 0.12;   // a fölötte lévő gerendáig
+      if (hely < 0.15) continue;
+      const r = hashSzam(`${h.kod}@${k}`);
+      if (polcos) {
+        const sz = Math.min(futas * 0.8, 0.3), m = Math.min(mely * 0.8, 0.45), mag = Math.min(hely, 0.12 + r * 0.25);
+        ki.push({ x: h.x, y: h.y, hx: (ax ? sz : m) / 2, hy: (ax ? m : sz) / 2, z0: alap, z1: alap + mag, raklap: false, r });
+      } else {
+        const sz = Math.min(futas - 0.12, 0.8), m = Math.min(mely - 0.06, 1.2);
+        const mag = Math.min(hely - 0.14, 0.6 + r * 0.9);
+        ki.push({ x: h.x, y: h.y, hx: (ax ? sz : m) / 2, hy: (ax ? m : sz) / 2, z0: alap, z1: alap + 0.14 + mag, raklap: true, r });
+      }
+    }
+  }
+  return ki;
+}
+
 // A galéria ütközői: a lépcső fokai (rájuk lehet lépni), a padló (rá lehet állni, alatta át
 // lehet menni) és a korlát a padló szélén – a belső éleken és a lépcső tetejénél nyitott.
 export function galeriaUtkozok(g) {

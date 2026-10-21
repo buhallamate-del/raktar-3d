@@ -293,6 +293,28 @@ window.RAKTAR_CONFIG = {
     palackSebesseg: 14,   // m/s
   },
 
+  // Realisztikus megjelenés (a helyszíni fotók alapján)
+  megjelenes: {
+    szinezes: 'valos',     // 'valos' (fotók szerint) | 'zona' | 'rajzon' – a menüben is váltható
+    // Állványszínek zónánként: oszlop és gerenda (a T1 horganyzott, a T4 és a fali sorok kék-narancs)
+    valosSzinek: {
+      'T1': { oszlop: '#b4bac2', gerenda: '#e0662a', polc: '#c9ced4' },
+      'T1 fali': { oszlop: '#2b4fa8', gerenda: '#e0662a', polc: '#c9ced4' },
+      'T2': { oszlop: '#b9bfc6', gerenda: '#a3abb4', polc: '#d3d7dc' },
+      'T3': { oszlop: '#b9bfc6', gerenda: '#e0662a', polc: '#c9ced4' },
+      'T4': { oszlop: '#2b4fa8', gerenda: '#e0662a', polc: '#c9ced4' },
+    },
+    toltottseg: 0.7,       // a tárolószintek ennyi része tele (raklap + áru); 0 = üres állványok
+    aruUtkozik: true,      // az árun nem lehet átbújni, de fel lehet mászni rá
+    oszlopvedok: true,     // sárga oszlopvédők a sorvégeken
+    // Mennyezet belső nézetben (téglalapok: x0, y0, x1, y1) és magassága
+    mennyezetMagassag: 8.5,
+    mennyezet: [
+      [0.0, -7.0, 20.6, 97.8],      // komissiózó, iroda, T1, áruátvétel
+      [-39.8, -0.4, 0.0, 20.0],     // felső szárny
+    ],
+  },
+
   // ------------------------------------------------------------------
   // 6) SÉTA ÉS MEGJELENÍTÉS
   // ------------------------------------------------------------------

@@ -164,8 +164,26 @@ const padloMeret = {
   x1: Math.max(H.x1, ...udvarok.map(u => u.x + u.szel)) + 8,
   y1: Math.max(H.y1, ...udvarok.map(u => u.y + u.mely)) + 8,
 };
-scene.add(padloTeglalap(padloMeret.x0, padloMeret.y0, padloMeret.x1, padloMeret.y1,
-  new THREE.MeshLambertMaterial({ color: '#c9cfd8' }), 0));
+{
+  // beton: finom, foltos zaj, 4 m-enként ismétlődve
+  const cv = document.createElement('canvas'); cv.width = cv.height = 256;
+  const ctx = cv.getContext('2d');
+  ctx.fillStyle = '#b9bec4'; ctx.fillRect(0, 0, 256, 256);
+  for (let i = 0; i < 2600; i++) {
+    const v = 150 + Math.floor(Math.random() * 70);
+    ctx.fillStyle = `rgba(${v},${v + 3},${v + 6},0.25)`;
+    const r = 1 + Math.random() * 6;
+    ctx.fillRect(Math.random() * 256, Math.random() * 256, r, r);
+  }
+  ctx.strokeStyle = 'rgba(90,95,100,0.35)'; ctx.lineWidth = 1.5; ctx.strokeRect(0, 0, 256, 256); // dilatációs hézag
+  const tex = new THREE.CanvasTexture(cv);
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.repeat.set((padloMeret.x1 - padloMeret.x0) / 4, (padloMeret.y1 - padloMeret.y0) / 4);
+  tex.anisotropy = 8;
+  scene.add(padloTeglalap(padloMeret.x0, padloMeret.y0, padloMeret.x1, padloMeret.y1,
+    new THREE.MeshLambertMaterial({ map: tex }), 0));
+}
 {
   const racs = new THREE.GridHelper(Math.ceil(Math.max(H.x1 - H.x0, H.y1 - H.y0) / 5) * 5 + 20,
     Math.ceil(Math.max(H.x1 - H.x0, H.y1 - H.y0) / 5) + 4, 0xb4bcc8, 0xb4bcc8);
@@ -411,9 +429,16 @@ for (const f of M.folyosok.values()) {
     ? [a, f.c - f.szel / 2, b, f.c + f.szel / 2]
     : [f.c - f.szel / 2, a, f.c + f.szel / 2, b];
   const anyag = new THREE.MeshBasicMaterial({
-    color: gerinc ? '#a9cdf3' : '#f2e3a0', transparent: true, opacity: 0.75, depthWrite: false,
+    color: gerinc ? '#a9cdf3' : '#f2e3a0', transparent: true, opacity: 0.35, depthWrite: false,
   });
   folyosoCsoport.add(padloTeglalap(x0, y0, x1, y1, anyag, gerinc ? 0.008 : 0.009));
+  // sárga padlójelölés a folyosó két szélén (mint a fotókon)
+  const sarga = new THREE.MeshBasicMaterial({ color: '#e8b800' });
+  if (f.tengely === 'X') {
+    folyosoCsoport.add(padloTeglalap(x0, y0, x1, y0 + 0.08, sarga, 0.011), padloTeglalap(x0, y1 - 0.08, x1, y1, sarga, 0.011));
+  } else {
+    folyosoCsoport.add(padloTeglalap(x0, y0, x0 + 0.08, y1, sarga, 0.011), padloTeglalap(x1 - 0.08, y0, x1, y1, sarga, 0.011));
+  }
   const hossz = b - a;
   const felMagas = Math.min(0.9, f.szel * 0.55);
   const fx = f.tengely === 'X' ? (a + b) / 2 : f.c;
@@ -426,12 +451,21 @@ for (const f of M.folyosok.values()) {
 // ---------------------------------------------------------------------
 // Falak
 // ---------------------------------------------------------------------
+// felülnézetben áttetsző szürke, belső nézetben tömör fehér falak (lásd modValt)
+const FAL_ANYAG = new THREE.MeshLambertMaterial({ color: '#9aa4b2', transparent: true, opacity: 0.6 });
+const VALASZFAL_ANYAG = new THREE.MeshLambertMaterial({ color: '#7d8796', transparent: true, opacity: 0.7 });
+function falakMod(seta) {
+  FAL_ANYAG.color.set(seta ? '#eceeef' : '#9aa4b2'); FAL_ANYAG.opacity = seta ? 1 : 0.6; FAL_ANYAG.transparent = !seta;
+  VALASZFAL_ANYAG.color.set(seta ? '#e2e5e8' : '#7d8796'); VALASZFAL_ANYAG.opacity = seta ? 1 : 0.7; VALASZFAL_ANYAG.transparent = !seta;
+  FAL_ANYAG.needsUpdate = VALASZFAL_ANYAG.needsUpdate = true;
+  mennyezetCsoport.visible = seta;
+  scene.fog = seta ? new THREE.Fog('#dfe3e8', 35, 140) : null;
+}
 const falCsoport = new THREE.Group();
 scene.add(falCsoport);
 {
   const vast = Number(C.falVastagsag ?? 0.2), mag = Number(C.falMagassag ?? 3);
-  const anyag = new THREE.MeshLambertMaterial({ color: '#9aa4b2', transparent: true, opacity: 0.6 });
-  const valAnyag = new THREE.MeshLambertMaterial({ color: '#7d8796', transparent: true, opacity: 0.7 });
+  const anyag = FAL_ANYAG, valAnyag = VALASZFAL_ANYAG;
   const fal = ([x1, y1, x2, y2], a, m) => {
     const w = Math.abs(x2 - x1) + vast, d = Math.abs(y2 - y1) + vast;
     const mesh = new THREE.Mesh(KOCKA, a);
@@ -497,18 +531,101 @@ const peldanyHely = { oszlop: [], polc: [], gerenda: [] };
 const RAJZ_PALETTA = ['#1f77b4', '#b8bec8', '#2ca02c', '#98df8a', '#ff7f0e', '#d62728', '#9467bd', '#8c564b'];
 const rajzErtekek = [...new Set(M.helyek.map(h => h.rajzon || '–'))];
 const rajzSzin = Object.fromEntries(rajzErtekek.map((r, i) => [r, RAJZ_PALETTA[i % RAJZ_PALETTA.length]]));
-let szinezesMod = 'zona';
+const MJ = C.megjelenes || {};
+let szinezesMod = MJ.szinezes || 'zona';
 function helySzin(h) {
   return new THREE.Color(szinezesMod === 'rajzon' ? rajzSzin[h.rajzon || '–'] : h.szin);
 }
 const FEHER = new THREE.Color('#ffffff');
 function szinez() {
+  if (szinezesMod === 'valos') {
+    // a fotók szerinti színek zónánként (oszlop, gerenda, polc)
+    const vs = MJ.valosSzinek || {};
+    const vsz = h => vs[h.zona] || vs[h.zonaFo] || { oszlop: '#b4bac2', gerenda: '#e0662a', polc: '#c9ced4' };
+    const cache = new Map();
+    const c = (s) => { if (!cache.has(s)) cache.set(s, new THREE.Color(s)); return cache.get(s); };
+    peldanyHely.oszlop.forEach((hi, i) => oszlopok.setColorAt(i, c(vsz(M.helyek[hi]).oszlop)));
+    peldanyHely.gerenda.forEach((hi, i) => gerendak.setColorAt(i, c(vsz(M.helyek[hi]).gerenda)));
+    peldanyHely.polc.forEach((hi, i) => polcok.setColorAt(i, c(vsz(M.helyek[hi]).polc)));
+    for (const m of [oszlopok, polcok, gerendak]) m.instanceColor.needsUpdate = true;
+    jelmagyarazat();
+    return;
+  }
   const szinek = M.helyek.map(helySzin);
   peldanyHely.oszlop.forEach((hi, i) => oszlopok.setColorAt(i, szinek[hi].clone().multiplyScalar(0.8)));
   peldanyHely.gerenda.forEach((hi, i) => gerendak.setColorAt(i, szinek[hi]));
   peldanyHely.polc.forEach((hi, i) => polcok.setColorAt(i, szinek[hi].clone().lerp(FEHER, 0.62)));
   for (const m of [oszlopok, polcok, gerendak]) m.instanceColor.needsUpdate = true;
   jelmagyarazat();
+}
+
+// ---------------------------------------------------------------------
+// Áru a polcokon (modell.aruk): raklap + kartondoboz / fóliázott áru, a T2-ben kisebb dobozok
+// ---------------------------------------------------------------------
+{
+  const raklaposak = M.aruk.filter(a => a.raklap);
+  const raklapok = new THREE.InstancedMesh(KOCKA, new THREE.MeshLambertMaterial({ color: '#b98a52' }), Math.max(1, raklaposak.length));
+  const aruHalo = new THREE.InstancedMesh(KOCKA, new THREE.MeshLambertMaterial(), Math.max(1, M.aruk.length));
+  const paletta = ['#c49a6c', '#b88a5a', '#d2ad7c', '#e9e7df', '#dcdad2', '#4f5560', '#8c6a45'].map(s => new THREE.Color(s));
+  let ir = 0;
+  M.aruk.forEach((a, i) => {
+    const sx = 2 * a.hx, sz = 2 * a.hy;
+    if (a.raklap) {
+      dobozMatrix(raklapok, ir++, a.x, a.z0 + 0.07, a.y, sx, 0.14, sz);
+      const fel = a.z0 + 0.14;
+      dobozMatrix(aruHalo, i, a.x, (fel + a.z1) / 2, a.y, sx * 0.96, a.z1 - fel, sz * 0.96);
+    } else {
+      dobozMatrix(aruHalo, i, a.x, (a.z0 + a.z1) / 2, a.y, sx, a.z1 - a.z0, sz);
+    }
+    aruHalo.setColorAt(i, paletta[Math.floor(a.r * 997) % paletta.length]);
+  });
+  raklapok.count = ir;
+  aruHalo.count = M.aruk.length;
+  for (const m of [raklapok, aruHalo]) { m.instanceMatrix.needsUpdate = true; m.computeBoundingSphere(); }
+  if (aruHalo.instanceColor) aruHalo.instanceColor.needsUpdate = true;
+  if (M.aruk.length) allvanyCsoport.add(raklapok, aruHalo);
+}
+// Sárga oszlopvédők a raklapos sorok végein, a folyosó felőli sarkokon
+if (MJ.oszlopvedok !== false) {
+  const vedok = [];
+  for (const hs of M.csoportok.values()) {
+    if (!['T1', 'T4'].includes(hs[0].zonaFo) || new Set(hs.map(h => h.irany)).size > 1) continue;
+    const h0 = hs[0], ax = h0.irany === 'X';
+    const a = Math.min(...hs.map(h => (ax ? h.x0 : h.y0))), b = Math.max(...hs.map(h => (ax ? h.x1 : h.y1)));
+    const elol = ax ? (h0.ny > 0 ? Math.max(...hs.map(h => h.y1)) : Math.min(...hs.map(h => h.y0)))
+      : (h0.nx > 0 ? Math.max(...hs.map(h => h.x1)) : Math.min(...hs.map(h => h.x0)));
+    const n = ax ? h0.ny : h0.nx;
+    for (const v of [a + 0.06, b - 0.06]) vedok.push(ax ? [v, elol - n * 0.06] : [elol - n * 0.06, v]);
+  }
+  const vedo = new THREE.InstancedMesh(KOCKA, new THREE.MeshLambertMaterial({ color: '#f2c200' }), Math.max(1, vedok.length));
+  vedok.forEach(([x, y], i) => dobozMatrix(vedo, i, x, 0.2, y, 0.2, 0.4, 0.2));
+  vedo.count = vedok.length;
+  vedo.instanceMatrix.needsUpdate = true; vedo.computeBoundingSphere();
+  allvanyCsoport.add(vedo);
+}
+// Mennyezet LED-sorokkal (csak belső nézetben látszik)
+const mennyezetCsoport = new THREE.Group();
+mennyezetCsoport.visible = false;
+scene.add(mennyezetCsoport);
+{
+  const mm = Number(MJ.mennyezetMagassag ?? 8.5);
+  const lapAnyag = new THREE.MeshLambertMaterial({ color: '#f1f3f5', side: THREE.DoubleSide });
+  for (const [x0, y0, x1, y1] of MJ.mennyezet || []) {
+    const lap = new THREE.Mesh(new THREE.PlaneGeometry(x1 - x0, y1 - y0), lapAnyag);
+    lap.rotation.x = Math.PI / 2;
+    lap.position.set((x0 + x1) / 2, mm, (y0 + y1) / 2);
+    mennyezetCsoport.add(lap);
+  }
+  // fénycsíkok a folyosók fölött
+  const fenyAnyag = new THREE.MeshBasicMaterial({ color: '#ffffff' });
+  for (const f of M.folyosok.values()) {
+    if (!f.padlo || f.tipus === 'gerinc') continue;
+    const { x0, y0, x1, y1 } = f.padlo, ax = f.tengely === 'X';
+    const l = new THREE.Mesh(KOCKA, fenyAnyag);
+    l.scale.set(ax ? x1 - x0 - 1 : 0.12, 0.05, ax ? 0.12 : y1 - y0 - 1);
+    l.position.set((x0 + x1) / 2, mm - 0.05, (y0 + y1) / 2);
+    mennyezetCsoport.add(l);
+  }
 }
 
 // ---------------------------------------------------------------------
@@ -921,6 +1038,7 @@ function modValt(uj, opciok = {}) {
   $('pozicio').hidden = mod !== 'seta';
   $('setaSugo').hidden = !(mod === 'seta' && !ERINTES);
   zonaFeliratok.visible = mod === 'felul';
+  falakMod(mod === 'seta');
   if (mod === 'seta') {
     controls.enabled = false;
     if (opciok.hova) {
@@ -1334,6 +1452,7 @@ $('szinezes').addEventListener('change', e => { szinezesMod = e.target.value; sz
 // ---------------------------------------------------------------------
 // Indítás
 // ---------------------------------------------------------------------
+$('szinezes').value = szinezesMod;
 szinez();
 attekintes(true);
 addEventListener('resize', () => {

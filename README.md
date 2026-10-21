@@ -25,6 +25,15 @@ Egyetlen statikus oldal (Three.js), nincs build-lépés, GitHub Pages-re közvet
   és lebegő „⚠ FELTÉTELEZÉS #n” tábla látszik (falon és állványon át is). A ☰ menüben megvan az összes, a táblázatbeli
   forrással (lap és cella). Ha egy tételre kattintasz, odavisz. Ha kiválasztott hely érintett, az infópanel is figyelmeztet.
 
+## Megjelenés
+
+Alapból **valósághű** a fotók alapján: a T1-ben horganyzott oszlopok narancs gerendákkal, a T4-ben és a T1 fali sorain kék
+oszlopok narancs gerendákkal, a T2 horganyzott polc. A polcokon raklapok és áru (kartondoboz, fóliázott raklap; a T2-ben
+kisebb dobozok) – a kitöltés a helykódból képzett, mindenkinél azonos „véletlen”, **nem a valódi készlet**. Sárga
+oszlopvédők a sorvégeken, betonpadló sárga folyosóvonalakkal; belső nézetben tömör fehér falak és mennyezet LED-sorokkal.
+A ☰ menü „Színezés” mezőjében vissza lehet váltani zóna szerinti színekre. Beállítások: `config.js` → `megjelenes`
+(színek zónánként, `toltottseg`, `aruUtkozik`, `oszlopvedok`, mennyezet).
+
 ## Közös nézet (több látogató)
 
 Aki egyszerre nézi az oldalt, az **pálcikaemberként** látja a többieket, felettük a nevükkel. A felülnézetből nézőket
