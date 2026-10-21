@@ -75,6 +75,7 @@ window.RAKTAR_CONFIG = {
   // Ezek nem pirossal, hanem zölddel, „ellenőrizve” jelöléssel látszanak.
   ellenorizve: {
     'Folyosók!A60': 'Helyszínen pontosítva: egy átjáró van, a T1-04 mellett.',
+    'Folyosók!A64': 'Helyszínen pontosítva: a T1-03 ugyanúgy számozott, mint a T1-04.',
   },
 
   // ------------------------------------------------------------------
@@ -112,8 +113,9 @@ window.RAKTAR_CONFIG = {
     // A szélesség a fotó alapján becsült.
     { nev: 'Kék kapu – árukiadó', x: 20.6, y: 17.3, szel: 3.0, szin: '#1f6feb' },
   ],
-  // Az árukiadó fedett udvar a kék kapu előtt (méret becsült; null = ne rajzolja)
-  arukiado: { x: 20.6, y: 9.0, szel: 14.0, mely: 18.0, nev: 'ÁRUKIADÓ (fedett udvar)' },
+  // Az árukiadó fedett udvar a kék kapu előtt: helyszíni becslés kb. 14 × 50 m, a kapura
+  // középre igazítva (a pontos helye becsült; null = ne rajzolja)
+  arukiado: { x: 20.6, y: -7.7, szel: 14.0, mely: 50.0, nev: 'ÁRUKIADÓ (fedett udvar)' },
   falMagassag: 3.0,
   falVastagsag: 0.2,
   falakUtkoznek: true,       // false: a falakon át lehet sétálni (csak az állványok ütköznek)

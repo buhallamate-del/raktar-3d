@@ -227,7 +227,7 @@ for (const a of C.ajtok || []) {
   korong.position.y = 0.02;
   const rud = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 2.6, 8), new THREE.MeshLambertMaterial({ color: '#1e9e48' }));
   rud.position.y = 1.3;
-  const t = szovegSprite(['Kiindulópont', '(komissiózó kijárat)'], 0.9, { hatter: '#1e9e48', szin: '#fff', meret: 48 });
+  const t = szovegSprite(['Kiindulópont', '(komissiózó lerakó közepe)'], 0.9, { hatter: '#1e9e48', szin: '#fff', meret: 48 });
   t.position.y = 3.1;
   g.add(korong, rud, t);
   g.position.set(k.x, 0, k.y);

@@ -436,6 +436,11 @@ function feltetelezesek(D, C, M) {
           atjaroTetel.horgonyok.push({ tipus: 'pont', x: atj.x, y: atj.y }, { tipus: 'ajto', x: atj.x, y: atj.y });
         }
         if (!lista.includes(atjaroTetel)) lista.push(atjaroTetel);
+      } else if (/^Kiindulópont/.test(nev)) {
+        lista.push({
+          cim: 'Kiindulópont: a komissiózó lerakó terület közepe', szoveg: `${nev} = ${p.ertek} ${p.egyseg}: ${c.szoveg}`, forras,
+          horgonyok: [{ tipus: 'pont', x: D.kulcsok.kiindulo.x, y: D.kulcsok.kiindulo.y }],
+        });
       } else if (/^T4 eltolás Y/.test(nev)) {
         const x0 = Math.min(...felsoHelyek.map(h => h.x0));
         const y = Number(p.ertek) + D.eltolasY;
@@ -534,7 +539,7 @@ function modellFeltetelezesek(C, helyek) {
     `Folyosószélesség alapértéke ${C.folyosoSzelesseg} m ott, ahol a táblázat nem ad meg szélességet.`,
     'A falak helye becsült (a táblázatban csak a komissiózó bal fala és a T4 alsó fala szerepel) – config.js: falak.',
     'A komissiózó (lerakó terület) a T1-03 sor fölött van, X 0–20,6 m; a bejárata a T1-03 keleti vége és a T1 jobb fala között, a kék kapu mellett (helyszíni info alapján, a pontos méret becsült).',
-    'Az árukiadó fedett udvar mérete becsült (config.js: arukiado); a kék kapu a T1-F0 keleti végén, a T1 jobb falán van.',
+    'Az árukiadó fedett udvar kb. 14 × 50 m (helyszíni becslés), a kék kapura középre igazítva (config.js: arukiado); a kék kapu a T1-F0 keleti végén, a T1 jobb falán van.',
   );
   if (jel.length) {
     l.push(`${jel.length} jelöletlen helynek („(nincs kód)”) ideiglenes kódot adtunk: ${[...new Set(jel.map(h => h.kod.replace(/-\d+$/, '-…')))].join(', ')}.`);

@@ -130,7 +130,16 @@ A modell feltevéseit a ☰ menü sárga „Modell saját feltételezései” r�
      a kapu szélessége és az udvar mérete becsült).
    - A **komissiózó lerakó terület** a T1-03 fölött van, a bejárata a T1-03 keleti vége és a T1 jobb fala között,
      a kék kapu mellett. Emiatt a komissiózó nem teljes szélességben nyílik a T1-F0-ra. Ez FELTÉTELEZÉS a pontos
-     helyre, és a T1 távolságai az Excelben még a régi, közvetlen utat számolják.
+     helyre (a távolságokat lásd lent).
+9c. **Kiindulópont és távolságok – helyszíni info (2026-10-21):** a kiindulópont a **komissiózó lerakó terület közepe**.
+   A terület méretét X 0–20,6 m, Y 0–14,4 m-nek vettem (FELTÉTELEZÉS), így a kiindulópont (10,3; 7,2). A T1-03 sor miatt
+   a komissiózóból a keleti bejáraton át, a keresztfolyosó vonalában (X = 17,8) lehet kilépni a T1-F0-ra; a felső szárnyba
+   ezután a T1-F0-n nyugatra, az átjárón át vezet az út. Ezért az Excelben újraszámoltam a „Táv a kiindulóponttól” oszlopot
+   (a lap eddigi képletével, amely mind a 976 helyen pontosan visszaadta a régi értékeket):
+   - Folyosók lap, „Kapu → kiindulópont”: T1 19,21 → **17,6 m**, FELSŐ 17,59 → **35,4 m**;
+   - a T1-F0 „Komissiózóból közvetlenül” értéke „nem” lett, a 03. és 04. sor is a T1 kapun át számol;
+   - a változás helyenként −1,6 … +17,8 m, átlagosan +8,8 m (a felső szárny lett messzebb).
+   Az árukiadó fedett udvar kb. 14 × 50 m, a kék kapura középre igazítva; a pontos helye becsült.
 10. **A 10. és 11. sor közötti válaszfal:** a két sor hátoldala között fut, Y = 36,88-on, X = 0-tól 16,2-ig, vagyis az
     S oszlop (keresztfolyosó) előtt véget ér. A táblázat feltételezését így modelleztem.
 11. **Jelöletlen helyek:** a 27 „(nincs kód)” hely ideiglenes kódot kapott: `T4-ALSO-01…24` (jelöletlen alsó sor),
