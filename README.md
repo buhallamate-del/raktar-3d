@@ -11,6 +11,11 @@ Egyetlen statikus oldal (Three.js), nincs build-lépés, GitHub Pages-re közvet
   Ha egy állványra kattintasz, megjelennek az adatai (zóna, sor, folyosó, X/Y, táv a kiindulóponttól stb.).
 - **Belső nézet (séta):** gépen kattints a képre, aztán W A S D vagy a nyilak, egérrel nézelődsz, Shift = gyorsabban,
   Szóköz = ugrás (telefonon az „Ugrás” gomb). A lépcsőn fel lehet menni a galériára.
+  **C = guggolás** (nyomva tartva; telefonon „Guggolás” gomb be/ki): guggolva át lehet bújni a sorok alatt, a legalsó
+  gerenda alatt (a T1-ben és T4-ben kb. 1,25 m; a T2/T3 polcai ehhez túl sűrűek). **E = mászás** (nyomva tartva;
+  telefonon „Mászás”): az állvány mellett felfelé lehet mászni, a polcszintekre guggolva be lehet bújni, a sor tetején
+  végig lehet sétálni. Ha elengeded, és nem polcon vagy, leesel. Állva továbbra sem lehet átmenni az állványokon;
+  a `config.js` `sorokAlattAtbujas: false` beállításával az állványok újra tömörek (se átbújás, se rájuk állás).
   Telefonon a bal alsó joystickkal sétálsz, a jobb oldalon húzással nézelődsz. Az állványokon és a falakon nem lehet átmenni.
 - **Kereső:** beírsz egy helykódot (pl. `T1-05-03`, `t1 5 3`), és az *Odavisz* gomb vagy az Enter odavisz:
   belső nézetben a hely elé állít, a címke felé fordulva; felülnézetben fölé repül. A *Kijelöl* gomb csak kijelöli.

@@ -248,6 +248,12 @@ window.RAKTAR_CONFIG = {
   fellepesMagassag: 0.35, // ekkora szintkülönbségre (pl. lépcsőfok) magától fellép
   ugrasSebesseg: 4.2,     // m/s felfelé (kb. 0,9 m magas ugrás); 0 = nincs ugrás
   gravitacio: 9.81,       // m/s²
+  // Guggolás (C billentyű / „Guggolás” gomb): ekkora magas a gyalogos, és ilyen magasan a szeme.
+  guggolas: { testMagassag: 1.0, szemmagassag: 0.9 },
+  // true: guggolva át lehet bújni a sorok alatt (a legalsó gerenda alatt), és az állvány polcaira
+  // és tetejére fel lehet állni. false: az állvány tömör, sehogy sem lehet átmenni rajta.
+  sorokAlattAtbujas: true,
+  maszasSebesseg: 1.5,    // m/s – mászás az állványon (E billentyű / „Mászás” gomb nyomva tartva)
   cimkeMagassag: 1.5,     // a helykód-címke magassága az állvány elején
   egerErzekenyseg: 0.0022,
   erintesErzekenyseg: 0.005,
