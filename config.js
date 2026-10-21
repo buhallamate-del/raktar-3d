@@ -62,6 +62,16 @@ window.RAKTAR_CONFIG = {
   minMelyseg: 0.3,
   maxHelySzelesseg: 1.4,   // egy tárhely legfeljebb ilyen széles (a szomszéd távolságból számolva)
 
+  // Oszlopkiosztás: hány tárhely van egy rekeszben (két oszlop között), a „Hely” sorszám szerint.
+  // Helyszín (2026-10-21): a T1 és T4 sorokban az 1–2. és a 3–4. hely egy-egy rekesz, utána
+  // 3 tárhelyenként van oszlop (5–7., 8–10., …). A felsorolt zónákon kívül minden tárhely külön rekesz.
+  // A zóna neve a Tárhelyek lap „Zóna” oszlopa (a „T1 fali” külön szerepel, ha kell, add hozzá).
+  oszlopKiosztas: {
+    zonak: ['T1', 'T4'],
+    elejen: [2, 2],   // az első rekeszek mérete sorban
+    utana: 3,         // utána ennyi tárhelyenként van oszlop
+  },
+
   // ------------------------------------------------------------------
   // 3) HELYSZÍNI PONTOSÍTÁSOK
   // ------------------------------------------------------------------

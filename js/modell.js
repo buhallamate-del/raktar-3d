@@ -219,6 +219,44 @@ export function epitModell(D0, C) {
   }
   for (const h of helyek) h.cimkeY = Math.min(Number(C.cimkeMagassag ?? 1.5), h.H - 0.1);
 
+  // --- Rekeszek (oszloptól oszlopig) ----------------------------------------
+  // A config.js oszlopKiosztas szerint több tárhely is lehet egy rekeszben; az oszlopok
+  // a rekesz két végén állnak.
+  const ok = C.oszlopKiosztas || {};
+  const okZonak = new Set(ok.zonak || []);
+  const elejen = (ok.elejen || []).map(Number), utana = Math.max(1, Number(ok.utana ?? 1));
+  const rekeszSzam = hely => {
+    let n = Number(hely), i = 0;
+    for (const m of elejen) { if (n <= m) return i; n -= m; i++; }
+    return i + Math.floor((n - 1) / utana);
+  };
+  const rekeszMap = new Map();
+  for (const h of helyek) {
+    const kulcs = okZonak.has(h.zona) && Number.isFinite(Number(h.hely))
+      ? `${h.sorKulcs}#${h.irany}#${rekeszSzam(h.hely)}` : `#${h.i}`;
+    if (!rekeszMap.has(kulcs)) rekeszMap.set(kulcs, []);
+    rekeszMap.get(kulcs).push(h);
+  }
+  const rekeszek = [];
+  for (const tagok of rekeszMap.values()) {
+    // csak az egymás melletti helyek alkotnak egy rekeszt (hiányzó hely esetén szétválik)
+    const r0 = tagok[0], ax = r0.irany === 'X';
+    tagok.sort((a, b) => (ax ? a.x - b.x : a.y - b.y));
+    let akt = [tagok[0]];
+    const lezar = () => rekeszek.push({
+      tagok: akt.map(t => t.i), irany: r0.irany,
+      x0: Math.min(...akt.map(t => t.x0)), x1: Math.max(...akt.map(t => t.x1)),
+      y0: Math.min(...akt.map(t => t.y0)), y1: Math.max(...akt.map(t => t.y1)),
+      H: Math.max(...akt.map(t => t.H)), w: Math.min(...akt.map(t => t.w)),
+    });
+    for (let k = 1; k < tagok.length; k++) {
+      const elozo = akt[akt.length - 1], t = tagok[k];
+      const res = ax ? t.x0 - elozo.x1 : t.y0 - elozo.y1;
+      if (res > 0.1) { lezar(); akt = [t]; } else akt.push(t);
+    }
+    lezar();
+  }
+
   // --- Falak (az átjáró helyén nyílással) -------------------------------
   const falak = [];
   // Nyílások: az átjáró (Paraméterek lap) és a config.js ajtok listája
@@ -289,7 +327,7 @@ export function epitModell(D0, C) {
   for (const [x1, y1, x2, y2] of falak) { xs.push(x1, x2); ys.push(y1, y2); }
   const hatar = { x0: Math.min(...xs), x1: Math.max(...xs), y0: Math.min(...ys), y1: Math.max(...ys) };
 
-  const modell = { helyek, folyosok, csoportok, falak, valaszfalak, utkozok, racs, hatar, figyelmeztetesek, adat: D, nyilasok };
+  const modell = { helyek, folyosok, csoportok, falak, valaszfalak, utkozok, racs, hatar, figyelmeztetesek, adat: D, nyilasok, rekeszek };
   modell.feltetelezesek = feltetelezesek(D, C, modell);
   modell.modellFeltetelezesek = modellFeltetelezesek(C, helyek);
   return modell;

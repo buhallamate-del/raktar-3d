@@ -162,6 +162,10 @@ A modell feltevéseit a ☰ menü sárga „Modell saját feltételezései” r�
      gerenda fölötti része van: `alsoMagassag`). A helyiség a déli fal mögé nyúlik ki, kb. 4 × 3,8 m.
    - **Fedett rakodó** (IMG_3290): az áruátvételi kapun kilépve balra, a keleti fal mentén, az árukiadó udvaráig (`udvarok`).
    - Minden méret és pontos hely becsült; a menüben a „config.js (helyszíni info)” FELTÉTELEZÉS-ek jelzik őket.
+9f. **Oszlopkiosztás – helyszíni info (2026-10-21):** a T1 és T4 sorokban az 1–2. és a 3–4. hely egy-egy rekesz
+   (nincs köztük oszlop), utána 3 tárhelyenként van oszlop (5–7., 8–10., 11–13., …). A `config.js` `oszlopKiosztas`
+   részében állítható (mely zónák, az első rekeszek mérete, utána hány hely). Ha egy hely hiányzik (pl. a 16–17. sorban
+   az 1–2.), a rekesz ott kettéválik. A T1 fali sorai (31–33) és a T2/T3 most is helyenként vannak osztva.
 10. **A 10. és 11. sor közötti válaszfal:** a két sor hátoldala között fut, Y = 36,88-on, X = 0-tól 16,2-ig, vagyis az
     S oszlop (keresztfolyosó) előtt véget ér. A táblázat feltételezését így modelleztem.
 11. **Jelöletlen helyek:** a 27 „(nincs kód)” hely ideiglenes kódot kapott: `T4-ALSO-01…24` (jelöletlen alsó sor),

@@ -415,7 +415,8 @@ scene.add(falCsoport);
 // Állványok (példányosított hálók: oszlopok, polcok, gerendák)
 // ---------------------------------------------------------------------
 let nOszlop = 0, nPolc = 0, nGerenda = 0;
-for (const h of M.helyek) { nOszlop += 4; nPolc += h.L; nGerenda += 2 * h.L; }
+for (const h of M.helyek) { nPolc += h.L; nGerenda += 2 * h.L; }
+nOszlop = 4 * M.rekeszek.length;
 const allvanyCsoport = new THREE.Group();
 scene.add(allvanyCsoport);
 const oszlopok = new THREE.InstancedMesh(KOCKA, new THREE.MeshLambertMaterial(), nOszlop);
@@ -426,13 +427,16 @@ valaszto.visible = false; // csak kattintás-felismeréshez
 const peldanyHely = { oszlop: [], polc: [], gerenda: [] };
 {
   let io = 0, ip = 0, ig = 0;
-  for (const h of M.helyek) {
-    const p = Math.min(0.08, h.w * 0.14);
-    const xs = [h.x0 + p / 2, h.x1 - p / 2], zs = [h.y0 + p / 2, h.y1 - p / 2];
+  // oszlopok rekeszenként (config.js: oszlopKiosztas), a rekesz négy sarkán
+  for (const r of M.rekeszek) {
+    const p = Math.min(0.08, r.w * 0.14);
+    const xs = [r.x0 + p / 2, r.x1 - p / 2], zs = [r.y0 + p / 2, r.y1 - p / 2];
     for (const x of xs) for (const z of zs) {
-      dobozMatrix(oszlopok, io, x, h.H / 2, z, p, h.H, p);
-      peldanyHely.oszlop[io++] = h.i;
+      dobozMatrix(oszlopok, io, x, r.H / 2, z, p, r.H, p);
+      peldanyHely.oszlop[io++] = r.tagok[0];
     }
+  }
+  for (const h of M.helyek) {
     const sx = h.x1 - h.x0, sz = h.y1 - h.y0;
     for (let k = 0; k < h.L; k++) {
       const y = k === 0 ? 0.05 : (k * h.H) / h.L;
