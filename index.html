@@ -29,6 +29,7 @@
     <button id="gombKijelol" class="masodlagos" title="Csak kijelöli">Kijelöl</button>
     <ul id="javaslatok" hidden></ul>
   </div>
+  <span id="kozosJelzo" class="kozosJelzo" hidden title="Közös nézet">👥</span>
   <button id="gombMenu" class="masodlagos" title="Feltételezések, jelmagyarázat, beállítások">☰ <span id="feltSzam" class="jelveny">!</span></button>
 </header>
 
@@ -52,6 +53,16 @@
     <ul id="modellFeltLista" class="feltLista modell"></ul>
   </section>
   <section>
+    <h2>Közös nézet</h2>
+    <p class="halvany">Aki egyszerre nézi az oldalt, az pálcikaemberként látja a többieket (felülnézetből nézőket halványan).</p>
+    <label><input type="checkbox" id="kozosBe"> Közös nézet bekapcsolva</label>
+    <label><input type="checkbox" id="kozosLathato"> Mások is lássanak engem</label>
+    <label>Nevem: <input type="text" id="kozosNev" maxlength="24" style="width: 12em"></label>
+    <label>Színem: <input type="color" id="kozosSzin"></label>
+    <p class="halvany kicsi" id="kozosAllapot"></p>
+    <p class="halvany kicsi">A neved, a színed és a helyed a modellben egy nyilvános, ingyenes üzenetközvetítőn (HiveMQ) át megy a többiekhez; más adat nem. Aki ismeri a csatorna nevét (config.js), az is láthatja.</p>
+  </section>
+  <section>
     <h2>Jelmagyarázat</h2>
     <ul id="jelmagyarazat" class="jelmagyarazat"></ul>
   </section>
@@ -72,8 +83,8 @@
     <h2>Irányítás</h2>
     <ul class="sugo">
       <li><b>Felülnézet:</b> húzás = mozgatás, görgő / csípés = nagyítás, jobb gomb / két ujj = forgatás. Kattints egy állványra a részletekért.</li>
-      <li><b>Belső nézet, gépen:</b> kattints a képre, aztán W A S D (vagy nyilak) = séta, egér = nézelődés, Shift = gyorsabban, Szóköz = ugrás, Esc = egér elengedése, kattintás = a célkereszt alatti hely kiválasztása. A lépcsőn fel lehet menni a galériára.</li>
-      <li><b>Belső nézet, telefonon:</b> bal alsó joystick = séta, jobb oldalon húzás = nézelődés, „Ugrás” gomb = ugrás, koppintás = hely kiválasztása.</li>
+      <li><b>Belső nézet, gépen:</b> kattints a képre, aztán W A S D (vagy nyilak) = séta, egér = nézelődés, Shift = gyorsabban, Szóköz = ugrás, C = guggolás (nyomva tartva; guggolva át lehet bújni a sorok alatt), E = mászás az állványon (nyomva tartva), Esc = egér elengedése, kattintás = a célkereszt alatti hely kiválasztása. A lépcsőn fel lehet menni a galériára.</li>
+      <li><b>Belső nézet, telefonon:</b> bal alsó joystick = séta, jobb oldalon húzás = nézelődés, „Ugrás” gomb = ugrás, „Guggolás” gomb = guggolás be/ki, „Mászás” gomb nyomva tartva = mászás az állványon, koppintás = hely kiválasztása.</li>
       <li><b>V</b> billentyű = nézetváltás. A cím (URL) végére írt <code>#T1-05-03</code> egyből a helyre visz.</li>
     </ul>
   </section>
@@ -83,7 +94,9 @@
 <div id="celkereszt" hidden>+</div>
 <div id="joystick" hidden><div id="joyGomb"></div></div>
 <button id="ugrasGomb" hidden aria-label="Ugrás">Ugrás</button>
-<div id="setaSugo" hidden>Kattints a képre a sétához · WASD / nyilak · egér · Shift · Szóköz = ugrás · Esc</div>
+<button id="maszGomb" class="setaGomb" hidden aria-label="Mászás (nyomva tartva)">Mászás</button>
+<button id="guggolGomb" class="setaGomb" hidden aria-label="Guggolás be/ki">Guggolás</button>
+<div id="setaSugo" hidden>Kattints a képre a sétához · WASD / nyilak · egér · Shift · Szóköz = ugrás · C = guggolás · E = mászás · Esc</div>
 <div id="pozicio" hidden></div>
 <div id="betoltes">Raktár betöltése…</div>
 

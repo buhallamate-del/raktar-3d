@@ -102,6 +102,9 @@ window.RAKTAR_CONFIG = {
     // Helyszín (2026-10-21): a T1-29 alatt az áruátvételi terület van, a déli fal ezért
     // lejjebb van; a terület mélysége (8 m) becsült.
     [  0.0,  97.8,  20.6,  97.8],   // déli fal az áruátvétel alatt
+    // Helyszín (IMG_3294): az árukiadó udvar déli végén (a bálázónál) fal van, innen nem lehet
+    // átmenni az áruátvétel felé.
+    [ 20.6,  42.3,  34.6,  42.3],   // az árukiadó udvar déli fala
     // Logisztikai iroda és mosdó a komissiózó északi fala mögött (helyszíni fotók alapján,
     // L alakú iroda: belépve balra a nagy terem, jobbra – a mosdó mögött – a kisebb rész).
     // Minden méret becsült.
@@ -142,6 +145,9 @@ window.RAKTAR_CONFIG = {
     // Helyszín (IMG_3289, 3291–3293): a pohármosó ajtaja az áruátvétel déli falán, a karantén
     // állvány alatt (helye becsült).
     { nev: 'Pohármosó', x: 7.0, y: 97.8, szel: 1.0, szin: '#8a6d3b' },
+    // Helyszín: szekcionált kapu a T1 keleti falán, kívülről a T1 válaszfala közelében; nem működik
+    // (vag: false – zárva). Helye és szélessége becsült.
+    { nev: 'Szekcionált kapu (nem működik)', x: 20.6, y: 38.5, szel: 3.5, szin: '#8d939b', vag: false },
     // Helyszín (2026-10-21, IMG_3284–3285): sárga kijárati gyorskapu a felső szárny északi
     // falán, a T4-06 keleti vége és a galéria lépcsője között (helye és szélessége becsült).
     { nev: 'Kijárat (fedett rész)', x: -20.0, y: -0.4, szel: 2.4, szin: '#e0a800' },
@@ -150,6 +156,32 @@ window.RAKTAR_CONFIG = {
     // (vag: false = csak jelölő ajtó, amelyen nem lehet átmenni.)
     { nev: 'Logisztikai iroda', x: 7.2, y: 0.0, szel: 1.0, szin: '#8a6d3b' },
     { nev: 'Mosdó', x: 9.8, y: 0.0, szel: 1.0, szin: '#8a6d3b' },
+  ],
+  // Kerítések [x1, y1, x2, y2] – ütköznek, 2,2 m magasak
+  keritesek: [
+    // Helyszín (IMG_3295–3297): az árukiadó udvar kerítéssel el van kerítve (helye becsült)
+    [ 34.6,  -7.7,  34.6,  42.3],   // keleti kerítés (az utca felé)
+    [ 20.6,  -7.7,  34.6,  -7.7],   // északi kerítés
+  ],
+  // Tereptárgyak: egyszerű dobozok (x, y = közép; szel × mely × mag méter), ütköznek
+  tereptargyak: [
+    // Helyszín (IMG_3294): bálázó és raklaphalmok az árukiadó udvar déli végén (helyek becsültek)
+    { nev: 'Bálázó', x: 22.4, y: 40.6, szel: 1.8, mely: 1.4, mag: 2.6, szin: '#2e7d32', felirat: true },
+    { x: 30.5, y: 40.8, szel: 1.2, mely: 0.8, mag: 1.8, szin: '#c8a165' },
+    { x: 31.9, y: 40.8, szel: 1.2, mely: 0.8, mag: 1.6, szin: '#c8a165' },
+    { x: 33.3, y: 40.8, szel: 1.2, mely: 0.8, mag: 1.9, szin: '#c8a165' },
+    { x: 30.5, y: 39.6, szel: 1.2, mely: 0.8, mag: 1.2, szin: '#c8a165' },
+    { nev: 'Raklapok', x: 31.9, y: 39.6, szel: 1.2, mely: 0.8, mag: 1.4, szin: '#c8a165', felirat: true },
+    // Helyszín (IMG_3295): hulladékkonténerek a kerítés mellett
+    { nev: 'Konténerek', x: 33.6, y: 6.0, szel: 1.2, mely: 1.8, mag: 1.4, szin: '#9aa4b2', felirat: true },
+    { x: 33.6, y: 8.2, szel: 1.2, mely: 1.8, mag: 1.4, szin: '#2e7d32' },
+    { x: 33.6, y: 10.4, szel: 1.2, mely: 1.8, mag: 1.4, szin: '#2e7d32' },
+    // Helyszín (IMG_3296, 3298): dohányzórész székekkel az udvar északi végén, az épület mellett
+    { nev: 'Dohányzó', x: 23.6, y: -5.0, szel: 0.8, mely: 0.8, mag: 0.75, szin: '#6b4f2a', felirat: true },
+    { x: 22.7, y: -5.0, szel: 0.45, mely: 0.45, mag: 0.9, szin: '#8a6d3b' },
+    { x: 24.5, y: -5.0, szel: 0.45, mely: 0.45, mag: 0.9, szin: '#8a6d3b' },
+    { x: 23.6, y: -5.9, szel: 0.45, mely: 0.45, mag: 0.9, szin: '#8a6d3b' },
+    { x: 23.6, y: -4.1, szel: 0.45, mely: 0.45, mag: 0.9, szin: '#8a6d3b' },
   ],
   // Egyéb padlóterületek felirattal (x, y = bal felső sarok; szel, mely)
   teruletek: [
@@ -180,6 +212,8 @@ window.RAKTAR_CONFIG = {
   ],
   // Helyszíni feltételezések, amelyek nem az Excelből jönnek (pirossal jelennek meg)
   helyszinFeltetelezesek: [
+    { cim: 'Az árukiadó udvar kerítése, fala és tereptárgyai', x: 27.6, y: 17.3,
+      szoveg: 'Az árukiadó udvar körbe van kerítve; a déli végén (a bálázónál) fal van, onnan nem lehet átmenni az áruátvétel felé. A szekcionált kapu a T1 keleti falán, a válaszfal közelében zárva van. A kerítés, a bálázó, a raklapok, a konténerek és a dohányzórész helye becsült.' },
     { cim: 'A pohármosó helye és mérete', x: 7.0, y: 99.7,
       szoveg: 'A pohármosó az áruátvételről nyílik, a karantén állvány alatti ajtón át; a déli fal mögé nyúlik ki, két ablakos külső fallal. Kb. 4 × 3,8 m, az ajtó X ≈ 7 m – becsült.' },
     { cim: 'A fedett rakodó az áruátvételi kapu előtt', x: 24.6, y: 80.0,
@@ -238,7 +272,19 @@ window.RAKTAR_CONFIG = {
   komissiozoBejarat: { x: 16.2, y: 14.4, szel: 4.4, mely: 1.3 },
 
   // ------------------------------------------------------------------
-  // 5) SÉTA ÉS MEGJELENÍTÉS
+  // 5) KÖZÖS NÉZET – a többi látogató pálcikaemberként
+  // ------------------------------------------------------------------
+  // A pozíciók egy MQTT üzenetközvetítőn mennek át (alapból a HiveMQ nyilvános, ingyenes
+  // szerverén). A csatorna neve véletlenszerű: aki ugyanezt használja, az látja egymást.
+  // Ha új csatornanevet adsz, a régi linkkel nézők nem látják az újakat.
+  kozos: {
+    bekapcsolva: true,
+    broker: 'wss://broker.hivemq.com:8884/mqtt',
+    csatorna: 'raktar3d-nmyk2ri8qnwq',
+  },
+
+  // ------------------------------------------------------------------
+  // 6) SÉTA ÉS MEGJELENÍTÉS
   // ------------------------------------------------------------------
   szemmagassag: 1.65,
   setaSebesseg: 1.8,      // m/s
@@ -248,6 +294,12 @@ window.RAKTAR_CONFIG = {
   fellepesMagassag: 0.35, // ekkora szintkülönbségre (pl. lépcsőfok) magától fellép
   ugrasSebesseg: 4.2,     // m/s felfelé (kb. 0,9 m magas ugrás); 0 = nincs ugrás
   gravitacio: 9.81,       // m/s²
+  // Guggolás (C billentyű / „Guggolás” gomb): ekkora magas a gyalogos, és ilyen magasan a szeme.
+  guggolas: { testMagassag: 1.0, szemmagassag: 0.9 },
+  // true: guggolva át lehet bújni a sorok alatt (a legalsó gerenda alatt), és az állvány polcaira
+  // és tetejére fel lehet állni. false: az állvány tömör, sehogy sem lehet átmenni rajta.
+  sorokAlattAtbujas: true,
+  maszasSebesseg: 1.5,    // m/s – mászás az állványon (E billentyű / „Mászás” gomb nyomva tartva)
   cimkeMagassag: 1.5,     // a helykód-címke magassága az állvány elején
   egerErzekenyseg: 0.0022,
   erintesErzekenyseg: 0.005,
