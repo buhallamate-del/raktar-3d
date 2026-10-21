@@ -1,0 +1,108 @@
+// =====================================================================
+//  RAKTÁR 3D – KONFIGURÁCIÓ
+//  Ezt a fájlt nyugodtan átírhatod (pl. a GitHub webes szerkesztőjében).
+//  Mentés után az oldalt frissíteni kell (GitHub Pages-en ~1 perc).
+//  Minden méret MÉTERBEN értendő. Tizedesjel: pont (2.6, nem 2,6).
+// =====================================================================
+window.RAKTAR_CONFIG = {
+
+  // ------------------------------------------------------------------
+  // 1) FŐ PARAMÉTEREK – ezeket érdemes pontosítani
+  // ------------------------------------------------------------------
+
+  // Alapértelmezett állványmagasság (padlótól a legfelső gerendáig), m.
+  allvanyMagassag: 5.0,
+
+  // Alapértelmezett szintszám (hány tárolószint van egymás fölött).
+  szintekSzama: 4,
+
+  // Alapértelmezett folyosószélesség (szabad szélesség két állványsor között), m.
+  folyosoSzelesseg: 2.6,
+
+  // Folyosónkénti szélesség (felülírja az alapértelmezettet).
+  // A kulcs a Folyosók lap „Folyosó” oszlopa. A megadott értékek a táblázat
+  // megjegyzéseiből / paramétereiből származnak; a többi az alapértelmezett.
+  folyosoSzelessegek: {
+    'T1-F0': 3.4,     // fejfolyosó: komissiózó alja (15,6) – 04. sor (19,0)
+    'T1-29/fal': 2.6, // „A 29. sor alatti folyosó (2,6 m)”
+    'T1-K': 3.2,      // keresztfolyosó: sorvégek (~16,2) – fali állványok (~19,4)
+    'F-SÁV': 2.6,     // alsó sáv: állványok alja (~3,8) – falmenti sor (~6,4)
+    'F-4': 0.8,       // „~0,8 m”
+    'F-5': 0.9,       // „~0,9 m”
+    'F-6': 1.4,       // „~1,4 m”
+    'F-7': 2.2,       // „~2,2 m”
+  },
+
+  // Zónánkénti felülírás (magasság, szintek, szín). A zóna neve a Tárhelyek
+  // lap „Zóna” oszlopa; a „T1 fali” külön is megadható, különben a T1 érvényes.
+  zonak: {
+    'T1': { szin: '#2f6fdb', nev: 'T1' },
+    'T1 fali': { szin: '#1f4fa8', nev: 'T1 fali' },
+    'T2': { szin: '#2ea44f', nev: 'T2', allvanyMagassag: 2.2, szintekSzama: 5 },
+    'T3': { szin: '#e8891c', nev: 'T3 (temperált)', allvanyMagassag: 2.5, szintekSzama: 4 },
+    'T4': { szin: '#8e44ad', nev: 'T4', allvanyMagassag: 4.0, szintekSzama: 3 },
+  },
+
+  // Soronkénti felülírás, ha egy sor eltér a zónájától. Kulcs: 'Zóna|Sor'.
+  // Példa: 'T2|01': { allvanyMagassag: 3.0, szintekSzama: 3 },
+  sorok: {
+  },
+
+  // ------------------------------------------------------------------
+  // 2) ÁLLVÁNYMÉLYSÉG
+  // ------------------------------------------------------------------
+  // 'auto': a mélységet a helykoordinátából és a folyosó szélességéből
+  //         számolja (az állvány eleje a folyosó széléig ér, hátul nem lóg
+  //         bele a mögötte lévő sorba), legfeljebb maxMelyseg.
+  // szám (pl. 1.2): minden állvány ilyen mély.
+  allvanyMelyseg: 'auto',
+  maxMelyseg: 1.2,
+  minMelyseg: 0.3,
+  maxHelySzelesseg: 1.4,   // egy tárhely legfeljebb ilyen széles (a szomszéd távolságból számolva)
+
+  // ------------------------------------------------------------------
+  // 3) ÉPÜLET (MODELL-FELTÉTELEZÉS – a táblázat nem adja meg a falakat)
+  // ------------------------------------------------------------------
+  // Falszakaszok [x1, y1, x2, y2] a táblázat koordináta-rendszerében
+  // (origó: a komissiózó bal felső sarka, X jobbra, Y lefelé nő).
+  falak: [
+    // Felső szárny (T2, T3, T4) – a jobb és az alsó fal a Paraméterek lapból
+    [-39.8, -12.6,   0.0, -12.6],   // felső fal (becsült)
+    [-39.8, -12.6, -39.8,   7.8],   // bal fal (becsült)
+    [-39.8,   7.8,   0.0,   7.8],   // alsó fal: „T4 eltolás Y = 7,8” (feltételezés a táblázatban)
+    [  0.0, -12.6,   0.0,  89.8],   // felső szárny jobb fala = komissiózó + T1 bal fala
+    // Komissiózó
+    [  0.0,   0.0,  16.19,  0.0],   // felső fal (becsült)
+    [ 16.19,  0.0,  16.19, 15.6],   // jobb fal (becsült; a kijárat X-e a fal közepe)
+    [ 16.19, 15.6,  20.6,  15.6],   // T1 felső fal a keresztfolyosó fölött (becsült)
+    // T1 csarnok
+    [ 20.6,  15.6,  20.6,  89.8],   // jobb fal a fali állványok mögött (becsült)
+    [  0.0,  89.8,  20.6,  89.8],   // alsó fal: 29. sor alatti folyosó széle
+  ],
+  // Válaszfalak (ugyanígy). A 10–11. sor közötti fal a táblázat feltételezése
+  // szerint NEM zárja el a keresztfolyosót, ezért az S oszlop előtt véget ér.
+  valaszfalak: [
+    [0.0, 36.88, 16.2, 36.88],
+  ],
+  // Az átjáró (Paraméterek lap: „Átjáró a felső szárnyba X/Y”) helyén a falba
+  // automatikusan ekkora nyílás kerül:
+  atjaroSzelesseg: 2.0,
+  falMagassag: 3.0,
+  falVastagsag: 0.2,
+  falakUtkoznek: true,       // false: a falakon át lehet sétálni (csak az állványok ütköznek)
+
+  // Komissiózó terület a padlón (téglalap: x, y, szélesség, mélység)
+  komissiozo: { x: 0, y: 0, szel: 16.19, mely: 7.8 },
+  komissiozoEloter: { x: 0, y: 7.8, szel: 16.19, mely: 7.8 },
+
+  // ------------------------------------------------------------------
+  // 4) SÉTA ÉS MEGJELENÍTÉS
+  // ------------------------------------------------------------------
+  szemmagassag: 1.65,
+  setaSebesseg: 1.8,      // m/s
+  futasSebesseg: 4.5,     // m/s (Shift)
+  testSugar: 0.28,        // a „gyalogos” sugara az ütközéshez
+  cimkeMagassag: 1.5,     // a helykód-címke magassága az állvány elején
+  egerErzekenyseg: 0.0022,
+  erintesErzekenyseg: 0.005,
+};
