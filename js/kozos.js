@@ -2,6 +2,7 @@
 // A pozíciók egy MQTT üzenetközvetítőn (alapból a HiveMQ nyilvános szerverén) mennek át:
 //   <csatorna>/poz/<azonosító>  ->  {nev, szin, x, y, z, yaw, g, m}
 // Üres üzenet = az illető kilépett (ezt a szerver is elküldi helyettünk, ha megszakad a kapcsolat).
+//   <csatorna>/e  ->  játékesemények (lökés, dobás, találat, halál), lásd jatek.js
 import * as THREE from 'three';
 
 const TAROL = 'raktar3d.kozos';
@@ -41,11 +42,20 @@ function palcikaember(szin, nev, szovegSprite) {
   const felirat = szovegSprite(nev, 0.32, { hatter: szin, szin: '#fff', meret: 44, depthTest: false });
   felirat.position.y = 2.05;
   g.add(felirat);
-  g.userData = { test, balLab, jobbLab, balKar, jobbKar, felirat, fazis: 0, anyag };
+  // életerő-csík (csak ha az illetőnél be van kapcsolva a játék)
+  const csik = (szin2) => {
+    const s = new THREE.Sprite(new THREE.SpriteMaterial({ color: szin2, depthTest: false }));
+    s.center.set(0, 0.5); s.scale.set(0.8, 0.07, 1); s.renderOrder = 11; return s;
+  };
+  const hpHatter = csik('#3a0d0d'), hpEloter = csik('#3ddc5a');
+  hpHatter.position.set(-0.4, 2.3, 0); hpEloter.position.set(-0.4, 2.3, 0); hpEloter.renderOrder = 12;
+  g.add(hpHatter, hpEloter);
+  g.userData = { test, balLab, jobbLab, balKar, jobbKar, felirat, fazis: 0, anyag, hpHatter, hpEloter, villan: 0 };
   return g;
 }
 
-export function inditKozos({ C, scene, szovegSprite, allapot, uzenet }) {
+// extra(): a pozíció mellé küldött további adatok (pl. életerő); esemeny(e): a <csatorna>/e üzenetei
+export function inditKozos({ C, scene, szovegSprite, allapot, uzenet, extra, esemeny }) {
   const K = C.kozos || {};
   const param = new URLSearchParams(location.search);
   const broker = param.get('broker') || K.broker;
@@ -109,12 +119,17 @@ export function inditKozos({ C, scene, szovegSprite, allapot, uzenet }) {
     kliens.on('connect', () => {
       kapcsolodva = true;
       kliens.subscribe(`${csatorna}/poz/+`);
+      kliens.subscribe(`${csatorna}/e`);
       utolsoAllapot = null;
       allapotKiir();
     });
     kliens.on('close', () => { kapcsolodva = false; allapotKiir(); });
     kliens.on('error', e => console.warn('[közös nézet]', e?.message || e));
     kliens.on('message', (tema, adat) => {
+      if (tema === `${csatorna}/e`) {
+        try { const e = JSON.parse(adat.toString()); if (e && e.tol !== b.id) esemeny?.(e); } catch { /* hibás üzenet */ }
+        return;
+      }
       const id = tema.split('/').pop();
       if (id === b.id) return;
       const s = adat.toString();
@@ -148,7 +163,7 @@ export function inditKozos({ C, scene, szovegSprite, allapot, uzenet }) {
       const g = palcikaember(szin, nev, szovegSprite);
       g.position.set(u.x, u.z || 0, u.y);
       scene.add(g);
-      t = { g, nev, szin, cel: u, utolso: 0 };
+      t = { id, g, nev, szin, cel: u, utolso: 0 };
       tobbiek.set(id, t);
       if (tobbiek.size <= 5) uzenet?.(`${nev} is nézi a modellt`);
       allapotKiir();
@@ -173,8 +188,12 @@ export function inditKozos({ C, scene, szovegSprite, allapot, uzenet }) {
       const p = utolsoAllapot;
       const mozdult = !p || Math.hypot(a.x - p.x, a.y - p.y) > 0.02 || Math.abs(a.z - p.z) > 0.02
         || Math.abs(a.yaw - p.yaw) > 0.03 || a.g !== p.g || a.m !== p.m;
-      if (mozdult || most - utolsoKuld > EL_MS) {
-        kuld({ nev: b.nev, szin: b.szin, ...a });
+      const ex2 = extra?.() || {}, pe = p?.ex || {};
+      const valtozott = Object.keys(ex2).some(k => ex2[k] !== pe[k]);
+      a.ex = ex2;
+      if (mozdult || valtozott || most - utolsoKuld > EL_MS) {
+        const { ex, ...pozAdat } = a;
+        kuld({ nev: b.nev, szin: b.szin, ...pozAdat, ...ex });
         utolsoAllapot = a;
         utolsoKuld = most;
       }
@@ -196,6 +215,20 @@ export function inditKozos({ C, scene, szovegSprite, allapot, uzenet }) {
       d.felirat.position.y = 2.05 * d.test.scale.y + 0.05;
       d.anyag.transparent = u.m === 'felul';
       d.anyag.opacity = u.m === 'felul' ? 0.45 : 1;
+      // életerő-csík, találatnál piros villanás, halálkor eldől
+      const jatszik = !!u.j && u.m !== 'felul';
+      d.hpHatter.visible = d.hpEloter.visible = jatszik;
+      if (jatszik) {
+        const hp = Math.max(0, Math.min(100, Number(u.h ?? 100))) / 100;
+        d.hpEloter.scale.x = 0.8 * Math.max(0.001, hp);
+        d.hpEloter.material.color.set(hp > 0.5 ? '#3ddc5a' : hp > 0.25 ? '#f0b400' : '#e5322d');
+        const fy = 2.3 * d.test.scale.y + 0.1;
+        d.hpHatter.position.y = d.hpEloter.position.y = fy;
+      }
+      d.villan = Math.max(0, d.villan - dt);
+      d.anyag.emissive?.set(d.villan > 0 ? '#ff2020' : '#000000');
+      const dol = u.hal ? Math.PI / 2 : 0;
+      d.test.rotation.z += (dol - d.test.rotation.z) * Math.min(1, dt * 6);
       // lépés: a lábak és a karok lengenek, ha mozog
       const seb = Math.hypot(g.position.x - ex, g.position.z - ez) / Math.max(dt, 1e-3);
       d.fazis += dt * Math.min(seb, 5) * 3.2;
@@ -207,5 +240,12 @@ export function inditKozos({ C, scene, szovegSprite, allapot, uzenet }) {
 
   allapotKiir();
   if (el('kozosBe').checked) kapcsol();
-  return { frissit, tobbiek };
+  return {
+    frissit, tobbiek, id: b.id,
+    nev: () => b.nev,
+    kapcsolodva: () => kapcsolodva && !!kliens,
+    kuldE: e => { if (kliens && kapcsolodva) kliens.publish(`${csatorna}/e`, JSON.stringify({ ...e, tol: b.id }), { qos: 0 }); },
+    villant: id => { const t = tobbiek.get(id); if (t) t.g.userData.villan = 0.25; },
+    frissitAllapot: () => { utolsoAllapot = null; },
+  };
 }

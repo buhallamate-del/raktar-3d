@@ -36,6 +36,19 @@ más adat nem. A csatorna neve a `config.js`-ben (`kozos.csatorna`) véletlensze
 Ha új nevet adsz, a régi linkkel nézők nem látják az újakat. Megbízhatóbb, zárt működéshez később saját szerverre
 (pl. Firebase vagy saját MQTT) cserélhető. Teszteléshez: `?broker=ws://...&csatorna=...` a cím végén.
 
+### Játék (lökés, palack, életerő)
+
+A közös nézetben játszani is lehet (a ☰ menü „Játék” kapcsolójával látogatónként ki-be kapcsolható):
+- **F = lökés** (telefonon „Lökés”): a közvetlenül előtted (≈1,4 m-en belül) álló kollégát ellöki, −10 HP.
+  Ha a polc tetejéről vagy a galériáról esik le, az esés is sebez, és a lökőé az ölés.
+- **G = palack** (telefonon „Dobás”): amerre nézel, eldobsz egy palackot; ívben repül, az állványon és a falon összetörik.
+  Találat: −25 HP.
+- **Esés:** kb. 4 m fölött sebez.
+- **0 HP = halál:** 3 mp múlva újraéledsz a kiindulóponton. A **pontlista** (a fejléc 👥 gombja) mutatja, ki hányszor halt
+  meg (☠) és hányszor ölt (🎯); a saját pontjaid a böngésződben megmaradnak, a menüben nullázhatók.
+- Mindenki a saját életerejéért felel (ő dönti el, hogy eltalálták-e), az események az MQTT-n mennek. Akinél a játék ki van
+  kapcsolva, azt nem lehet bántani. A sebzések a `config.js` `jatek` részében állíthatók.
+
 ## Fájlok
 
 | Fájl | Mire való |
@@ -47,6 +60,7 @@ Ha új nevet adsz, a régi linkkel nézők nem látják az újakat. Megbízható
 | `js/modell.js` | geometria: irány, mélység, ütközés, a feltételezések helye |
 | `js/main.js` | 3D megjelenítés, séta, kereső, felület |
 | `js/kozos.js` | közös nézet: a többi látogató pálcikaemberként (MQTT) |
+| `js/jatek.js` | játék: lökés, palackdobás, életerő, pontlista |
 | `vendor/three/` | Three.js r170 helyi másolata (MIT licenc), így CDN nélkül is működik |
 | `vendor/mqtt/` | MQTT.js 5.10.1 helyi másolata (MIT licenc) a közös nézethez |
 
