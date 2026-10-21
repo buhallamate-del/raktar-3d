@@ -219,6 +219,44 @@ export function epitModell(D0, C) {
   }
   for (const h of helyek) h.cimkeY = Math.min(Number(C.cimkeMagassag ?? 1.5), h.H - 0.1);
 
+  // --- Rekeszek (oszloptól oszlopig) ----------------------------------------
+  // A config.js oszlopKiosztas szerint több tárhely is lehet egy rekeszben; az oszlopok
+  // a rekesz két végén állnak.
+  const ok = C.oszlopKiosztas || {};
+  const okZonak = new Set(ok.zonak || []);
+  const elejen = (ok.elejen || []).map(Number), utana = Math.max(1, Number(ok.utana ?? 1));
+  const rekeszSzam = hely => {
+    let n = Number(hely), i = 0;
+    for (const m of elejen) { if (n <= m) return i; n -= m; i++; }
+    return i + Math.floor((n - 1) / utana);
+  };
+  const rekeszMap = new Map();
+  for (const h of helyek) {
+    const kulcs = okZonak.has(h.zona) && Number.isFinite(Number(h.hely))
+      ? `${h.sorKulcs}#${h.irany}#${rekeszSzam(h.hely)}` : `#${h.i}`;
+    if (!rekeszMap.has(kulcs)) rekeszMap.set(kulcs, []);
+    rekeszMap.get(kulcs).push(h);
+  }
+  const rekeszek = [];
+  for (const tagok of rekeszMap.values()) {
+    // csak az egymás melletti helyek alkotnak egy rekeszt (hiányzó hely esetén szétválik)
+    const r0 = tagok[0], ax = r0.irany === 'X';
+    tagok.sort((a, b) => (ax ? a.x - b.x : a.y - b.y));
+    let akt = [tagok[0]];
+    const lezar = () => rekeszek.push({
+      tagok: akt.map(t => t.i), irany: r0.irany,
+      x0: Math.min(...akt.map(t => t.x0)), x1: Math.max(...akt.map(t => t.x1)),
+      y0: Math.min(...akt.map(t => t.y0)), y1: Math.max(...akt.map(t => t.y1)),
+      H: Math.max(...akt.map(t => t.H)), w: Math.min(...akt.map(t => t.w)),
+    });
+    for (let k = 1; k < tagok.length; k++) {
+      const elozo = akt[akt.length - 1], t = tagok[k];
+      const res = ax ? t.x0 - elozo.x1 : t.y0 - elozo.y1;
+      if (res > 0.1) { lezar(); akt = [t]; } else akt.push(t);
+    }
+    lezar();
+  }
+
   // --- Falak (az átjáró helyén nyílással) -------------------------------
   const falak = [];
   // Nyílások: az átjáró (Paraméterek lap) és a config.js ajtok listája
@@ -264,24 +302,24 @@ export function epitModell(D0, C) {
     x0: Math.min(x1, x2) - vast, x1: Math.max(x1, x2) + vast,
     y0: Math.min(y1, y2) - vast, y1: Math.max(y1, y2) + vast, fal: true,
   });
-  const utkozok = helyek.map(h => ({ x0: h.x0, y0: h.y0, x1: h.x1, y1: h.y1, hely: h.i }));
+  // Minden ütközőnek magassága is van (z0–z1, m); a fal végtelen magas. A gyalogos csak
+  // azzal ütközik, ami a teste magasságában van, és amire nem tud fellépni (lásd UtkozoRacs).
+  const utkozok = helyek.map(h => ({ x0: h.x0, y0: h.y0, x1: h.x1, y1: h.y1, z0: 0, z1: h.H, hely: h.i }));
   if (C.falakUtkoznek !== false) {
     for (const f of falak) utkozok.push(falTeglalap(f));
     for (const f of valaszfalak) utkozok.push(falTeglalap(f));
   }
   for (const a of C.egyebAllvanyok || []) {
-    if (Number(a.alsoMagassag ?? 0) >= 2) continue; // alatta át lehet menni (pl. ajtó fölötti rész)
-    utkozok.push({ x0: Math.min(a.x0, a.x1), y0: Math.min(a.y0, a.y1), x1: Math.max(a.x0, a.x1), y1: Math.max(a.y0, a.y1) });
+    // alsoMagassag: alatta át lehet menni (pl. az ajtó fölötti rész)
+    utkozok.push({ x0: Math.min(a.x0, a.x1), y0: Math.min(a.y0, a.y1), x1: Math.max(a.x0, a.x1), y1: Math.max(a.y0, a.y1),
+      z0: Number(a.alsoMagassag ?? 0), z1: Number(a.magassag ?? 4) });
   }
-  for (const g of C.galeriak || []) {
-    const l = g.lepcso;
-    if (l) utkozok.push({ x0: Math.min(l.x0, l.x1), y0: Math.min(l.y0, l.y1), x1: Math.max(l.x0, l.x1), y1: Math.max(l.y0, l.y1) });
-  }
+  for (const g of C.galeriak || []) utkozok.push(...galeriaUtkozok(g));
   for (const g of C.gepek || []) {
     const r = Number(g.r ?? 0.5);
-    utkozok.push({ x0: g.x - r, y0: g.y - r, x1: g.x + r, y1: g.y + r });
+    utkozok.push({ x0: g.x - r, y0: g.y - r, x1: g.x + r, y1: g.y + r, z0: 0, z1: 2.6 });
   }
-  const racs = new UtkozoRacs(utkozok, 2);
+  const racs = new UtkozoRacs(utkozok, 2, { lepes: Number(C.fellepesMagassag ?? 0.35), test: Number(C.testMagassag ?? 1.8) });
 
   // --- Határok ----------------------------------------------------------
   const xs = [], ys = [];
@@ -289,7 +327,7 @@ export function epitModell(D0, C) {
   for (const [x1, y1, x2, y2] of falak) { xs.push(x1, x2); ys.push(y1, y2); }
   const hatar = { x0: Math.min(...xs), x1: Math.max(...xs), y0: Math.min(...ys), y1: Math.max(...ys) };
 
-  const modell = { helyek, folyosok, csoportok, falak, valaszfalak, utkozok, racs, hatar, figyelmeztetesek, adat: D, nyilasok };
+  const modell = { helyek, folyosok, csoportok, falak, valaszfalak, utkozok, racs, hatar, figyelmeztetesek, adat: D, nyilasok, rekeszek };
   modell.feltetelezesek = feltetelezesek(D, C, modell);
   modell.modellFeltetelezesek = modellFeltetelezesek(C, helyek);
   return modell;
@@ -298,10 +336,69 @@ export function epitModell(D0, C) {
 // ---------------------------------------------------------------------
 // Ütközés: kör (a gyalogos) és tengelyhez igazított téglalapok
 // ---------------------------------------------------------------------
+// A galéria ütközői: a lépcső fokai (rájuk lehet lépni), a padló (rá lehet állni, alatta át
+// lehet menni) és a korlát a padló szélén – a belső éleken és a lépcső tetejénél nyitott.
+export function galeriaUtkozok(g) {
+  const mag = Number(g.magassag ?? 3), ki = [];
+  const reszek = (g.reszek || []).map(([x0, y0, x1, y1]) => ({
+    x0: Math.min(x0, x1), y0: Math.min(y0, y1), x1: Math.max(x0, x1), y1: Math.max(y0, y1),
+  }));
+  for (const r of reszek) ki.push({ ...r, z0: mag - 0.15, z1: mag, galeria: true });
+  const l = g.lepcso;
+  let nyilas = null; // a lépcső teteje: {tengely, c, a, b}
+  if (l) {
+    const x0 = Math.min(l.x0, l.x1), x1 = Math.max(l.x0, l.x1), y0 = Math.min(l.y0, l.y1), y1 = Math.max(l.y0, l.y1);
+    const menten = l.irany === '+X' || l.irany === '-X', plusz = l.irany.startsWith('+');
+    const n = Math.max(4, Math.round(mag / 0.19)), hossz = menten ? x1 - x0 : y1 - y0;
+    for (let k = 0; k < n; k++) {
+      const a = k / n * hossz, b = (k + 1) / n * hossz;
+      const [s0, s1] = plusz ? [a, b] : [hossz - b, hossz - a];
+      ki.push(menten
+        ? { x0: x0 + s0, x1: x0 + s1, y0, y1, z0: 0, z1: mag * (k + 1) / n, lepcso: true }
+        : { x0, x1, y0: y0 + s0, y1: y0 + s1, z0: 0, z1: mag * (k + 1) / n, lepcso: true });
+    }
+    nyilas = menten
+      ? { tengely: 'x', c: plusz ? x1 : x0, a: y0, b: y1 }
+      : { tengely: 'y', c: plusz ? y1 : y0, a: x0, b: x1 };
+  }
+  // korlát: a téglalapok külső élei (ahol a szomszédos sávban nincs másik padlórész)
+  const E = 0.05, V = 0.08, KM = 1.1;
+  const fedett = (x, y) => reszek.some(r => x > r.x0 && x < r.x1 && y > r.y0 && y < r.y1);
+  for (const r of reszek) {
+    const elek = [
+      { tengely: 'y', c: r.y0, a: r.x0, b: r.x1, kifele: -1 }, { tengely: 'y', c: r.y1, a: r.x0, b: r.x1, kifele: 1 },
+      { tengely: 'x', c: r.x0, a: r.y0, b: r.y1, kifele: -1 }, { tengely: 'x', c: r.x1, a: r.y0, b: r.y1, kifele: 1 },
+    ];
+    for (const e of elek) {
+      const lepesek = Math.max(1, Math.ceil((e.b - e.a) / 0.1));
+      let kezd = null;
+      for (let i = 0; i <= lepesek; i++) {
+        const t = e.a + (e.b - e.a) * Math.min(i + 0.5, lepesek) / lepesek;
+        const [px, py] = e.tengely === 'y' ? [t, e.c + e.kifele * E] : [e.c + e.kifele * E, t];
+        const nyitott = i === lepesek || fedett(px, py) ||
+          (nyilas && nyilas.tengely === e.tengely && Math.abs(nyilas.c - e.c) < 0.05 && t > nyilas.a && t < nyilas.b);
+        if (!nyitott && kezd === null) kezd = e.a + (e.b - e.a) * i / lepesek;
+        if (nyitott && kezd !== null) {
+          const veg = e.a + (e.b - e.a) * Math.min(i, lepesek) / lepesek;
+          ki.push(e.tengely === 'y'
+            ? { x0: kezd, x1: veg, y0: e.c - V / 2, y1: e.c + V / 2, z0: mag, z1: mag + KM, korlat: true }
+            : { x0: e.c - V / 2, x1: e.c + V / 2, y0: kezd, y1: veg, z0: mag, z1: mag + KM, korlat: true });
+          kezd = null;
+        }
+      }
+    }
+  }
+  return ki;
+}
+
 export class UtkozoRacs {
-  constructor(teglalapok, cella) {
+  // Egy téglalap akkor akadály, ha a teste magasságában van (z0 < z + test), és nem tud
+  // fellépni rá (z1 > z + lepes). Ha z0/z1 hiányzik: a padlótól végtelen magasig (fal).
+  constructor(teglalapok, cella, { lepes = 0.35, test = 1.8 } = {}) {
     this.t = teglalapok;
     this.cella = cella;
+    this.lepes = lepes;
+    this.test = test;
     this.m = new Map();
     teglalapok.forEach((r, i) => {
       for (let cx = Math.floor(r.x0 / cella); cx <= Math.floor(r.x1 / cella); cx++) {
@@ -324,18 +421,32 @@ export class UtkozoRacs {
     }
     return [...ki].map(i => this.t[i]);
   }
-  utkozik(x, y, r) {
+  akadaly(t, z) {
+    return (t.z1 ?? Infinity) > z + this.lepes && (t.z0 ?? 0) < z + this.test;
+  }
+  // A talaj magassága a pontban: a legmagasabb felület, amire z magasságból fel lehet lépni.
+  talaj(x, y, z = 0) {
+    let h = 0;
+    for (const t of this.kozel(x, y, 0)) {
+      const z1 = t.z1 ?? Infinity;
+      if (x > t.x0 && x < t.x1 && y > t.y0 && y < t.y1 && z1 <= z + this.lepes && z1 > h) h = z1;
+    }
+    return h;
+  }
+  utkozik(x, y, r, z = 0) {
     for (const t of this.kozel(x, y, r)) {
+      if (!this.akadaly(t, z)) continue;
       const px = Math.max(t.x0, Math.min(x, t.x1)), py = Math.max(t.y0, Math.min(y, t.y1));
       if ((x - px) ** 2 + (y - py) ** 2 < r * r - 1e-9) return true;
     }
     return false;
   }
   // Kitolja a kört a téglalapokból (csúszás a fal mentén).
-  felold(x, y, r) {
+  felold(x, y, r, z = 0) {
     for (let iter = 0; iter < 4; iter++) {
       let mozdult = false;
       for (const t of this.kozel(x, y, r)) {
+        if (!this.akadaly(t, z)) continue;
         const px = Math.max(t.x0, Math.min(x, t.x1)), py = Math.max(t.y0, Math.min(y, t.y1));
         const dx = x - px, dy = y - py, d2 = dx * dx + dy * dy;
         if (d2 >= r * r) continue;
@@ -355,21 +466,24 @@ export class UtkozoRacs {
     return [x, y];
   }
   // Mozgás lépésekben, hogy vékony akadályon se lehessen átugrani.
-  mozgat(x, y, dx, dy, r) {
+  // z: a talpmagasság; lépcsőn felfelé menet a lépésenként elért fokot is figyeli.
+  // Visszaadja: [x, y, z] – z a menet közben elért (fellépett) talpmagasság.
+  mozgat(x, y, dx, dy, r, z = 0) {
     const hossz = Math.hypot(dx, dy);
     const lepes = Math.max(1, Math.ceil(hossz / (r * 0.5)));
     for (let i = 0; i < lepes; i++) {
-      [x, y] = this.felold(x + dx / lepes, y + dy / lepes, r);
+      [x, y] = this.felold(x + dx / lepes, y + dy / lepes, r, z);
+      z = Math.max(z, this.talaj(x, y, z));
     }
-    return [x, y];
+    return [x, y, z];
   }
   // A legközelebbi szabad pont (spirálban keresve).
-  szabadPont(x, y, r) {
-    if (!this.utkozik(x, y, r)) return [x, y];
+  szabadPont(x, y, r, z = 0) {
+    if (!this.utkozik(x, y, r, z)) return [x, y];
     for (let rad = 0.2; rad < 8; rad += 0.2) {
       for (let a = 0; a < 24; a++) {
         const px = x + Math.cos(a / 24 * Math.PI * 2) * rad, py = y + Math.sin(a / 24 * Math.PI * 2) * rad;
-        if (!this.utkozik(px, py, r)) return [px, py];
+        if (!this.utkozik(px, py, r, z)) return [px, py];
       }
     }
     return [x, y];

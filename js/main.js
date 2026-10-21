@@ -415,7 +415,8 @@ scene.add(falCsoport);
 // Állványok (példányosított hálók: oszlopok, polcok, gerendák)
 // ---------------------------------------------------------------------
 let nOszlop = 0, nPolc = 0, nGerenda = 0;
-for (const h of M.helyek) { nOszlop += 4; nPolc += h.L; nGerenda += 2 * h.L; }
+for (const h of M.helyek) { nPolc += h.L; nGerenda += 2 * h.L; }
+nOszlop = 4 * M.rekeszek.length;
 const allvanyCsoport = new THREE.Group();
 scene.add(allvanyCsoport);
 const oszlopok = new THREE.InstancedMesh(KOCKA, new THREE.MeshLambertMaterial(), nOszlop);
@@ -426,13 +427,16 @@ valaszto.visible = false; // csak kattintás-felismeréshez
 const peldanyHely = { oszlop: [], polc: [], gerenda: [] };
 {
   let io = 0, ip = 0, ig = 0;
-  for (const h of M.helyek) {
-    const p = Math.min(0.08, h.w * 0.14);
-    const xs = [h.x0 + p / 2, h.x1 - p / 2], zs = [h.y0 + p / 2, h.y1 - p / 2];
+  // oszlopok rekeszenként (config.js: oszlopKiosztas), a rekesz négy sarkán
+  for (const r of M.rekeszek) {
+    const p = Math.min(0.08, r.w * 0.14);
+    const xs = [r.x0 + p / 2, r.x1 - p / 2], zs = [r.y0 + p / 2, r.y1 - p / 2];
     for (const x of xs) for (const z of zs) {
-      dobozMatrix(oszlopok, io, x, h.H / 2, z, p, h.H, p);
-      peldanyHely.oszlop[io++] = h.i;
+      dobozMatrix(oszlopok, io, x, r.H / 2, z, p, r.H, p);
+      peldanyHely.oszlop[io++] = r.tagok[0];
     }
+  }
+  for (const h of M.helyek) {
     const sx = h.x1 - h.x0, sz = h.y1 - h.y0;
     for (let k = 0; k < h.L; k++) {
       const y = k === 0 ? 0.05 : (k * h.H) / h.L;
@@ -809,7 +813,8 @@ controls.maxDistance = 400;
 controls.zoomToCursor = true;
 
 let mod = 'felul';
-const seta = { x: D.kulcsok.kiindulo.x, y: D.kulcsok.kiindulo.y, yaw: Math.PI, pitch: -0.05, volt: false };
+// z: talpmagasság (lépcső, galéria, ugrás), vz: függőleges sebesség, kz: a kamera simított magassága
+const seta = { x: D.kulcsok.kiindulo.x, y: D.kulcsok.kiindulo.y, z: 0, vz: 0, kz: 0, yaw: Math.PI, pitch: -0.05, volt: false };
 const SZEM = Number(C.szemmagassag ?? 1.65);
 const SUGAR = Number(C.testSugar ?? 0.28);
 
@@ -852,7 +857,12 @@ function felulRepul(cel, poz, ms = 800) {
 function setaNezet() {
   camera.rotation.order = 'YXZ';
   camera.rotation.set(seta.pitch, seta.yaw, 0);
-  camera.position.set(seta.x, SZEM, seta.y);
+  camera.position.set(seta.x, seta.kz + SZEM, seta.y);
+}
+
+function ugras() {
+  if (mod !== 'seta' || animacio || !(Number(C.ugrasSebesseg) > 0)) return;
+  if (seta.z - M.racs.talaj(seta.x, seta.y, seta.z) < 0.02) seta.vz = Number(C.ugrasSebesseg);
 }
 
 function kameraPozbaRepul(celPoz, celQuat, ms, kesz) {
@@ -870,6 +880,7 @@ function modValt(uj, opciok = {}) {
   $('gombBelso').classList.toggle('aktiv', mod === 'seta');
   document.body.classList.toggle('seta', mod === 'seta');
   $('joystick').hidden = !(mod === 'seta' && ERINTES);
+  $('ugrasGomb').hidden = !(mod === 'seta' && ERINTES && Number(C.ugrasSebesseg) > 0);
   $('celkereszt').hidden = mod !== 'seta';
   $('pozicio').hidden = mod !== 'seta';
   $('setaSugo').hidden = !(mod === 'seta' && !ERINTES);
@@ -887,7 +898,9 @@ function modValt(uj, opciok = {}) {
       else Object.assign(seta, { x, y });
     }
     seta.volt = true;
-    const celPoz = new THREE.Vector3(seta.x, SZEM, seta.y);
+    seta.z = seta.kz = M.racs.talaj(seta.x, seta.y, opciok.hova?.z ?? 0);
+    seta.vz = 0;
+    const celPoz = new THREE.Vector3(seta.x, seta.kz + SZEM, seta.y);
     const celQuat = new THREE.Quaternion().setFromEuler(new THREE.Euler(seta.pitch, seta.yaw, 0, 'YXZ'));
     kameraPozbaRepul(celPoz, celQuat, 900, () => setaNezet());
   } else {
@@ -920,7 +933,7 @@ function helyhezMegy(h, cel = mod) {
     const tav = Math.hypot(lx, ly);
     const pitch = Math.atan2(h.cimkeY - SZEM, Math.max(0.5, tav - h.h));
     if (mod !== 'seta') {
-      modValt('seta', { hova: { x: p.x, y: p.y, yaw, pitch } });
+      modValt('seta', { hova: { x: p.x, y: p.y, z: 0, yaw, pitch } });
     } else {
       const s0 = { ...seta };
       let dy = yaw - s0.yaw;
@@ -928,6 +941,7 @@ function helyhezMegy(h, cel = mod) {
       animal(900, e => {
         seta.x = s0.x + (p.x - s0.x) * e; seta.y = s0.y + (p.y - s0.y) * e;
         seta.yaw = s0.yaw + dy * e; seta.pitch = s0.pitch + (pitch - s0.pitch) * e;
+        seta.z = seta.kz = s0.z * (1 - e); seta.vz = 0; // a tárhelyek a padlószinten vannak
         setaNezet();
       });
     }
@@ -966,6 +980,7 @@ addEventListener('keydown', e => {
   if (e.code === 'Escape') { $('menuPanel').hidden = true; }
   lenyomva.add(e.code);
   if (mod === 'seta' && e.code.startsWith('Arrow')) e.preventDefault();
+  if (mod === 'seta' && e.code === 'Space') { e.preventDefault(); if (!e.repeat) ugras(); }
 });
 addEventListener('keyup', e => lenyomva.delete(e.code));
 addEventListener('blur', () => lenyomva.clear());
@@ -1012,8 +1027,8 @@ vaszon.addEventListener('pointerup', pointerVege);
 vaszon.addEventListener('pointercancel', pointerVege);
 document.addEventListener('pointerlockchange', () => {
   $('setaSugo').textContent = document.pointerLockElement === vaszon
-    ? 'WASD / nyilak = séta · egér = nézelődés · Shift = gyorsabban · kattintás = hely kiválasztása · Esc = egér elengedése'
-    : 'Kattints a képre a sétához · WASD / nyilak · egér · Shift · Esc';
+    ? 'WASD / nyilak = séta · egér = nézelődés · Shift = gyorsabban · Szóköz = ugrás · kattintás = hely kiválasztása · Esc = egér elengedése'
+    : 'Kattints a képre a sétához · WASD / nyilak · egér · Shift · Szóköz = ugrás · Esc';
 });
 
 function valaszt(nx, ny) {
@@ -1028,6 +1043,9 @@ function valaszt(nx, ny) {
   const talalat = raycaster.intersectObject(valaszto, false)[0];
   if (talalat && talalat.instanceId != null) kijelol(M.helyek[talalat.instanceId]);
 }
+
+// --- ugrás gomb (telefon) ---
+$('ugrasGomb').addEventListener('pointerdown', e => { e.preventDefault(); ugras(); });
 
 // --- joystick (telefon) ---
 const joy = { x: 0, y: 0, id: null };
@@ -1072,7 +1090,23 @@ function setaLeptet(dt, most) {
   const sy = Math.sin(seta.yaw), cy = Math.cos(seta.yaw);
   const dx = (-sy * elore + cy * oldal) * seb * dt;
   const dz = (-cy * elore - sy * oldal) * seb * dt;
-  if (dx || dz) [seta.x, seta.y] = M.racs.mozgat(seta.x, seta.y, dx, dz, SUGAR);
+  if (dx || dz) {
+    let zLep;
+    [seta.x, seta.y, zLep] = M.racs.mozgat(seta.x, seta.y, dx, dz, SUGAR, seta.z);
+    if (seta.vz === 0) seta.z = zLep; // a lépcsőfokokra fellépett magasság
+  }
+  // függőleges mozgás: fellépés a lépcsőfokra, esés, ugrás
+  const talaj = M.racs.talaj(seta.x, seta.y, seta.z);
+  if (seta.vz > 0 || seta.z > talaj + 0.001) {
+    seta.vz -= Number(C.gravitacio ?? 9.81) * dt;
+    seta.z += seta.vz * dt;
+    if (seta.z <= talaj) { seta.z = talaj; seta.vz = 0; }
+  } else {
+    seta.z = talaj;
+    seta.vz = 0;
+  }
+  // a kamera simán kövesse a lépcsőfokokat, ugrásnál közvetlenül
+  seta.kz = seta.vz !== 0 ? seta.z : seta.kz + (seta.z - seta.kz) * Math.min(1, dt * 12);
   setaNezet();
   if (most - utolsoPozFrissites > 250) {
     utolsoPozFrissites = most;
@@ -1083,7 +1117,8 @@ function setaLeptet(dt, most) {
       const d = Math.hypot(h.x - seta.x, h.y - seta.y);
       if (d < ld) { ld = d; legk = h; }
     }
-    $('pozicio').textContent = `X ${sz(seta.x, 1)} m · Y ${sz(seta.y, 1)} m${legk ? ' · ' + legk.kod : ''}`;
+    const szint = seta.z > 0.5 ? ` · ${sz(seta.z, 1)} m magasan` : '';
+    $('pozicio').textContent = `X ${sz(seta.x, 1)} m · Y ${sz(seta.y, 1)} m${szint}${legk && seta.z < 0.5 ? ' · ' + legk.kod : ''}`;
   }
 }
 
@@ -1268,4 +1303,4 @@ renderer.setAnimationLoop(() => {
 });
 $('betoltes').hidden = true;
 hashbolNyit();
-window.raktar = { M, scene, camera, controls, seta, kijelol, helyhezMegy, modValt }; // hibakereséshez
+window.raktar = { M, scene, camera, controls, seta, kijelol, helyhezMegy, modValt, lep: setaLeptet, ugras }; // hibakereséshez

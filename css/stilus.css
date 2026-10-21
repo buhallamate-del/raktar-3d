@@ -94,6 +94,9 @@ code { background: #eef1f5; padding: 0 4px; border-radius: 4px; }
 #joystick { position: fixed; left: 24px; bottom: 24px; width: 130px; height: 130px; border-radius: 50%; z-index: 8;
   background: rgba(255, 255, 255, 0.25); border: 2px solid rgba(255, 255, 255, 0.7); touch-action: none;
   margin-bottom: env(safe-area-inset-bottom); }
+#ugrasGomb { position: fixed; right: 24px; bottom: 60px; width: 84px; height: 84px; border-radius: 50%; z-index: 8;
+  background: rgba(31, 111, 235, 0.85); border: 2px solid #fff; color: #fff; font-weight: 700; touch-action: none;
+  margin-bottom: env(safe-area-inset-bottom); }
 #joyGomb { position: absolute; left: 50%; top: 50%; width: 56px; height: 56px; margin: -28px 0 0 -28px; border-radius: 50%;
   background: rgba(31, 111, 235, 0.85); border: 2px solid #fff; pointer-events: none; }
 #betoltes { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 30;

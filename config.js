@@ -62,6 +62,16 @@ window.RAKTAR_CONFIG = {
   minMelyseg: 0.3,
   maxHelySzelesseg: 1.4,   // egy tárhely legfeljebb ilyen széles (a szomszéd távolságból számolva)
 
+  // Oszlopkiosztás: hány tárhely van egy rekeszben (két oszlop között), a „Hely” sorszám szerint.
+  // Helyszín (2026-10-21): a T1 és T4 sorokban az 1–2. és a 3–4. hely egy-egy rekesz, utána
+  // 3 tárhelyenként van oszlop (5–7., 8–10., …). A felsorolt zónákon kívül minden tárhely külön rekesz.
+  // A zóna neve a Tárhelyek lap „Zóna” oszlopa (a „T1 fali” külön szerepel, ha kell, add hozzá).
+  oszlopKiosztas: {
+    zonak: ['T1', 'T4'],
+    elejen: [2, 2],   // az első rekeszek mérete sorban
+    utana: 3,         // utána ennyi tárhelyenként van oszlop
+  },
+
   // ------------------------------------------------------------------
   // 3) HELYSZÍNI PONTOSÍTÁSOK
   // ------------------------------------------------------------------
@@ -234,6 +244,10 @@ window.RAKTAR_CONFIG = {
   setaSebesseg: 1.8,      // m/s
   futasSebesseg: 4.5,     // m/s (Shift)
   testSugar: 0.28,        // a „gyalogos” sugara az ütközéshez
+  testMagassag: 1.8,      // a „gyalogos” magassága (ennél magasabban lévő dolgok alatt átfér)
+  fellepesMagassag: 0.35, // ekkora szintkülönbségre (pl. lépcsőfok) magától fellép
+  ugrasSebesseg: 4.2,     // m/s felfelé (kb. 0,9 m magas ugrás); 0 = nincs ugrás
+  gravitacio: 9.81,       // m/s²
   cimkeMagassag: 1.5,     // a helykód-címke magassága az állvány elején
   egerErzekenyseg: 0.0022,
   erintesErzekenyseg: 0.005,
