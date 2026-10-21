@@ -221,29 +221,40 @@ export function epitModell(D0, C) {
 
   // --- Falak (az átjáró helyén nyílással) -------------------------------
   const falak = [];
+  // Nyílások: az átjáró (Paraméterek lap) és a config.js ajtok listája
   const atj = D.kulcsok.atjaro;
-  const nyilas = Number(C.atjaroSzelesseg ?? 2) / 2;
-  let atjaroVagva = false;
+  const nyilasok = [
+    { nev: 'átjáró', x: atj.x, y: atj.y, fel: Number(C.atjaroSzelesseg ?? 2) / 2 },
+    ...(C.ajtok || []).map(a => ({ nev: a.nev, x: a.x, y: a.y, fel: Number(a.szel ?? 2) / 2 })),
+  ];
   const osszesFal = [
     ...(C.falak || []),
     ...(C.felsoSzarnyFalak || []).map(([x1, y1, x2, y2]) => [x1, y1 + D.eltolasY, x2, y2 + D.eltolasY]),
   ];
+  const vagott = new Set();
   for (const [x1, y1, x2, y2] of osszesFal) {
-    const fugg = Math.abs(x1 - x2) < 1e-6, viz = Math.abs(y1 - y2) < 1e-6;
-    if (fugg && Math.abs(x1 - atj.x) < 0.15 && atj.y > Math.min(y1, y2) && atj.y < Math.max(y1, y2)) {
-      const a = Math.min(y1, y2), b = Math.max(y1, y2);
-      falak.push([x1, a, x1, atj.y - nyilas], [x1, atj.y + nyilas, x1, b]);
-      atjaroVagva = true;
-    } else if (viz && Math.abs(y1 - atj.y) < 0.15 && atj.x > Math.min(x1, x2) && atj.x < Math.max(x1, x2)) {
-      const a = Math.min(x1, x2), b = Math.max(x1, x2);
-      falak.push([a, y1, atj.x - nyilas, y1], [atj.x + nyilas, y1, b, y1]);
-      atjaroVagva = true;
-    } else {
-      falak.push([x1, y1, x2, y2]);
+    const fugg = Math.abs(x1 - x2) < 1e-6;
+    if (!fugg && Math.abs(y1 - y2) > 1e-6) { falak.push([x1, y1, x2, y2]); continue; }
+    // a fal mentén mért szakaszok [a, b], ebből vágjuk ki a nyílásokat
+    let szakaszok = [[Math.min(fugg ? y1 : x1, fugg ? y2 : x2), Math.max(fugg ? y1 : x1, fugg ? y2 : x2)]];
+    for (const n of nyilasok) {
+      const kereszt = fugg ? n.x : n.y, menten = fugg ? n.y : n.x;
+      if (Math.abs((fugg ? x1 : y1) - kereszt) > 0.15) continue;
+      const uj = [];
+      for (const [a, b] of szakaszok) {
+        if (menten <= a || menten >= b) { uj.push([a, b]); continue; }
+        vagott.add(n);
+        if (menten - n.fel > a) uj.push([a, menten - n.fel]);
+        if (menten + n.fel < b) uj.push([menten + n.fel, b]);
+      }
+      szakaszok = uj;
     }
+    for (const [a, b] of szakaszok) falak.push(fugg ? [x1, a, x1, b] : [a, y1, b, y1]);
   }
-  if (!atjaroVagva && osszesFal.length) {
-    figyelmeztetesek.push('Az átjáró pontja nem esik egyik falra sem – nem vágtunk nyílást.');
+  if (osszesFal.length) {
+    for (const n of nyilasok) {
+      if (!vagott.has(n)) figyelmeztetesek.push(`A(z) „${n.nev}” pontja nem esik egyik falra sem – nem vágtunk nyílást.`);
+    }
   }
   const valaszfalak = (C.valaszfalak || []).map(v => [...v]);
 
@@ -266,7 +277,7 @@ export function epitModell(D0, C) {
   for (const [x1, y1, x2, y2] of falak) { xs.push(x1, x2); ys.push(y1, y2); }
   const hatar = { x0: Math.min(...xs), x1: Math.max(...xs), y0: Math.min(...ys), y1: Math.max(...ys) };
 
-  const modell = { helyek, folyosok, csoportok, falak, valaszfalak, utkozok, racs, hatar, figyelmeztetesek, adat: D };
+  const modell = { helyek, folyosok, csoportok, falak, valaszfalak, utkozok, racs, hatar, figyelmeztetesek, adat: D, nyilasok };
   modell.feltetelezesek = feltetelezesek(D, C, modell);
   modell.modellFeltetelezesek = modellFeltetelezesek(C, helyek);
   return modell;
@@ -401,6 +412,7 @@ function feltetelezesek(D, C, M) {
   const atjaroTetel = { cim: 'Átjáró a felső szárnyba', szovegek: [], forrasok: [], horgonyok: [] };
   for (const c of D.feltetelezesCellak) {
     if (/^Feltételezések|^Ha egy feltételezés/i.test(c.szoveg)) continue; // fejléc és útmutató
+    if (c.lap === 'Folyosók' && c.szoveg.startsWith('•')) continue;     // a listát lent dolgozzuk fel
     const sorSzam = Number(c.cella.replace(/\D/g, ''));
     const forras = `${c.lap}!${c.cella}`;
     if (c.lap === 'Folyosók') {
@@ -460,6 +472,16 @@ function feltetelezesek(D, C, M) {
     } else if (/átjáró/i.test(sz)) {
       cim = 'Átjáró a felső szárny és a komissiózó között';
       horgonyok.push({ tipus: 'pont', x: atj.x, y: atj.y }, { tipus: 'ajto', x: atj.x, y: atj.y });
+    } else if (/T1-03 sor a T1-04-gyel szemben/i.test(sz)) {
+      cim = 'A T1-03 sor helye és helyszáma';
+      const hs = M.csoportok.get('T1|03') || [];
+      horgonyok.push({ tipus: 'sorok', kulcsok: ['T1|03'] });
+      if (hs.length) horgonyok.push({ tipus: 'pont', x: hs.reduce((s, h) => s + h.x, 0) / hs.length, y: hs[0].y });
+    } else if (/lerakó terület/i.test(sz)) {
+      cim = 'A komissiózó bejárata';
+      const b = C.komissiozoBejarat;
+      if (b) horgonyok.push({ tipus: 'pont', x: b.x + b.szel / 2, y: b.y + b.mely / 2 },
+        { tipus: 'vonal', x1: b.x, y1: b.y + b.mely, x2: b.x + b.szel, y2: b.y + b.mely });
     } else if (/teteje/i.test(sz)) {
       cim = 'A felső szárny folyosóinak teteje zárt';
       const fs = [...folyosok.values()].filter(f => f.szarny === 'FELSŐ' && f.tipus !== 'gerinc' && f.tengely === 'Y');
@@ -511,7 +533,8 @@ function modellFeltetelezesek(C, helyek) {
     `Állványmagasság és szintszám becsült (alap: ${C.allvanyMagassag} m, ${C.szintekSzama} szint; zónánként a config.js-ben).`,
     `Folyosószélesség alapértéke ${C.folyosoSzelesseg} m ott, ahol a táblázat nem ad meg szélességet.`,
     'A falak helye becsült (a táblázatban csak a komissiózó bal fala és a T4 alsó fala szerepel) – config.js: falak.',
-    'A komissiózó zóna a 0–7,8 m sáv; alatta 15,6 m-ig nyitott előtér (a „komissiózó alja 15,6 m” megjegyzés alapján).',
+    'A komissiózó (lerakó terület) a T1-03 sor fölött van, X 0–20,6 m; a bejárata a T1-03 keleti vége és a T1 jobb fala között, a kék kapu mellett (helyszíni info alapján, a pontos méret becsült).',
+    'Az árukiadó fedett udvar mérete becsült (config.js: arukiado); a kék kapu a T1-F0 keleti végén, a T1 jobb falán van.',
   );
   if (jel.length) {
     l.push(`${jel.length} jelöletlen helynek („(nincs kód)”) ideiglenes kódot adtunk: ${[...new Set(jel.map(h => h.kod.replace(/-\d+$/, '-…')))].join(', ')}.`);

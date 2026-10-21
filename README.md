@@ -5,7 +5,7 @@ Egyetlen statikus oldal (Three.js), nincs build-lépés, GitHub Pages-re közvet
 
 **Mit tud:**
 
-- Mind a 960 tárhely állványként jelenik meg, zónánként más színnel (T1 kék, T2 zöld, T3 narancs, T4 lila).
+- Mind a 976 tárhely állványként jelenik meg, zónánként más színnel (T1 kék, T2 zöld, T3 narancs, T4 lila).
   Minden rekeszen a helykód: az elején a folyosó felé, és a tetején, felülnézetből olvashatóan.
 - **Felülnézet:** húzással mozgatod, görgővel vagy csípéssel nagyítasz, jobb gombbal vagy két ujjal forgatsz.
   Ha egy állványra kattintasz, megjelennek az adatai (zóna, sor, folyosó, X/Y, táv a kiindulóponttól stb.).
@@ -122,6 +122,15 @@ A modell feltevéseit a ☰ menü sárga „Modell saját feltételezései” r�
 
    A `config.js`-ben a `felsoSzarnyEltolasY` ezért 0. Ha egyszer újra el kellene tolni a szárnyat, ott beállítható,
    és a távolságokat a modell is újraszámolja.
+9b. **T1-03 sor, kék kapu, komissiózó bejárata – helyszíni info (2026-10-21):**
+   - A T1-F0 fejfolyosó másik oldalán is áll egy állványsor, a **T1-03**. Az Excelbe 16 helyként vettem fel, a T1-04-gyel
+     szemben, ugyanolyan számozással (X ugyanaz, Y = 15,0, a 04. sor tükörképe). A helyszám és a számozás FELTÉTELEZÉS.
+     A „Rajzon” oszlopban „nincs a rajzon (helyszíni info)” áll. A „Táv” a 04. sor logikájával számolt érték.
+   - A T1-F0 keleti vége a **kék szalagfüggönyös kapu** az árukiadó fedett udvarra (config.js: `ajtok`, `arukiado`;
+     a kapu szélessége és az udvar mérete becsült).
+   - A **komissiózó lerakó terület** a T1-03 fölött van, a bejárata a T1-03 keleti vége és a T1 jobb fala között,
+     a kék kapu mellett. Emiatt a komissiózó nem teljes szélességben nyílik a T1-F0-ra. Ez FELTÉTELEZÉS a pontos
+     helyre, és a T1 távolságai az Excelben még a régi, közvetlen utat számolják.
 10. **A 10. és 11. sor közötti válaszfal:** a két sor hátoldala között fut, Y = 36,88-on, X = 0-tól 16,2-ig, vagyis az
     S oszlop (keresztfolyosó) előtt véget ér. A táblázat feltételezését így modelleztem.
 11. **Jelöletlen helyek:** a 27 „(nincs kód)” hely ideiglenes kódot kapott: `T4-ALSO-01…24` (jelöletlen alsó sor),

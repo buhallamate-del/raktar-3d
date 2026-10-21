@@ -154,7 +154,11 @@ function padloTeglalap(x0, y0, x1, y1, anyag, emeles = 0.01) {
 // ---------------------------------------------------------------------
 // Padló, komissiózó, kiindulópont
 // ---------------------------------------------------------------------
-const padloMeret = { x0: H.x0 - 8, x1: H.x1 + 8, y0: H.y0 - 8, y1: H.y1 + 8 };
+const aru = C.arukiado;
+const padloMeret = {
+  x0: H.x0 - 8, y0: H.y0 - 8, y1: H.y1 + 8,
+  x1: Math.max(H.x1, aru ? aru.x + aru.szel : -Infinity) + 8,
+};
 scene.add(padloTeglalap(padloMeret.x0, padloMeret.y0, padloMeret.x1, padloMeret.y1,
   new THREE.MeshLambertMaterial({ color: '#c9cfd8' }), 0));
 {
@@ -168,7 +172,7 @@ const kom = C.komissiozo;
 if (kom) {
   scene.add(padloTeglalap(kom.x, kom.y, kom.x + kom.szel, kom.y + kom.mely,
     new THREE.MeshBasicMaterial({ color: '#bfe3c8', transparent: true, opacity: 0.85, depthWrite: false }), 0.006));
-  scene.add(padloFelirat('KOMISSIÓZÓ', kom.x + kom.szel / 2, kom.y + kom.mely * 0.35, 1.4, 0,
+  scene.add(padloFelirat('KOMISSIÓZÓ – lerakó terület', kom.x + kom.szel / 2, kom.y + kom.mely * 0.35, 1.2, 0,
     { szin: '#2b7a3d' }));
 }
 const kom2 = C.komissiozoEloter;
@@ -176,6 +180,45 @@ if (kom2) {
   scene.add(padloTeglalap(kom2.x, kom2.y, kom2.x + kom2.szel, kom2.y + kom2.mely,
     new THREE.MeshBasicMaterial({ color: '#dcefe0', transparent: true, opacity: 0.8, depthWrite: false }), 0.005));
   scene.add(padloFelirat('komissiózó előtér', kom2.x + kom2.szel / 2, kom2.y + kom2.mely * 0.6, 0.8, 0, { szin: '#4d8a5b' }));
+}
+const kom3 = C.komissiozoBejarat;
+if (kom3) {
+  scene.add(padloTeglalap(kom3.x, kom3.y, kom3.x + kom3.szel, kom3.y + kom3.mely,
+    new THREE.MeshBasicMaterial({ color: '#bfe3c8', transparent: true, opacity: 0.9, depthWrite: false }), 0.007));
+  scene.add(padloFelirat('bejárat', kom3.x + kom3.szel / 2, kom3.y + kom3.mely / 2, 0.6, 0, { szin: '#2b7a3d', emeles: 0.02 }));
+}
+if (aru) {
+  scene.add(padloTeglalap(aru.x, aru.y, aru.x + aru.szel, aru.y + aru.mely,
+    new THREE.MeshLambertMaterial({ color: '#8d939b' }), 0.004));
+  scene.add(padloFelirat(aru.nev || 'ÁRUKIADÓ', aru.x + aru.szel / 2, aru.y + aru.mely / 2, 1.0, Math.PI / 2, { szin: '#f4f6f8' }));
+  // a fedett udvar teteje: csak a széle (felülnézetben ne takarjon)
+  const teto = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(aru.szel, 0.01, aru.mely)),
+    new THREE.LineBasicMaterial({ color: '#5d6878' }));
+  teto.position.set(aru.x + aru.szel / 2, 4.5, aru.y + aru.mely / 2);
+  scene.add(teto);
+}
+// Ajtók / kapuk kerete (config.js: ajtok)
+for (const a of C.ajtok || []) {
+  const fel = Number(a.szel ?? 2) / 2, mag = 3.2;
+  const anyag = new THREE.MeshLambertMaterial({ color: a.szin || '#1f6feb' });
+  const fugg = M.falak.some(([x1, , x2]) => Math.abs(x1 - a.x) < 0.15 && Math.abs(x2 - a.x) < 0.15);
+  for (const s of [-1, 1]) {
+    const o = new THREE.Mesh(KOCKA, anyag);
+    o.scale.set(0.25, mag, 0.25);
+    o.position.set(a.x + (fugg ? 0 : s * fel), mag / 2, a.y + (fugg ? s * fel : 0));
+    scene.add(o);
+  }
+  const fent = new THREE.Mesh(KOCKA, anyag);
+  fent.scale.set(fugg ? 0.25 : 2 * fel + 0.25, 0.25, fugg ? 2 * fel + 0.25 : 0.25);
+  fent.position.set(a.x, mag, a.y);
+  // áttetsző kék szalagfüggöny
+  const fuggony = new THREE.Mesh(new THREE.PlaneGeometry(2 * fel, mag),
+    new THREE.MeshBasicMaterial({ color: a.szin || '#1f6feb', transparent: true, opacity: 0.25, side: THREE.DoubleSide, depthWrite: false }));
+  fuggony.position.set(a.x, mag / 2, a.y);
+  if (fugg) fuggony.rotation.y = Math.PI / 2;
+  const t = szovegSprite(a.nev, 0.7, { hatter: a.szin || '#1f6feb', szin: '#fff', meret: 48 });
+  t.position.set(a.x, mag + 0.8, a.y);
+  scene.add(fent, fuggony, t);
 }
 {
   const k = D.kulcsok.kiindulo;
