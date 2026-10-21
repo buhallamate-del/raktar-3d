@@ -58,7 +58,7 @@ az állvány eleje a folyosó széléig ér. Ha a mélységet fix számra állí
 
 A `config.js` „Helyszíni pontosítások” részében:
 
-- `felsoSzarnyEltolasY`: a felső szárny függőleges eltolása az Excelhez képest.
+- `felsoSzarnyEltolasY`: a felső szárny függőleges eltolása az Excelhez képest (most 0, mert az Excel már javítva van).
 - `ellenorizve`: az ellenőrzött feltételezések. A kulcs a táblázat cellája (a menüben a „Forrás”), az érték egy rövid
   megjegyzés. Ezek zölddel látszanak, és nem számítanak bele a ☰ gombon látható számba.
 
@@ -109,15 +109,19 @@ A modell feltevéseit a ☰ menü sárga „Modell saját feltételezései” r�
    `falakUtkoznek: false` esetén csak az állványok ütköznek.
 8. **Komissiózó:** a „B5:R6” blokk a 0–7,8 m sáv, ennek alsó élén van a kijárat. Alatta 15,6 m-ig nyitott előteret
    rajzoltam, mert a Paraméterek lap szerint „a komissiózó alja 15,6 m”, és a fejfolyosó felé teljes szélességben nyitott.
-9. **Átjáró a felső szárnyba – helyszínen pontosítva:** az átjáró a T1-04 mellett van. Ezért az egész felső szárny
-   (T2, T3, T4) **12,2 m-rel lejjebb** került az Excel koordinátáihoz képest, így az alsó sávja (F-SÁV) a T1 fejfolyosó
-   vonalában fut (Y = 17,3), az átjáró pedig a T1 bal falán, a (0; 17,3) pontban van (2 m-es nyílás, `atjaroSzelesseg`).
-   A „T4 eltolás Y = 7,8” feltételezés tehát nem volt igaz. A felső szárny „Táv a kiindulóponttól” értékeit a modell
-   újraszámolja (+6,8 m, mert a kapu messzebb van a kiindulóponttól). Az infópanel az Excel eredeti értékét is mutatja.
-   Az érintett feltételezések (#3, #4, #7) a menüben és a modellben zölddel, „ELLENŐRIZVE” jelöléssel látszanak.
-   **Az Excelben is érdemes javítani:** Paraméterek → „T4 eltolás Y” = 20,0, ettől az alsó sáv és az átjáró Y-ja 17,3 lesz,
-   és a távolságok is helyesek lesznek. Utána generáld újra az adatokat, és a `config.js`-ben állítsd a
-   `felsoSzarnyEltolasY` értéket 0-ra. (Ha elfelejted, a modell észreveszi, és nem tol kétszer.)
+9. **Átjáró a felső szárnyba – helyszínen pontosítva (2026-10-21), az Excelben is javítva:** az átjáró a T1-04 mellett
+   van. Ezért az egész felső szárny (T2, T3, T4) 12,2 m-rel lejjebb került: az alsó sávja (F-SÁV) a T1 fejfolyosó
+   vonalában fut (Y = 17,3), az átjáró a T1 bal falán, a (0; 17,3) pontban van (2 m-es nyílás, `atjaroSzelesseg`).
+   Az Excelben átírt értékek:
+   - Paraméterek: „T4 eltolás Y” 7,8 → 20,0; „Felső szárny alsó sáv Y” 5,1 → 17,3; „Átjáró a felső szárnyba Y” 5,1 → 17,3.
+     A megjegyzésük „ELLENŐRIZVE” lett.
+   - Folyosók: a FELSŐ szárny „Kapu → kiindulópont” távolsága 10,79 → 17,59 m; a felső szárny folyosóinak vége (F oszlop)
+     5,1 → 17,3; a feltételezés-listában az átjáróról szóló sor „ELLENŐRIZVE”.
+   - Tárhelyek: a felső szárny 496 helyén az Y és (a függőleges folyosóknál) a „Pozíció a folyosón” +12,2 m, a „Folyosóvég”
+     17,3, a „Táv a kiindulóponttól” +6,8 m (a szárnyon belüli út nem változott, csak a kapu került messzebb).
+
+   A `config.js`-ben a `felsoSzarnyEltolasY` ezért 0. Ha egyszer újra el kellene tolni a szárnyat, ott beállítható,
+   és a távolságokat a modell is újraszámolja.
 10. **A 10. és 11. sor közötti válaszfal:** a két sor hátoldala között fut, Y = 36,88-on, X = 0-tól 16,2-ig, vagyis az
     S oszlop (keresztfolyosó) előtt véget ér. A táblázat feltételezését így modelleztem.
 11. **Jelöletlen helyek:** a 27 „(nincs kód)” hely ideiglenes kódot kapott: `T4-ALSO-01…24` (jelöletlen alsó sor),

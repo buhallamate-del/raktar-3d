@@ -64,19 +64,14 @@ window.RAKTAR_CONFIG = {
   // 3) HELYSZÍNI PONTOSÍTÁSOK
   // ------------------------------------------------------------------
   // A felső szárny (T2, T3, T4) függőleges eltolása az Excel koordinátáihoz képest, m.
-  // Helyszíni info (2026-10-21): az átjáró a felső szárnyba a T1-04 mellett van, a
-  // szárny alsó sávja (F-SÁV) a T1 fejfolyosó vonalában fut: 17,3 − 5,1 = 12,2 m.
-  // Ha az Excelt is javítod (Paraméterek: „T4 eltolás Y” = 20,0, így az alsó sáv és
-  // az átjáró Y-ja 17,3 lesz), és újragenerálod az adatokat, ezt állítsd 0-ra!
-  // (Ha az adatokban az alsó sáv már a fejfolyosó vonalában van, a modell nem tol kétszer.)
-  felsoSzarnyEltolasY: 12.2,
+  // 0 = az Excel koordinátái érvényesek. (2026-10-21: a helyszíni pontosítás – átjáró a
+  // T1-04 mellett, a szárny 12,2 m-rel lejjebb – már az Excelben is javítva van.)
+  // Ha az adatokban az alsó sáv már a T1 fejfolyosó vonalában van, a modell nem tol.
+  felsoSzarnyEltolasY: 0,
 
   // Ellenőrzött feltételezések: a kulcs a táblázat cellája (a ☰ menüben a „Forrás”).
   // Ezek nem pirossal, hanem zölddel, „ellenőrizve” jelöléssel látszanak.
   ellenorizve: {
-    'Paraméterek!D17': 'Helyszínen pontosítva: a felső szárny lejjebb van, az alsó sávja a T1 fejfolyosó vonalában fut (felsoSzarnyEltolasY).',
-    'Paraméterek!D23': 'Helyszínen pontosítva: az átjáró a T1-04 mellett van (a T1 bal falán, a fejfolyosó vonalában).',
-    'Paraméterek!D24': 'Helyszínen pontosítva: az átjáró a T1-04 mellett van (a T1 bal falán, a fejfolyosó vonalában).',
     'Folyosók!A59': 'Helyszínen pontosítva: egy átjáró van, a T1-04 mellett.',
   },
 
@@ -95,13 +90,13 @@ window.RAKTAR_CONFIG = {
     [ 20.6,  15.6,  20.6,  89.8],   // jobb fal a fali állványok mögött (becsült)
     [  0.0,  89.8,  20.6,  89.8],   // alsó fal: 29. sor alatti folyosó széle
   ],
-  // A felső szárny (T2, T3, T4) falai az ÉRTÉK SZERINTI, eltolás előtti
-  // koordinátákban (ahogy az Excelben vannak); a felsoSzarnyEltolasY-nal együtt tolódnak.
+  // A felső szárny (T2, T3, T4) falai az Excel koordinátáiban; a felsoSzarnyEltolasY-nal
+  // együtt tolódnak.
   felsoSzarnyFalak: [
-    [-39.8, -12.6,   0.0, -12.6],   // felső fal (becsült)
-    [-39.8, -12.6, -39.8,   7.8],   // bal fal (becsült)
-    [-39.8,   7.8,   0.0,   7.8],   // alsó fal (Paraméterek: T4 eltolás Y = 7,8)
-    [  0.0, -12.6,   0.0,   7.8],   // jobb fal (X = 0, a komissiózó / T1 felé)
+    [-39.8,  -0.4,   0.0,  -0.4],   // felső fal (becsült)
+    [-39.8,  -0.4, -39.8,  20.0],   // bal fal (becsült)
+    [-39.8,  20.0,   0.0,  20.0],   // alsó fal (Paraméterek: T4 eltolás Y = 20,0)
+    [  0.0,  -0.4,   0.0,  20.0],   // jobb fal (X = 0, a komissiózó / T1 felé)
   ],
   // Válaszfalak (ugyanígy). A 10–11. sor közötti fal a táblázat feltételezése
   // szerint NEM zárja el a keresztfolyosót, ezért az S oszlop előtt véget ér.
