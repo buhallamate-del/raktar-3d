@@ -158,6 +158,9 @@ A modell feltevéseit a ☰ menü sárga „Modell saját feltételezései” r�
    - **EAR raktár (elzárt):** zárt rekesz a T4-01 sor északi vége mögött, az északi falnál (`egyebAllvanyok`, `tomor: true`).
    - A gerendacímkék szerint a helykód után a szint betűje áll (pl. T4-06-09-A, -B, -C; az A a padlószint).
      A T4-ben ez 3 szint, ami egyezik a modellel.
+   - **Pohármosó** (IMG_3289, 3291–3293): az áruátvételről nyílik, a karantén állvány alatti ajtón át (ott az állványnak csak a
+     gerenda fölötti része van: `alsoMagassag`). A helyiség a déli fal mögé nyúlik ki, kb. 4 × 3,8 m.
+   - **Fedett rakodó** (IMG_3290): az áruátvételi kapun kilépve balra, a keleti fal mentén, az árukiadó udvaráig (`udvarok`).
    - Minden méret és pontos hely becsült; a menüben a „config.js (helyszíni info)” FELTÉTELEZÉS-ek jelzik őket.
 10. **A 10. és 11. sor közötti válaszfal:** a két sor hátoldala között fut, Y = 36,88-on, X = 0-tól 16,2-ig, vagyis az
     S oszlop (keresztfolyosó) előtt véget ér. A táblázat feltételezését így modelleztem.

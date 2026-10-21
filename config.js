@@ -100,6 +100,10 @@ window.RAKTAR_CONFIG = {
     [ 11.4,  -7.0,  11.4,   0.0],   // az iroda / mosdó keleti fala
     [  7.9,  -2.6,   7.9,   0.0],   // a nagy terem és a mosdó közötti fal
     [  7.9,  -2.6,  11.4,  -2.6],   // a mosdó és az iroda kisebb része közötti fal
+    // Pohármosó az áruátvétel déli fala mögött (két külső, ablakos fal; méret becsült)
+    [  5.0, 101.6,   9.0, 101.6],   // déli fal (ablak)
+    [  5.0,  97.8,   5.0, 101.6],   // nyugati fal (ablak)
+    [  9.0,  97.8,   9.0, 101.6],   // keleti fal
   ],
   // A felső szárny (T2, T3, T4) falai az Excel koordinátáiban; a felsoSzarnyEltolasY-nal
   // együtt tolódnak.
@@ -125,6 +129,9 @@ window.RAKTAR_CONFIG = {
     // Helyszín (2026-10-21): az áruátvételi kapu (sárga gyorskapu) az áruátvételi terület
     // keleti falán; a helye a falon és a szélessége becsült.
     { nev: 'Áruátvételi kapu', x: 20.6, y: 93.8, szel: 3.5, szin: '#e0a800' },
+    // Helyszín (IMG_3289, 3291–3293): a pohármosó ajtaja az áruátvétel déli falán, a karantén
+    // állvány alatt (helye becsült).
+    { nev: 'Pohármosó', x: 7.0, y: 97.8, szel: 1.0, szin: '#8a6d3b' },
     // Helyszín (2026-10-21, IMG_3284–3285): sárga kijárati gyorskapu a felső szárny északi
     // falán, a T4-06 keleti vége és a galéria lépcsője között (helye és szélessége becsült).
     { nev: 'Kijárat (fedett rész)', x: -20.0, y: -0.4, szel: 2.4, szin: '#e0a800' },
@@ -140,12 +147,17 @@ window.RAKTAR_CONFIG = {
     { nev: 'LOGISZTIKAI IRODA', x: 0.0, y: -7.0, szel: 7.9, mely: 7.0, szin: '#e4e0f0' },
     { nev: 'iroda', x: 7.9, y: -7.0, szel: 3.5, mely: 4.4, szin: '#e4e0f0' },
     { nev: 'MOSDÓ', x: 7.9, y: -2.6, szel: 3.5, mely: 2.6, szin: '#d6eef5' },
+    { nev: 'POHÁRMOSÓ', x: 5.0, y: 97.8, szel: 4.0, mely: 3.8, szin: '#d6eef5' },
   ],
   // Kód nélküli állványok (nem tárhelyek): alaprajzi téglalap, magasság, szintek
   egyebAllvanyok: [
     // Helyszín (2026-10-21): a karantén tárhely az áruátvételen, a T1-29-cel szemben.
     // A hossza és a mélysége becsült.
-    { nev: 'KARANTÉN', x0: 5.0, y0: 96.4, x1: 18.0, y1: 97.6, magassag: 6.5, szintek: 5, szin: '#8e5a2b' },
+    // A karantén állvány alatt nyílik a pohármosó ajtaja (IMG_3289): ott csak a gerenda
+    // fölötti rész van (alsoMagassag), alatta át lehet menni.
+    { nev: 'KARANTÉN', x0: 5.0, y0: 96.4, x1: 6.4, y1: 97.6, magassag: 6.5, szintek: 5, szin: '#8e5a2b', felirat: false },
+    { nev: 'KARANTÉN', x0: 6.4, y0: 96.4, x1: 7.6, y1: 97.6, magassag: 6.5, szintek: 5, szin: '#8e5a2b', alsoMagassag: 2.6, felirat: false },
+    { nev: 'KARANTÉN', x0: 7.6, y0: 96.4, x1: 18.0, y1: 97.6, magassag: 6.5, szintek: 5, szin: '#8e5a2b' },
     // Helyszín (IMG_3288): EAR raktár – zárt, OSB-falú rekesz a T4-01 sor északi vége mögött,
     // az északi falnál (tomor: zárt doboz, nem polc). Mérete becsült.
     { nev: 'EAR RAKTÁR (elzárt)', x0: -34.4, y0: -0.3, x1: -30.8, y1: 1.9, magassag: 2.5, tomor: true, szin: '#c8a165' },
@@ -158,6 +170,10 @@ window.RAKTAR_CONFIG = {
   ],
   // Helyszíni feltételezések, amelyek nem az Excelből jönnek (pirossal jelennek meg)
   helyszinFeltetelezesek: [
+    { cim: 'A pohármosó helye és mérete', x: 7.0, y: 99.7,
+      szoveg: 'A pohármosó az áruátvételről nyílik, a karantén állvány alatti ajtón át; a déli fal mögé nyúlik ki, két ablakos külső fallal. Kb. 4 × 3,8 m, az ajtó X ≈ 7 m – becsült.' },
+    { cim: 'A fedett rakodó az áruátvételi kapu előtt', x: 24.6, y: 80.0,
+      szoveg: 'Az áruátvételi kapun kilépve balra a fal mentén fedett rakodó; 8 m szélesnek vettem, az árukiadó udvaráig. Becsült.' },
     { cim: 'A galéria mérete és magassága', x: -8.5, y: 8.7,
       szoveg: 'A galéria a T2 polcos zóna fölött van (X −16,9…−0,2, Y 0…16 m), a padlója kb. 3 m magasan – mindez a fotókból becsült.' },
     { cim: 'A galéria lépcsője és a sárga kijárat', x: -19.0, y: 0.6,
@@ -182,6 +198,9 @@ window.RAKTAR_CONFIG = {
   udvarok: [
     // Helyszín: a sárga kijáraton kilépve balra, a T4 mellett fedett rész (méret becsült)
     { x: -39.8, y: -6.4, szel: 20.0, mely: 6.0, nev: 'FEDETT RÉSZ' },
+    // Helyszín (IMG_3290): az áruátvételi kapun kilépve balra (észak felé) a fal mentén fedett
+    // rakodó, térkövezett udvarral; a szélessége és a hossza becsült (az árukiadó udvaráig).
+    { x: 20.6, y: 42.3, szel: 8.0, mely: 56.0, nev: 'FEDETT RAKODÓ' },
   ],
   // Galéria (emelet): a padló magassága, a lefedett téglalapok [x0, y0, x1, y1], a lépcső
   // (alaprajzi téglalap + merre emelkedik: '+X', '-X', '+Y', '-Y') és az áru feladó/lerakó.

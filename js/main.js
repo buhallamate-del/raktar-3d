@@ -246,20 +246,33 @@ for (const a of C.egyebAllvanyok || []) {
     scene.add(doboz, t);
     continue;
   }
-  const keret = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(x1 - x0, mag, y1 - y0)),
+  const kAlso = Number(a.alsoMagassag ?? 0);
+  const keret = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(x1 - x0, mag - kAlso, y1 - y0)),
     new THREE.LineBasicMaterial({ color: szin }));
-  keret.position.set((x0 + x1) / 2, mag / 2, (y0 + y1) / 2);
+  keret.position.set((x0 + x1) / 2, (mag + kAlso) / 2, (y0 + y1) / 2);
   scene.add(keret);
   const polcAnyag = new THREE.MeshLambertMaterial({ color: szin.clone().lerp(FEHER_SZIN, 0.55) });
+  const also = Number(a.alsoMagassag ?? 0);
   for (let k = 0; k <= szint; k++) {
+    const y = k === 0 ? 0.05 : (k * mag) / szint;
+    if (y < also - 0.01) continue;
     const p = new THREE.Mesh(KOCKA, polcAnyag);
     p.scale.set(x1 - x0, 0.06, y1 - y0);
-    p.position.set((x0 + x1) / 2, k === 0 ? 0.05 : (k * mag) / szint, (y0 + y1) / 2);
+    p.position.set((x0 + x1) / 2, y, (y0 + y1) / 2);
     scene.add(p);
   }
-  const t = szovegSprite(a.nev, 0.8, { hatter: a.szin || '#777', szin: '#fff', meret: 48 });
-  t.position.set((x0 + x1) / 2, mag + 0.8, (y0 + y1) / 2);
-  scene.add(t);
+  if (also > 0) {
+    // a nyílás fölötti gerenda
+    const g = new THREE.Mesh(KOCKA, new THREE.MeshLambertMaterial({ color: '#e0662a' }));
+    g.scale.set(x1 - x0, 0.12, y1 - y0);
+    g.position.set((x0 + x1) / 2, also, (y0 + y1) / 2);
+    scene.add(g);
+  }
+  if (a.felirat !== false) {
+    const t = szovegSprite(a.nev, 0.8, { hatter: a.szin || '#777', szin: '#fff', meret: 48 });
+    t.position.set((x0 + x1) / 2, mag + 0.8, (y0 + y1) / 2);
+    scene.add(t);
+  }
 }
 // Galériák (config.js: galeriak) – áttetsző padló kék oszlopokkal, korláttal, lépcsővel
 for (const g of C.galeriak || []) {
