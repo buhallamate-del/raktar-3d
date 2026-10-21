@@ -270,7 +270,12 @@ export function epitModell(D0, C) {
     for (const f of valaszfalak) utkozok.push(falTeglalap(f));
   }
   for (const a of C.egyebAllvanyok || []) {
+    if (Number(a.alsoMagassag ?? 0) >= 2) continue; // alatta át lehet menni (pl. ajtó fölötti rész)
     utkozok.push({ x0: Math.min(a.x0, a.x1), y0: Math.min(a.y0, a.y1), x1: Math.max(a.x0, a.x1), y1: Math.max(a.y0, a.y1) });
+  }
+  for (const g of C.galeriak || []) {
+    const l = g.lepcso;
+    if (l) utkozok.push({ x0: Math.min(l.x0, l.x1), y0: Math.min(l.y0, l.y1), x1: Math.max(l.x0, l.x1), y1: Math.max(l.y0, l.y1) });
   }
   for (const g of C.gepek || []) {
     const r = Number(g.r ?? 0.5);
