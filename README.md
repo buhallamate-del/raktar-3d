@@ -100,7 +100,7 @@ A modell feltevéseit a ☰ menü sárga „Modell saját feltételezései” r�
 5. **Folyosószélesség:** ahol a táblázat ad értéket (F-4 0,8; F-5 0,9; F-6 1,4; F-7 2,2; 29. sor alatti folyosó 2,6 m),
    azt használom. A T1-F0 (3,4 m), a T1-K (3,2 m) és az F-SÁV (2,6 m) szélességét a Paraméterek lap megjegyzéseiből számoltam.
    A többi folyosó az alapértelmezett **2,6 m**.
-6. **Állványmagasság és szintszám:** a táblázatban nincs, ezek becslések. T1: 5,0 m és 4 szint, T2 (polc): 2,2 m és 5 szint,
+6. **Állványmagasság és szintszám:** a táblázatban nincs, ezek becslések. T1: 6,5 m és 5 szint (helyszíni fotó alapján: padló + 4 gerendaszint), T2 (polc): 2,2 m és 5 szint,
    T3: 2,5 m és 4 szint, T4: 4,0 m és 3 szint.
 7. **Falak:** a táblázat csak a komissiózó bal falát (X = 0) és a T4 alsó falát (Y = 7,8) adja meg. A többi fal helyét az
    állványok szélei alapján becsültem: felső szárny X −39,8…0 és Y −12,6…7,8 (az eltolás előtt, lásd lent),

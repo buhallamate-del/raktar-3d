@@ -36,7 +36,9 @@ window.RAKTAR_CONFIG = {
   // Zónánkénti felülírás (magasság, szintek, szín). A zóna neve a Tárhelyek
   // lap „Zóna” oszlopa; a „T1 fali” külön is megadható, különben a T1 érvényes.
   zonak: {
-    'T1': { szin: '#2f6fdb', nev: 'T1' },
+    // T1: helyszíni fotó (2026-10-21, T1-04 sor) alapján becsülve: padló + 4 gerendaszint,
+    // a legfelső raklapok kb. 6–7 m magasan. Pontos méréssel érdemes javítani.
+    'T1': { szin: '#2f6fdb', nev: 'T1', allvanyMagassag: 6.5, szintekSzama: 5 },
     'T1 fali': { szin: '#1f4fa8', nev: 'T1 fali' },
     'T2': { szin: '#2ea44f', nev: 'T2', allvanyMagassag: 2.2, szintekSzama: 5 },
     'T3': { szin: '#e8891c', nev: 'T3 (temperált)', allvanyMagassag: 2.5, szintekSzama: 4 },
