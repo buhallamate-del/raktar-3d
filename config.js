@@ -92,6 +92,14 @@ window.RAKTAR_CONFIG = {
     // Helyszín (2026-10-21): a T1-29 alatt az áruátvételi terület van, a déli fal ezért
     // lejjebb van; a terület mélysége (8 m) becsült.
     [  0.0,  97.8,  20.6,  97.8],   // déli fal az áruátvétel alatt
+    // Logisztikai iroda és mosdó a komissiózó északi fala mögött (helyszíni fotók alapján,
+    // L alakú iroda: belépve balra a nagy terem, jobbra – a mosdó mögött – a kisebb rész).
+    // Minden méret becsült.
+    [  0.0,  -7.0,  11.4,  -7.0],   // az iroda északi (külső, ablakos) fala
+    [  0.0,  -7.0,   0.0,   0.0],   // az iroda nyugati fala
+    [ 11.4,  -7.0,  11.4,   0.0],   // az iroda / mosdó keleti fala
+    [  7.9,  -2.6,   7.9,   0.0],   // a nagy terem és a mosdó közötti fal
+    [  7.9,  -2.6,  11.4,  -2.6],   // a mosdó és az iroda kisebb része közötti fal
   ],
   // A felső szárny (T2, T3, T4) falai az Excel koordinátáiban; a felsoSzarnyEltolasY-nal
   // együtt tolódnak.
@@ -118,13 +126,17 @@ window.RAKTAR_CONFIG = {
     // keleti falán; a helye a falon és a szélessége becsült.
     { nev: 'Áruátvételi kapu', x: 20.6, y: 93.8, szel: 3.5, szin: '#e0a800' },
     // A komissiózó lerakó hátsó (északi) falán: bal oldalt a logisztikai iroda, jobbra a
-    // mosdó. vag: false = csak jelölő, a falon nem lehet átmenni. Az X helyük becsült.
-    { nev: 'Logisztikai iroda', x: 7.4, y: 0.0, szel: 1.0, szin: '#8a6d3b', vag: false },
-    { nev: 'Mosdó', x: 9.8, y: 0.0, szel: 1.0, szin: '#8a6d3b', vag: false },
+    // mosdó ajtaja (be lehet menni). Az X helyük becsült.
+    // (vag: false = csak jelölő ajtó, amelyen nem lehet átmenni.)
+    { nev: 'Logisztikai iroda', x: 7.2, y: 0.0, szel: 1.0, szin: '#8a6d3b' },
+    { nev: 'Mosdó', x: 9.8, y: 0.0, szel: 1.0, szin: '#8a6d3b' },
   ],
   // Egyéb padlóterületek felirattal (x, y = bal felső sarok; szel, mely)
   teruletek: [
     { nev: 'ÁRUÁTVÉTEL', x: 0.0, y: 89.8, szel: 20.6, mely: 8.0, szin: '#f3e1bd' },
+    { nev: 'LOGISZTIKAI IRODA', x: 0.0, y: -7.0, szel: 7.9, mely: 7.0, szin: '#e4e0f0' },
+    { nev: 'iroda', x: 7.9, y: -7.0, szel: 3.5, mely: 4.4, szin: '#e4e0f0' },
+    { nev: 'MOSDÓ', x: 7.9, y: -2.6, szel: 3.5, mely: 2.6, szin: '#d6eef5' },
   ],
   // Kód nélküli állványok (nem tárhelyek): alaprajzi téglalap, magasság, szintek
   egyebAllvanyok: [
@@ -146,8 +158,8 @@ window.RAKTAR_CONFIG = {
       szoveg: 'A sárga gyorskapu az áruátvétel keleti falán, középen (Y ≈ 93,8), 3,5 m széles – a T1-29 a kapuból nézve jobbra esik.' },
     { cim: 'A fóliázógép helye', x: 15.2, y: 53.35,
       szoveg: 'A fóliázógép a 17–18. sor előtt van; a 16–17. sor keleti végére tettem, ahol a 01–02. hely hiányzik.' },
-    { cim: 'Az iroda és a mosdó ajtaja', x: 8.6, y: 0.6,
-      szoveg: 'A komissiózó lerakó hátsó (északi) falán: balra a logisztikai iroda, jobbra a mosdó. A pontos helyük a falon becsült.' },
+    { cim: 'A logisztikai iroda és a mosdó', x: 5.0, y: -3.5,
+      szoveg: 'A komissiózó lerakó hátsó (északi) fala mögött: balra a logisztikai iroda ajtaja, jobbra a mosdóé. Az iroda L alakú: belépve balra a nagy terem (kb. 7,9 × 7 m, ablakos külső fallal), jobbra – a mosdó mögött – a kisebb rész (kb. 3,5 × 4,4 m). Az ajtók helye és minden méret a fotókból becsült.' },
   ],
   // Az árukiadó fedett udvar a kék kapu előtt: helyszíni becslés kb. 14 × 50 m, a kapura
   // középre igazítva (a pontos helye becsült; null = ne rajzolja)

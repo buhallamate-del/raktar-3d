@@ -145,7 +145,9 @@ A modell feltevéseit a ☰ menü sárga „Modell saját feltételezései” r�
      (a terület 8 m mély – becsült). A T1-29-cel szemben a **karantén tárhely** áll (kód nélküli állvány, `egyebAllvanyok`),
      a keleti falon a **sárga áruátvételi kapu** (`ajtok`).
    - **Fóliázógép** a 17–18. sor előtt, a 16–17. sor keleti végén, ahol a 01–02. hely hiányzik (`gepek`).
-   - **Logisztikai iroda és mosdó:** ajtók a komissiózó lerakó hátsó (északi) falán (`ajtok`, `vag: false` – csak jelölő).
+   - **Logisztikai iroda és mosdó** a komissiózó lerakó hátsó (északi) fala mögött, mindkettőbe ajtó vezet (`ajtok`).
+     Az iroda L alakú: belépve balra a nagy terem (kb. 7,9 × 7 m, ablakos külső fallal), jobbra – a mosdó mögött –
+     a kisebb rész (kb. 3,5 × 4,4 m). A méretek a fotók álmennyezet-lapjaiból becsültek (`falak`, `teruletek`).
    - A méretek és pontos helyek becsültek: a menüben a „config.js (helyszíni info)” forrású FELTÉTELEZÉS-ek
      (`helyszinFeltetelezesek`) jelzik őket; ha pontosítod, írd át ott az értéket, és töröld a tételt a listából.
 10. **A 10. és 11. sor közötti válaszfal:** a két sor hátoldala között fut, Y = 36,88-on, X = 0-tól 16,2-ig, vagyis az
