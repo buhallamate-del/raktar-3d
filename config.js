@@ -84,12 +84,14 @@ window.RAKTAR_CONFIG = {
   // Falszakaszok [x1, y1, x2, y2] a táblázat koordináta-rendszerében
   // (origó: a komissiózó bal felső sarka, X jobbra, Y lefelé nő).
   falak: [
-    [  0.0,   0.0,   0.0,  89.8],   // komissiózó + T1 bal fala (X = 0)
+    [  0.0,   0.0,   0.0,  97.8],   // komissiózó + T1 + áruátvétel bal fala (X = 0)
     // Komissiózó (lerakó terület) – a T1-03 sor fölött, a jobb fala a T1 jobb falával egy vonalban
     [  0.0,   0.0,  20.6,   0.0],   // felső fal (becsült)
     // T1 csarnok + komissiózó jobb fala; a kék kapu nyílását az ajtok lista vágja bele
-    [ 20.6,   0.0,  20.6,  89.8],   // jobb fal a fali állványok mögött (becsült)
-    [  0.0,  89.8,  20.6,  89.8],   // alsó fal: 29. sor alatti folyosó széle
+    [ 20.6,   0.0,  20.6,  97.8],   // jobb fal a fali állványok mögött (becsült)
+    // Helyszín (2026-10-21): a T1-29 alatt az áruátvételi terület van, a déli fal ezért
+    // lejjebb van; a terület mélysége (8 m) becsült.
+    [  0.0,  97.8,  20.6,  97.8],   // déli fal az áruátvétel alatt
   ],
   // A felső szárny (T2, T3, T4) falai az Excel koordinátáiban; a felsoSzarnyEltolasY-nal
   // együtt tolódnak.
@@ -112,6 +114,40 @@ window.RAKTAR_CONFIG = {
     // Helyszín (2026-10-21): a T1-F0 keleti vége a kék szalagfüggönyös kapu az árukiadó felé.
     // A szélesség a fotó alapján becsült.
     { nev: 'Kék kapu – árukiadó', x: 20.6, y: 17.3, szel: 3.0, szin: '#1f6feb' },
+    // Helyszín (2026-10-21): az áruátvételi kapu (sárga gyorskapu) az áruátvételi terület
+    // keleti falán; a helye a falon és a szélessége becsült.
+    { nev: 'Áruátvételi kapu', x: 20.6, y: 93.8, szel: 3.5, szin: '#e0a800' },
+    // A komissiózó lerakó hátsó (északi) falán: bal oldalt a logisztikai iroda, jobbra a
+    // mosdó. vag: false = csak jelölő, a falon nem lehet átmenni. Az X helyük becsült.
+    { nev: 'Logisztikai iroda', x: 7.4, y: 0.0, szel: 1.0, szin: '#8a6d3b', vag: false },
+    { nev: 'Mosdó', x: 9.8, y: 0.0, szel: 1.0, szin: '#8a6d3b', vag: false },
+  ],
+  // Egyéb padlóterületek felirattal (x, y = bal felső sarok; szel, mely)
+  teruletek: [
+    { nev: 'ÁRUÁTVÉTEL', x: 0.0, y: 89.8, szel: 20.6, mely: 8.0, szin: '#f3e1bd' },
+  ],
+  // Kód nélküli állványok (nem tárhelyek): alaprajzi téglalap, magasság, szintek
+  egyebAllvanyok: [
+    // Helyszín (2026-10-21): a karantén tárhely az áruátvételen, a T1-29-cel szemben.
+    // A hossza és a mélysége becsült.
+    { nev: 'KARANTÉN', x0: 5.0, y0: 96.4, x1: 18.0, y1: 97.6, magassag: 6.5, szintek: 5, szin: '#8e5a2b' },
+  ],
+  // Gépek (kör alaprajz, ütköznek)
+  gepek: [
+    // Helyszín (2026-10-21): a fóliázógép a 17–18. sor előtt, a 16–17. sor keleti végén,
+    // ahol a 01–02. hely hiányzik (becsült hely).
+    { nev: 'Fóliázógép', x: 15.2, y: 53.35, r: 0.8 },
+  ],
+  // Helyszíni feltételezések, amelyek nem az Excelből jönnek (pirossal jelennek meg)
+  helyszinFeltetelezesek: [
+    { cim: 'Az áruátvételi terület mérete', x: 10.3, y: 93.8,
+      szoveg: 'Az áruátvétel a T1-29 alatt van, a karantén tárhellyel szemben. Mélységét 8 m-nek (Y 89,8–97,8), a karantén állványt X 5–18 m-nek vettem.' },
+    { cim: 'Az áruátvételi kapu helye', x: 20.6, y: 93.8,
+      szoveg: 'A sárga gyorskapu az áruátvétel keleti falán, középen (Y ≈ 93,8), 3,5 m széles – a T1-29 a kapuból nézve jobbra esik.' },
+    { cim: 'A fóliázógép helye', x: 15.2, y: 53.35,
+      szoveg: 'A fóliázógép a 17–18. sor előtt van; a 16–17. sor keleti végére tettem, ahol a 01–02. hely hiányzik.' },
+    { cim: 'Az iroda és a mosdó ajtaja', x: 8.6, y: 0.6,
+      szoveg: 'A komissiózó lerakó hátsó (északi) falán: balra a logisztikai iroda, jobbra a mosdó. A pontos helyük a falon becsült.' },
   ],
   // Az árukiadó fedett udvar a kék kapu előtt: helyszíni becslés kb. 14 × 50 m, a kapura
   // középre igazítva (a pontos helye becsült; null = ne rajzolja)
