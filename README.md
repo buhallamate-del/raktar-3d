@@ -1,1 +1,129 @@
-# raktar-3d
+# Raktár 3D
+
+Böngészőben futó, bejárható 3D raktármodell a `raktar_alaprajz_anonim.xlsx` alaprajzból.
+Egyetlen statikus oldal (Three.js), nincs build-lépés, GitHub Pages-re közvetlenül publikálható.
+
+**Mit tud:**
+
+- Mind a 960 tárhely állványként jelenik meg, zónánként más színnel (T1 kék, T2 zöld, T3 narancs, T4 lila).
+  Minden rekeszen a helykód: az elején a folyosó felé, és a tetején, felülnézetből olvashatóan.
+- **Felülnézet:** húzással mozgatod, görgővel vagy csípéssel nagyítasz, jobb gombbal vagy két ujjal forgatsz.
+  Ha egy állványra kattintasz, megjelennek az adatai (zóna, sor, folyosó, X/Y, táv a kiindulóponttól stb.).
+- **Belső nézet (séta):** gépen kattints a képre, aztán W A S D vagy a nyilak, egérrel nézelődsz, Shift = gyorsabban.
+  Telefonon a bal alsó joystickkal sétálsz, a jobb oldalon húzással nézelődsz. Az állványokon és a falakon nem lehet átmenni.
+- **Kereső:** beírsz egy helykódot (pl. `T1-05-03`, `t1 5 3`), és az *Odavisz* gomb vagy az Enter odavisz:
+  belső nézetben a hely elé állít, a címke felé fordulva; felülnézetben fölé repül. A *Kijelöl* gomb csak kijelöli.
+  Ha részleges kódot írsz (pl. `T2-05`), az összes illeszkedő helyet sárgával jelöli.
+  A cím végére írt `#T1-05-03` egyből a helyre visz, így egy helyre mutató linket is meg lehet osztani.
+- **Feltételezések:** ahol a táblázat „FELTÉTELEZÉS”-t ír, ott a modellben piros-sárga csíkos jelölés, piros keret
+  és lebegő „⚠ FELTÉTELEZÉS #n” tábla látszik (falon és állványon át is). A ☰ menüben megvan az összes, a táblázatbeli
+  forrással (lap és cella). Ha egy tételre kattintasz, odavisz. Ha kiválasztott hely érintett, az infópanel is figyelmeztet.
+
+## Fájlok
+
+| Fájl | Mire való |
+|---|---|
+| `index.html` | maga az oldal |
+| **`config.js`** | **a pontosítandó értékek: állványmagasság, szintek száma, folyosószélesség, falak** |
+| `data/adatok.js` | az Excelből generált adatok (ne szerkeszd kézzel) |
+| `tools/xlsx_to_adatok.py` | ez generálja a `data/adatok.js`-t az Excelből |
+| `js/modell.js` | geometria: irány, mélység, ütközés, a feltételezések helye |
+| `js/main.js` | 3D megjelenítés, séta, kereső, felület |
+| `vendor/three/` | Three.js r170 helyi másolata (MIT licenc), így CDN nélkül is működik |
+
+## A konfiguráció átírása (`config.js`)
+
+A fájl elején vannak a fő paraméterek:
+
+```js
+allvanyMagassag: 5.0,     // alapértelmezett állványmagasság (m)
+szintekSzama: 4,          // alapértelmezett szintszám
+folyosoSzelesseg: 2.6,    // alapértelmezett folyosószélesség (m)
+folyosoSzelessegek: { 'F-4': 0.8, ... },   // folyosónként
+zonak: { 'T2': { allvanyMagassag: 2.2, szintekSzama: 5, ... }, ... },  // zónánként
+sorok: { 'T2|01': { allvanyMagassag: 3.0 } },                         // soronként
+```
+
+Az értékek sorrendje: a soronkénti felülírja a zónánkéntit, az pedig az alapértelmezettet.
+A GitHubon a fájl megnyitása után a ceruza ikonnal közvetlenül szerkesztheted. A *Commit changes* után kb. egy perc,
+amíg a Pages oldal frissül. Utána a böngészőben frissítsd az oldalt (Ctrl+F5).
+A tizedesjel pont, nem vessző. Ha elírás miatt az oldal nem tölt be, a böngésző konzolja (F12) megmutatja, hol a hiba.
+
+**A folyosószélesség hatása:** a tárhelyek koordinátái a táblázatból jönnek, ezeket nem mozdítja el.
+A folyosószélesség a padlón jelölt folyosósávot és (ha `allvanyMelyseg: 'auto'`) az állványok mélységét határozza meg:
+az állvány eleje a folyosó széléig ér. Ha a mélységet fix számra állítod (pl. `allvanyMelyseg: 1.2`), és egy
+állvány így belelóg a folyosóba, a hely infópanelje figyelmeztet, és a menü „Modell saját feltételezései” része is jelzi.
+
+## Ha az Excel változik
+
+```bash
+pip install openpyxl
+python3 tools/xlsx_to_adatok.py          # raktar_alaprajz_anonim.xlsx -> data/adatok.js
+```
+
+A script a cellák mentett értékeit olvassa, ezért az Excelt előbb mentsd el. A feltételezéseket automatikusan gyűjti:
+minden cellát, amelynek szövegében szerepel a „feltételez” szó, és a Folyosók lap „Feltételezések” listáját.
+Ha a K oszlopban egy sort másik folyosóhoz rendelsz, vagy az E oszlopban átírod egy folyosó helyét,
+a modell a generálás után ezt követi: arra fordítja az állványt, és ahhoz igazítja a mélységét.
+
+## Helyi kipróbálás
+
+A modulok miatt az `index.html`-t nem lehet közvetlenül fájlként megnyitni, kell hozzá egy webszerver:
+
+```bash
+python3 -m http.server 8000
+# majd a böngészőben: http://localhost:8000
+```
+
+## Amit feltételeztem (ellenőrizd)
+
+Ezek a modell saját feltevései, nem a táblázatéi. A táblázat FELTÉTELEZÉS-ei külön, pirossal látszanak az oldalon.
+A modell feltevéseit a ☰ menü sárga „Modell saját feltételezései” része is felsorolja.
+
+1. **Koordináta-rendszer:** a Paraméterek lap szerint az origó a komissiózó bal felső sarka. X jobbra, Y lefelé nő,
+   felülnézetben is így látszik (a T1 lent, a felső szárny bal fent).
+2. **A tárhely X/Y pontja a rekesz közepe.** A rekesz szélessége a sorbeli szomszédok távolsága
+   (T1: 1 m, T2: kb. 0,35 m, T3: kb. 0,5–0,67 m), legfeljebb 1,4 m.
+3. **Merre néz az állvány:** a sor arra néz, amerre a hozzárendelt folyosó (Tárhelyek lap H oszlop). Ha a sor
+   keresztben áll a folyosó végén (T3-03, T4-06, a T3-00 alja), akkor a folyosó közepe felé néz.
+   A T3-00 U alakú, a szárai befelé néznek.
+4. **Állványmélység (automatikus):** az eleje a folyosó széléig ér, hátul nem lóg bele a mögötte álló sorba, legfeljebb 1,2 m.
+   Az eredmény jól egyezik a táblázat megjegyzéseivel (pl. „alsó falmenti sor ~6,4 m”, „fali állványok ~19,4 m”).
+5. **Folyosószélesség:** ahol a táblázat ad értéket (F-4 0,8; F-5 0,9; F-6 1,4; F-7 2,2; 29. sor alatti folyosó 2,6 m),
+   azt használom. A T1-F0 (3,4 m), a T1-K (3,2 m) és az F-SÁV (2,6 m) szélességét a Paraméterek lap megjegyzéseiből számoltam.
+   A többi folyosó az alapértelmezett **2,6 m**.
+6. **Állványmagasság és szintszám:** a táblázatban nincs, ezek becslések. T1: 5,0 m és 4 szint, T2 (polc): 2,2 m és 5 szint,
+   T3: 2,5 m és 4 szint, T4: 4,0 m és 3 szint.
+7. **Falak:** a táblázat csak a komissiózó bal falát (X = 0) és a T4 alsó falát (Y = 7,8) adja meg. A többi fal helyét az
+   állványok szélei alapján becsültem: felső szárny X −39,8…0 és Y −12,6…7,8, T1 csarnok X 0…20,6 és Y 15,6…89,8.
+   A komissiózó jobb fala X = 16,19, mert a kijárat X-e (8,09) a fal közepe. A falak a `config.js`-ben átírhatók.
+   `falakUtkoznek: false` esetén csak az állványok ütköznek.
+8. **Komissiózó:** a „B5:R6” blokk a 0–7,8 m sáv, ennek alsó élén van a kijárat. Alatta 15,6 m-ig nyitott előteret
+   rajzoltam, mert a Paraméterek lap szerint „a komissiózó alja 15,6 m”, és a fejfolyosó felé teljes szélességben nyitott.
+9. **Átjáró a felső szárnyba:** a falba a Paraméterek lap pontján (0; 5,1) 2 m-es nyílás kerül (`atjaroSzelesseg`).
+   Ez a táblázatban is FELTÉTELEZÉS, ezért piros kapukeret jelöli.
+10. **A 10. és 11. sor közötti válaszfal:** a két sor hátoldala között fut, Y = 36,88-on, X = 0-tól 16,2-ig, vagyis az
+    S oszlop (keresztfolyosó) előtt véget ér. A táblázat feltételezését így modelleztem.
+11. **Jelöletlen helyek:** a 27 „(nincs kód)” hely ideiglenes kódot kapott: `T4-ALSO-01…24` (jelöletlen alsó sor),
+    `T4-ROVID-01…03` (jelöletlen rövid sor). A szám a táblázat „Hely” oszlopa. A címkéjük sárga alapú.
+12. **„Rajzon” oszlop** (kék X / üres keret / T2 polc …): nem tudom, mit jelent (foglalt vagy üres? más típusú hely?),
+    ezért csak megjelenítem. A menüben a *Színezés: rajzi jel szerint* opcióval vizuálisan ellenőrizheted.
+13. **A 10. számú táblázatbeli feltételezés** („a folyosón belül a tárhely előtti pontig számol…”) a távolságszámítás
+    módjára vonatkozik, ezért nincs helye a modellben, csak a listában szerepel.
+
+## GitHub Pages bekapcsolása
+
+1. Ha a munka még a `claude/...` ágon van, előbb vond össze a `main` ágba. A GitHubon a repó oldalán:
+   **Pull requests → New pull request**, a *compare* mezőben válaszd ki az ágat, majd **Create pull request → Merge**.
+   (Ha nem akarsz összevonni, a 3. lépésben közvetlenül ezt az ágat is kiválaszthatod.)
+2. A repóban nyisd meg a **Settings** (Beállítások) fület, és a bal oldali menüben kattints a **Pages**-re.
+3. A **Build and deployment** résznél:
+   - **Source:** `Deploy from a branch`
+   - **Branch:** `main` (vagy a választott ág), a mappa: `/ (root)`, majd **Save**.
+4. 1–2 perc múlva a Pages oldal tetején megjelenik a cím: `https://<felhasználónév>.github.io/raktar-3d/`.
+   A folyamatot az **Actions** fülön a „pages build and deployment” futás mutatja.
+5. **Privát repónál** a Pages csak fizetős csomagban (Pro/Team/Enterprise) érhető el. Ingyenes fióknál a repót
+   nyilvánossá kell tenni (Settings → General → *Danger Zone* → *Change visibility*). Ilyenkor a táblázat is
+   nyilvános lesz, az anonimizált adatok ellenére érdemes ezt mérlegelni.
+
+Ezután minden `main`-re küldött módosítás (pl. a `config.js` átírása) kb. egy percen belül megjelenik az oldalon.

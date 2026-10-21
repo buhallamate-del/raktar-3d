@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Raktár 3D</title>
+<meta name="description" content="Bejárható 3D raktármodell a raktár alaprajzából">
+<link rel="stylesheet" href="css/stilus.css">
+<script type="importmap">
+{ "imports": {
+    "three": "./vendor/three/three.module.min.js",
+    "three/addons/": "./vendor/three/"
+} }
+</script>
+</head>
+<body>
+<div id="vaszon"></div>
+
+<header id="fejlec">
+  <div class="cim">Raktár&nbsp;3D</div>
+  <div class="nezet" role="group" aria-label="Nézet">
+    <button id="gombFelul" class="aktiv" title="Felülnézet (V)">Felülnézet</button>
+    <button id="gombBelso" title="Belső nézet – séta (V)">Belső nézet</button>
+  </div>
+  <div class="kereso">
+    <input id="keresoMezo" type="search" placeholder="Helykód, pl. T1-05-03" autocomplete="off"
+           autocapitalize="characters" spellcheck="false" enterkeyhint="go" aria-label="Helykód keresése">
+    <button id="gombOdavisz" title="Odavisz a helyhez (Enter)">Odavisz</button>
+    <button id="gombKijelol" class="masodlagos" title="Csak kijelöli">Kijelöl</button>
+    <ul id="javaslatok" hidden></ul>
+  </div>
+  <button id="gombMenu" class="masodlagos" title="Feltételezések, jelmagyarázat, beállítások">☰ <span id="feltSzam" class="jelveny">!</span></button>
+</header>
+
+<div id="uzenet" hidden></div>
+
+<aside id="infoPanel" hidden>
+  <button class="bezar" id="infoBezar" aria-label="Bezár">×</button>
+  <div id="infoTartalom"></div>
+</aside>
+
+<aside id="menuPanel" hidden>
+  <button class="bezar" id="menuBezar" aria-label="Bezár">×</button>
+  <section>
+    <h2 class="piros">⚠ Ellenőrizendő feltételezések</h2>
+    <p class="halvany">A táblázatban „FELTÉTELEZÉS”-ként jelölt pontok. A modellben piros-sárga csíkos jelölés és lebegő tábla mutatja őket. Kattints egy tételre, hogy odavigyen.</p>
+    <ol id="feltLista" class="feltLista"></ol>
+  </section>
+  <section>
+    <h2 class="borostyan">Modell saját feltételezései</h2>
+    <p class="halvany">Amit a táblázat nem ad meg, és a modell becsül (részletek a README-ben; a config.js-ben átírható).</p>
+    <ul id="modellFeltLista" class="feltLista modell"></ul>
+  </section>
+  <section>
+    <h2>Jelmagyarázat</h2>
+    <ul id="jelmagyarazat" class="jelmagyarazat"></ul>
+  </section>
+  <section>
+    <h2>Megjelenítés</h2>
+    <label><input type="checkbox" id="kapcsCimkek" checked> Helykód-címkék</label>
+    <label><input type="checkbox" id="kapcsFelt" checked> Feltételezések jelölése</label>
+    <label><input type="checkbox" id="kapcsFolyoso" checked> Folyosók a padlón</label>
+    <label><input type="checkbox" id="kapcsFalak" checked> Falak</label>
+    <label>Színezés:
+      <select id="szinezes">
+        <option value="zona">zóna szerint</option>
+        <option value="rajzon">rajzi jel szerint („Rajzon” oszlop)</option>
+      </select>
+    </label>
+  </section>
+  <section>
+    <h2>Irányítás</h2>
+    <ul class="sugo">
+      <li><b>Felülnézet:</b> húzás = mozgatás, görgő / csípés = nagyítás, jobb gomb / két ujj = forgatás. Kattints egy állványra a részletekért.</li>
+      <li><b>Belső nézet, gépen:</b> kattints a képre, aztán W A S D (vagy nyilak) = séta, egér = nézelődés, Shift = gyorsabban, Esc = egér elengedése, kattintás = a célkereszt alatti hely kiválasztása.</li>
+      <li><b>Belső nézet, telefonon:</b> bal alsó joystick = séta, jobb oldalon húzás = nézelődés, koppintás = hely kiválasztása.</li>
+      <li><b>V</b> billentyű = nézetváltás. A cím (URL) végére írt <code>#T1-05-03</code> egyből a helyre visz.</li>
+    </ul>
+  </section>
+  <p class="halvany kicsi" id="forrasInfo"></p>
+</aside>
+
+<div id="celkereszt" hidden>+</div>
+<div id="joystick" hidden><div id="joyGomb"></div></div>
+<div id="setaSugo" hidden>Kattints a képre a sétához · WASD / nyilak · egér · Shift · Esc</div>
+<div id="pozicio" hidden></div>
+<div id="betoltes">Raktár betöltése…</div>
+
+<noscript>Az oldalhoz JavaScript szükséges.</noscript>
+<script>
+  // Helyi fájlként (file://) a böngésző nem tölti be a modulokat – erre figyelmeztetünk.
+  setTimeout(function () {
+    var b = document.getElementById('betoltes');
+    if (b && !b.hidden) {
+      b.className = 'hiba';
+      b.textContent = location.protocol === 'file:'
+        ? 'Az oldal közvetlenül fájlból nem indul. Indíts egy helyi webszervert (python3 -m http.server), vagy nyisd meg a GitHub Pages címen.'
+        : 'A betöltés nem sikerült – nézd meg a böngésző konzolját (F12) a hibaüzenetért (gyakran elírás a config.js-ben).';
+    }
+  }, 8000);
+</script>
+<script src="config.js"></script>
+<script src="data/adatok.js"></script>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
