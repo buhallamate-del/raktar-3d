@@ -406,12 +406,15 @@ const pulzalok = [];
 {
   const rajzoltFolyosok = new Set();
   const rajzoltSorok = new Set();
-  const pontok = []; // {x, y, szamok[]}
+  const pontok = []; // {x, y, szamok[], ok}
+  const rajzoltAjtok = new Set();
   for (const t of M.feltetelezesek) {
+    const ok = !!t.ellenorizve; // helyszínen ellenőrizve: zöld jelölés, csíkok nélkül
     for (const hg of t.horgonyok) {
+      if (ok && hg.tipus !== 'pont' && hg.tipus !== 'ajto') continue;
       if (hg.tipus === 'pont') {
-        let p = pontok.find(p => Math.hypot(p.x - hg.x, p.y - hg.y) < 1);
-        if (!p) pontok.push(p = { x: hg.x, y: hg.y, szamok: [] });
+        let p = pontok.find(p => p.ok === ok && Math.hypot(p.x - hg.x, p.y - hg.y) < 1);
+        if (!p) pontok.push(p = { x: hg.x, y: hg.y, szamok: [], ok });
         if (!p.szamok.includes(t.szam)) p.szamok.push(t.szam);
       } else if (hg.tipus === 'folyoso' && !rajzoltFolyosok.has(hg.id)) {
         rajzoltFolyosok.add(hg.id);
@@ -460,9 +463,10 @@ const pulzalok = [];
           feltCsoport.add(teto);
           pulzalok.push({ anyag: teto.material, min: 0.12, max: 0.42 }); // a címkék átlátszanak
         }
-      } else if (hg.tipus === 'ajto') {
+      } else if (hg.tipus === 'ajto' && !rajzoltAjtok.has(`${hg.x},${hg.y}`)) {
+        rajzoltAjtok.add(`${hg.x},${hg.y}`);
         const ny = Number(C.atjaroSzelesseg ?? 2) / 2;
-        const anyag = new THREE.MeshLambertMaterial({ color: '#d0261b' });
+        const anyag = new THREE.MeshLambertMaterial({ color: ok ? '#1e9e48' : '#d0261b' });
         for (const s of [-1, 1]) {
           const o = new THREE.Mesh(KOCKA, anyag);
           o.scale.set(0.25, 2.5, 0.25);
@@ -473,6 +477,7 @@ const pulzalok = [];
         fel.scale.set(0.25, 0.25, 2 * ny + 0.25);
         fel.position.set(hg.x, 2.6, hg.y);
         feltCsoport.add(fel);
+        if (ok) continue;
         const m = padloTeglalap(hg.x - 1.2, hg.y - ny, hg.x + 1.2, hg.y + ny, csikosAnyag(2.4, 2 * ny, 0.9), 0.014);
         feltCsoport.add(m);
         pulzalok.push(m.material);
@@ -481,18 +486,21 @@ const pulzalok = [];
   }
   for (const p of pontok) {
     const g = new THREE.Group();
-    const mag = maxMagassag + 1.8;
+    const mag = maxMagassag + (p.ok ? 0.8 : 1.8);
+    const szin = p.ok ? '#1e9e48' : '#d0261b';
     const rud = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, mag, 8),
-      new THREE.MeshBasicMaterial({ color: '#d0261b', transparent: true, opacity: 0.8, depthTest: false }));
+      new THREE.MeshBasicMaterial({ color: szin, transparent: true, opacity: 0.8, depthTest: false }));
     rud.position.y = mag / 2;
     rud.renderOrder = 9;
     const gyuru = new THREE.Mesh(new THREE.RingGeometry(0.5, 0.8, 32),
-      new THREE.MeshBasicMaterial({ color: '#d0261b', transparent: true, side: THREE.DoubleSide, depthWrite: false }));
+      new THREE.MeshBasicMaterial({ color: szin, transparent: true, side: THREE.DoubleSide, depthWrite: false }));
     gyuru.rotation.x = -Math.PI / 2;
     gyuru.position.y = 0.03;
-    pulzalok.push(gyuru.material);
-    const felirat = szovegSprite(['⚠ FELTÉTELEZÉS', p.szamok.map(n => '#' + n).join(', ')], 1.6,
-      { hatter: '#d0261b', szin: '#ffe14d', keret: '#ffe14d', meret: 56, depthTest: false });
+    if (!p.ok) pulzalok.push(gyuru.material);
+    const szamok = p.szamok.map(n => '#' + n).join(', ');
+    const felirat = p.ok
+      ? szovegSprite(['✔ ELLENŐRIZVE', szamok], 1.1, { hatter: '#1e9e48', szin: '#fff', meret: 56, depthTest: false })
+      : szovegSprite(['⚠ FELTÉTELEZÉS', szamok], 1.6, { hatter: '#d0261b', szin: '#ffe14d', keret: '#ffe14d', meret: 56, depthTest: false });
     felirat.position.y = mag + 0.9;
     felirat.userData.feltSzamok = p.szamok;
     jelzoSpriteok.push(felirat);
@@ -560,7 +568,7 @@ const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '
 const sz = (v, j = 2) => (v == null || v === '' ? '–' : Number(v).toFixed(j).replace('.', ','));
 
 function helyFeltetelezesei(h) {
-  return M.feltetelezesek.filter(t => t.horgonyok.some(hg =>
+  return M.feltetelezesek.filter(t => !t.ellenorizve && t.horgonyok.some(hg =>
     (hg.tipus === 'folyoso' && hg.id === h.folyoso) || (hg.tipus === 'sorok' && hg.kulcsok.includes(h.sorKulcs))));
 }
 
@@ -580,7 +588,8 @@ function infoHely(h) {
       <tr><td>Rajzon</td><td>${esc(h.rajzon)}</td></tr>
       <tr><td>X / Y</td><td>${sz(h.x)} m / ${sz(h.y)} m</td></tr>
       <tr><td>Pozíció a folyosón</td><td>${sz(h.pozicio)} m</td></tr>
-      <tr><td>Táv a kiindulóponttól</td><td><b>${sz(h.tav, 1)} m</b></td></tr>
+      <tr><td>Táv a kiindulóponttól</td><td><b>${sz(h.tav, 1)} m</b>${h.tavExcel != null && Math.abs(h.tavExcel - h.tav) > 0.05
+        ? `<br><span class="halvany kicsi">újraszámolva az eltolt felső szárnyhoz; az Excelben ${sz(h.tavExcel, 1)} m</span>` : ''}</td></tr>
       <tr><td>Állvány (modell)</td><td>${sz(h.H, 1)} m magas, ${h.L} szint, ${sz(2 * h.h)} m mély, ${sz(h.w)} m széles</td></tr>
       <tr><td>Forrás</td><td>Tárhelyek lap, ${h.excelSor}. sor</td></tr>
     </table>
@@ -594,8 +603,11 @@ function infoHely(h) {
 
 function infoFeltetelezes(t) {
   $('infoTartalom').innerHTML = `
-    <h3 style="color:var(--piros)">⚠ FELTÉTELEZÉS #${t.szam}</h3>
-    <div class="figyelmeztet"><b>${esc(t.cim)}</b><br>${esc(t.szoveg)}</div>
+    ${t.ellenorizve
+      ? `<h3 class="zold">✔ ELLENŐRIZVE #${t.szam}</h3><div class="ellenorizveDoboz">${esc(t.ellenorizve)}</div>
+         <p class="halvany kicsi">Eredeti feltételezés: <b>${esc(t.cim)}</b> – ${esc(t.szoveg)}</p>`
+      : `<h3 style="color:var(--piros)">⚠ FELTÉTELEZÉS #${t.szam}</h3>
+         <div class="figyelmeztet"><b>${esc(t.cim)}</b><br>${esc(t.szoveg)}</div>`}
     <p class="halvany kicsi">Forrás: ${esc(t.forras)}</p>
     ${t.fokusz ? '<div class="gombok"><button data-felt-oda="' + t.szam + '">Odavisz</button></div>' : '<p class="halvany">Ehhez nem tartozik konkrét hely a modellben.</p>'}`;
   $('infoPanel').hidden = false;
@@ -1008,9 +1020,10 @@ function uzenet(sz) {
 // ---------------------------------------------------------------------
 // Menü: feltételezések listája, jelmagyarázat, kapcsolók
 // ---------------------------------------------------------------------
-$('feltSzam').textContent = M.feltetelezesek.length;
+$('feltSzam').textContent = M.feltetelezesek.filter(t => !t.ellenorizve).length;
 $('feltLista').innerHTML = M.feltetelezesek.map(t => `
-  <li value="${t.szam}" data-szam="${t.szam}" class="${t.fokusz ? '' : 'nincsHely'}">
+  <li value="${t.szam}" data-szam="${t.szam}" class="${t.fokusz ? '' : 'nincsHely'} ${t.ellenorizve ? 'ellenorizve' : ''}">
+    ${t.ellenorizve ? `<b class="zold">✔ ELLENŐRIZVE</b> – ${esc(t.ellenorizve)}<br>` : ''}
     <b>${esc(t.cim)}</b><br>${esc(t.szoveg)}
     <span class="forras">Forrás: ${esc(t.forras)}${t.fokusz ? ' · kattints, hogy odavigyen' : ' · nincs konkrét helye'}</span>
   </li>`).join('');

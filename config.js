@@ -61,16 +61,27 @@ window.RAKTAR_CONFIG = {
   maxHelySzelesseg: 1.4,   // egy tárhely legfeljebb ilyen széles (a szomszéd távolságból számolva)
 
   // ------------------------------------------------------------------
-  // 3) ÉPÜLET (MODELL-FELTÉTELEZÉS – a táblázat nem adja meg a falakat)
+  // 3) HELYSZÍNI PONTOSÍTÁSOK
+  // ------------------------------------------------------------------
+  // A felső szárny (T2, T3, T4) függőleges eltolása az Excel koordinátáihoz képest, m.
+  // 0 = az Excel koordinátái érvényesek. (2026-10-21: a helyszíni pontosítás – átjáró a
+  // T1-04 mellett, a szárny 12,2 m-rel lejjebb – már az Excelben is javítva van.)
+  // Ha az adatokban az alsó sáv már a T1 fejfolyosó vonalában van, a modell nem tol.
+  felsoSzarnyEltolasY: 0,
+
+  // Ellenőrzött feltételezések: a kulcs a táblázat cellája (a ☰ menüben a „Forrás”).
+  // Ezek nem pirossal, hanem zölddel, „ellenőrizve” jelöléssel látszanak.
+  ellenorizve: {
+    'Folyosók!A59': 'Helyszínen pontosítva: egy átjáró van, a T1-04 mellett.',
+  },
+
+  // ------------------------------------------------------------------
+  // 4) ÉPÜLET (MODELL-FELTÉTELEZÉS – a táblázat nem adja meg a falakat)
   // ------------------------------------------------------------------
   // Falszakaszok [x1, y1, x2, y2] a táblázat koordináta-rendszerében
   // (origó: a komissiózó bal felső sarka, X jobbra, Y lefelé nő).
   falak: [
-    // Felső szárny (T2, T3, T4) – a jobb és az alsó fal a Paraméterek lapból
-    [-39.8, -12.6,   0.0, -12.6],   // felső fal (becsült)
-    [-39.8, -12.6, -39.8,   7.8],   // bal fal (becsült)
-    [-39.8,   7.8,   0.0,   7.8],   // alsó fal: „T4 eltolás Y = 7,8” (feltételezés a táblázatban)
-    [  0.0, -12.6,   0.0,  89.8],   // felső szárny jobb fala = komissiózó + T1 bal fala
+    [  0.0,   0.0,   0.0,  89.8],   // komissiózó + T1 bal fala (X = 0)
     // Komissiózó
     [  0.0,   0.0,  16.19,  0.0],   // felső fal (becsült)
     [ 16.19,  0.0,  16.19, 15.6],   // jobb fal (becsült; a kijárat X-e a fal közepe)
@@ -78,6 +89,14 @@ window.RAKTAR_CONFIG = {
     // T1 csarnok
     [ 20.6,  15.6,  20.6,  89.8],   // jobb fal a fali állványok mögött (becsült)
     [  0.0,  89.8,  20.6,  89.8],   // alsó fal: 29. sor alatti folyosó széle
+  ],
+  // A felső szárny (T2, T3, T4) falai az Excel koordinátáiban; a felsoSzarnyEltolasY-nal
+  // együtt tolódnak.
+  felsoSzarnyFalak: [
+    [-39.8,  -0.4,   0.0,  -0.4],   // felső fal (becsült)
+    [-39.8,  -0.4, -39.8,  20.0],   // bal fal (becsült)
+    [-39.8,  20.0,   0.0,  20.0],   // alsó fal (Paraméterek: T4 eltolás Y = 20,0)
+    [  0.0,  -0.4,   0.0,  20.0],   // jobb fal (X = 0, a komissiózó / T1 felé)
   ],
   // Válaszfalak (ugyanígy). A 10–11. sor közötti fal a táblázat feltételezése
   // szerint NEM zárja el a keresztfolyosót, ezért az S oszlop előtt véget ér.
@@ -96,7 +115,7 @@ window.RAKTAR_CONFIG = {
   komissiozoEloter: { x: 0, y: 7.8, szel: 16.19, mely: 7.8 },
 
   // ------------------------------------------------------------------
-  // 4) SÉTA ÉS MEGJELENÍTÉS
+  // 5) SÉTA ÉS MEGJELENÍTÉS
   // ------------------------------------------------------------------
   szemmagassag: 1.65,
   setaSebesseg: 1.8,      // m/s

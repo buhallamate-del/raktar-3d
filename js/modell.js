@@ -21,8 +21,48 @@ export function folyosoSzelesseg(C, id) {
   return Number(ertekLanc(C.folyosoSzelessegek?.[id], C.folyosoSzelesseg, 2.6));
 }
 
-export function epitModell(D, C) {
+// A felső szárny (FELSŐ) eltolása Y irányban a config.js felsoSzarnyEltolasY értékével.
+// A szárnyon belüli távolságok nem változnak, csak a kapu → kiindulópont szakasz,
+// ezért a „Táv a kiindulóponttól” értéket ennyivel korrigáljuk.
+function felsoSzarnyEltolas(D, C, figyelmeztetesek) {
+  let dy = Number(C.felsoSzarnyEltolasY || 0);
+  const k = D.kulcsok;
+  if (dy && Math.abs(k.alsoSavY - k.t1FejY) < 0.05) {
+    figyelmeztetesek.push('A felső szárny alsó sávja az adatokban már a T1 fejfolyosó vonalában van – a felsoSzarnyEltolasY-t nem alkalmaztuk (állítsd 0-ra a config.js-ben).');
+    dy = 0;
+  }
+  if (!dy) return { ...D, eltolasY: 0 };
+  const folyosok = D.folyosok.map(f => {
+    if (f.szarny !== 'FELSŐ') return f;
+    return f.tengely === 'Y'
+      ? { ...f, e: f.e == null ? f.e : +(f.e + dy).toFixed(4) }
+      : { ...f, c: f.c == null ? f.c : +(f.c + dy).toFixed(4) };
+  });
+  const tengely = new Map(D.folyosok.map(f => [f.id, f.tengely]));
+  const atjaro = { x: k.atjaro.x, y: +(k.atjaro.y + dy).toFixed(4) };
+  const kapuRegi = D.szarnyak.find(s => s.szarny === 'FELSŐ')?.kapuTav;
+  const kapuUj = Math.abs(k.kiindulo.x - atjaro.x) + Math.abs(k.kiindulo.y - atjaro.y);
+  const helyek = D.helyek.map(h => {
+    if (h.szarny !== 'FELSŐ') return h;
+    const fy = tengely.get(h.folyoso) === 'Y';
+    return {
+      ...h,
+      y: +(h.y + dy).toFixed(4),
+      pozicio: fy && h.pozicio != null ? +(h.pozicio + dy).toFixed(4) : h.pozicio,
+      folyosoveg: fy && h.folyosoveg != null ? +(h.folyosoveg + dy).toFixed(4) : h.folyosoveg,
+      tavExcel: h.tav,
+      tav: kapuRegi != null && h.tav != null ? +(h.tav - kapuRegi + kapuUj).toFixed(2) : h.tav,
+    };
+  });
+  return {
+    ...D, helyek, folyosok, eltolasY: dy,
+    kulcsok: { ...k, atjaro, alsoSavY: +(k.alsoSavY + dy).toFixed(4) },
+  };
+}
+
+export function epitModell(D0, C) {
   const figyelmeztetesek = [];
+  const D = felsoSzarnyEltolas(D0, C, figyelmeztetesek);
   const folyosok = new Map();
   for (const f of D.folyosok) {
     folyosok.set(f.id, { ...f, szel: folyosoSzelesseg(C, f.id), helyek: [] });
@@ -184,7 +224,11 @@ export function epitModell(D, C) {
   const atj = D.kulcsok.atjaro;
   const nyilas = Number(C.atjaroSzelesseg ?? 2) / 2;
   let atjaroVagva = false;
-  for (const [x1, y1, x2, y2] of C.falak || []) {
+  const osszesFal = [
+    ...(C.falak || []),
+    ...(C.felsoSzarnyFalak || []).map(([x1, y1, x2, y2]) => [x1, y1 + D.eltolasY, x2, y2 + D.eltolasY]),
+  ];
+  for (const [x1, y1, x2, y2] of osszesFal) {
     const fugg = Math.abs(x1 - x2) < 1e-6, viz = Math.abs(y1 - y2) < 1e-6;
     if (fugg && Math.abs(x1 - atj.x) < 0.15 && atj.y > Math.min(y1, y2) && atj.y < Math.max(y1, y2)) {
       const a = Math.min(y1, y2), b = Math.max(y1, y2);
@@ -198,7 +242,7 @@ export function epitModell(D, C) {
       falak.push([x1, y1, x2, y2]);
     }
   }
-  if (!atjaroVagva && (C.falak || []).length) {
+  if (!atjaroVagva && osszesFal.length) {
     figyelmeztetesek.push('Az átjáró pontja nem esik egyik falra sem – nem vágtunk nyílást.');
   }
   const valaszfalak = (C.valaszfalak || []).map(v => [...v]);
@@ -222,7 +266,7 @@ export function epitModell(D, C) {
   for (const [x1, y1, x2, y2] of falak) { xs.push(x1, x2); ys.push(y1, y2); }
   const hatar = { x0: Math.min(...xs), x1: Math.max(...xs), y0: Math.min(...ys), y1: Math.max(...ys) };
 
-  const modell = { helyek, folyosok, csoportok, falak, valaszfalak, utkozok, racs, hatar, figyelmeztetesek };
+  const modell = { helyek, folyosok, csoportok, falak, valaszfalak, utkozok, racs, hatar, figyelmeztetesek, adat: D };
   modell.feltetelezesek = feltetelezesek(D, C, modell);
   modell.modellFeltetelezesek = modellFeltetelezesek(C, helyek);
   return modell;
@@ -382,7 +426,7 @@ function feltetelezesek(D, C, M) {
         if (!lista.includes(atjaroTetel)) lista.push(atjaroTetel);
       } else if (/^T4 eltolás Y/.test(nev)) {
         const x0 = Math.min(...felsoHelyek.map(h => h.x0));
-        const y = Number(p.ertek);
+        const y = Number(p.ertek) + D.eltolasY;
         lista.push({
           cim: 'A felső szárny alsó fala', szoveg: `${nev} = ${p.ertek} ${p.egyseg}: ${c.szoveg}`, forras,
           horgonyok: [{ tipus: 'vonal', x1: x0, y1: y, x2: 0, y2: y }, { tipus: 'pont', x: (x0) / 2, y }],
@@ -445,6 +489,8 @@ function feltetelezesek(D, C, M) {
 
   lista.forEach((t, i) => {
     t.szam = i + 1;
+    const megj = t.forras.split(/,\s*/).map(f => C.ellenorizve?.[f]).filter(Boolean);
+    t.ellenorizve = megj.length ? [...new Set(megj)].join(' ') : null;
     const pontok = t.horgonyok.filter(h => h.tipus === 'pont');
     t.fokusz = pontok[0] || null;
   });
@@ -453,7 +499,11 @@ function feltetelezesek(D, C, M) {
 
 function modellFeltetelezesek(C, helyek) {
   const jel = helyek.filter(h => h.jeloletlen);
-  const l = [
+  const l = [];
+  if (C.felsoSzarnyEltolasY) {
+    l.push(`A felső szárny (T2–T4) ${String(C.felsoSzarnyEltolasY).replace('.', ',')} m-rel lejjebb van az Excel koordinátáihoz képest (helyszíni pontosítás, config.js: felsoSzarnyEltolasY). A felső szárny „Táv a kiindulóponttól” értékeit ehhez igazítva újraszámoltuk.`);
+  }
+  l.push(
     'A tárhely X/Y koordinátája az állvány-rekesz közepe; a rekesz szélessége a sorbeli szomszéd távolsága.',
     C.allvanyMelyseg === 'auto'
       ? `Állványmélység automatikus: az eleje a folyosó széléig ér, legfeljebb ${C.maxMelyseg} m (config.js: allvanyMelyseg).`
@@ -462,7 +512,7 @@ function modellFeltetelezesek(C, helyek) {
     `Folyosószélesség alapértéke ${C.folyosoSzelesseg} m ott, ahol a táblázat nem ad meg szélességet.`,
     'A falak helye becsült (a táblázatban csak a komissiózó bal fala és a T4 alsó fala szerepel) – config.js: falak.',
     'A komissiózó zóna a 0–7,8 m sáv; alatta 15,6 m-ig nyitott előtér (a „komissiózó alja 15,6 m” megjegyzés alapján).',
-  ];
+  );
   if (jel.length) {
     l.push(`${jel.length} jelöletlen helynek („(nincs kód)”) ideiglenes kódot adtunk: ${[...new Set(jel.map(h => h.kod.replace(/-\d+$/, '-…')))].join(', ')}.`);
   }
