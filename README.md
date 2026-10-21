@@ -150,6 +150,15 @@ A modell feltevéseit a ☰ menü sárga „Modell saját feltételezései” r�
      a kisebb rész (kb. 3,5 × 4,4 m). A méretek a fotók álmennyezet-lapjaiból becsültek (`falak`, `teruletek`).
    - A méretek és pontos helyek becsültek: a menüben a „config.js (helyszíni info)” forrású FELTÉTELEZÉS-ek
      (`helyszinFeltetelezesek`) jelzik őket; ha pontosítod, írd át ott az értéket, és töröld a tételt a listából.
+9e. **Galéria, kijárat, EAR raktár – helyszíni info (2026-10-21, IMG_3283–3288), a `config.js`-ben:**
+   - **Galéria a T2 polcos zóna fölött** (`galeriak`): kb. 3 m magasan, X −16,9…−0,2, Y 0…16 m. A lépcső a T4-06-09 mellett
+     indul, az északi fal mentén kelet felé emelkedik. A tetején kétszer jobbra fordulva a galéria nyugati szélén, az F-3 fölött
+     van az **áru feladó / lerakó**. A séta egyszintes: a galériára nem lehet felmenni, de a 3D-ben látszik.
+   - **Sárga kijárati gyorskapu** az északi falon, a T4-06 vége és a lépcső között. Kilépve balra **fedett rész** (`udvarok`).
+   - **EAR raktár (elzárt):** zárt rekesz a T4-01 sor északi vége mögött, az északi falnál (`egyebAllvanyok`, `tomor: true`).
+   - A gerendacímkék szerint a helykód után a szint betűje áll (pl. T4-06-09-A, -B, -C; az A a padlószint).
+     A T4-ben ez 3 szint, ami egyezik a modellel.
+   - Minden méret és pontos hely becsült; a menüben a „config.js (helyszíni info)” FELTÉTELEZÉS-ek jelzik őket.
 10. **A 10. és 11. sor közötti válaszfal:** a két sor hátoldala között fut, Y = 36,88-on, X = 0-tól 16,2-ig, vagyis az
     S oszlop (keresztfolyosó) előtt véget ér. A táblázat feltételezését így modelleztem.
 11. **Jelöletlen helyek:** a 27 „(nincs kód)” hely ideiglenes kódot kapott: `T4-ALSO-01…24` (jelöletlen alsó sor),

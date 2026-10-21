@@ -155,10 +155,12 @@ function padloTeglalap(x0, y0, x1, y1, anyag, emeles = 0.01) {
 // ---------------------------------------------------------------------
 // Padló, komissiózó, kiindulópont
 // ---------------------------------------------------------------------
-const aru = C.arukiado;
+const udvarok = [C.arukiado, ...(C.udvarok || [])].filter(Boolean);
 const padloMeret = {
-  x0: H.x0 - 8, y0: H.y0 - 8, y1: H.y1 + 8,
-  x1: Math.max(H.x1, aru ? aru.x + aru.szel : -Infinity) + 8,
+  x0: Math.min(H.x0, ...udvarok.map(u => u.x)) - 8,
+  y0: Math.min(H.y0, ...udvarok.map(u => u.y)) - 8,
+  x1: Math.max(H.x1, ...udvarok.map(u => u.x + u.szel)) + 8,
+  y1: Math.max(H.y1, ...udvarok.map(u => u.y + u.mely)) + 8,
 };
 scene.add(padloTeglalap(padloMeret.x0, padloMeret.y0, padloMeret.x1, padloMeret.y1,
   new THREE.MeshLambertMaterial({ color: '#c9cfd8' }), 0));
@@ -188,10 +190,11 @@ if (kom3) {
     new THREE.MeshBasicMaterial({ color: '#bfe3c8', transparent: true, opacity: 0.9, depthWrite: false }), 0.007));
   scene.add(padloFelirat('bejárat', kom3.x + kom3.szel / 2, kom3.y + kom3.mely / 2, 0.6, 0, { szin: '#2b7a3d', emeles: 0.02 }));
 }
-if (aru) {
+for (const aru of udvarok) {
   scene.add(padloTeglalap(aru.x, aru.y, aru.x + aru.szel, aru.y + aru.mely,
     new THREE.MeshLambertMaterial({ color: '#8d939b' }), 0.004));
-  scene.add(padloFelirat(aru.nev || 'ÁRUKIADÓ', aru.x + aru.szel / 2, aru.y + aru.mely / 2, 1.0, Math.PI / 2, { szin: '#f4f6f8' }));
+  scene.add(padloFelirat(aru.nev || 'UDVAR', aru.x + aru.szel / 2, aru.y + aru.mely / 2, 1.0,
+    aru.mely > aru.szel ? Math.PI / 2 : 0, { szin: '#f4f6f8' }));
   // a fedett udvar teteje: csak a széle (felülnézetben ne takarjon)
   const teto = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(aru.szel, 0.01, aru.mely)),
     new THREE.LineBasicMaterial({ color: '#5d6878' }));
@@ -233,6 +236,16 @@ for (const a of C.egyebAllvanyok || []) {
   const x0 = Math.min(a.x0, a.x1), x1 = Math.max(a.x0, a.x1), y0 = Math.min(a.y0, a.y1), y1 = Math.max(a.y0, a.y1);
   const mag = Number(a.magassag ?? 4), szint = Math.max(1, Number(a.szintek ?? 3));
   const szin = new THREE.Color(a.szin || '#777');
+  if (a.tomor) {
+    // zárt rekesz / helyiség: tömör doboz
+    const doboz = new THREE.Mesh(KOCKA, new THREE.MeshLambertMaterial({ color: szin }));
+    doboz.scale.set(x1 - x0, mag, y1 - y0);
+    doboz.position.set((x0 + x1) / 2, mag / 2, (y0 + y1) / 2);
+    const t = szovegSprite(a.nev, 0.6, { hatter: '#6b4f2a', szin: '#fff', meret: 48 });
+    t.position.set((x0 + x1) / 2, mag + 0.7, (y0 + y1) / 2);
+    scene.add(doboz, t);
+    continue;
+  }
   const keret = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(x1 - x0, mag, y1 - y0)),
     new THREE.LineBasicMaterial({ color: szin }));
   keret.position.set((x0 + x1) / 2, mag / 2, (y0 + y1) / 2);
@@ -247,6 +260,64 @@ for (const a of C.egyebAllvanyok || []) {
   const t = szovegSprite(a.nev, 0.8, { hatter: a.szin || '#777', szin: '#fff', meret: 48 });
   t.position.set((x0 + x1) / 2, mag + 0.8, (y0 + y1) / 2);
   scene.add(t);
+}
+// Galériák (config.js: galeriak) – áttetsző padló kék oszlopokkal, korláttal, lépcsővel
+for (const g of C.galeriak || []) {
+  const mag = Number(g.magassag ?? 3);
+  const kek = new THREE.MeshLambertMaterial({ color: '#2b4fa8' });
+  const padloAnyag = new THREE.MeshLambertMaterial({ color: '#b9c3d6', transparent: true, opacity: 0.45, depthWrite: false });
+  const korlatAnyag = new THREE.LineBasicMaterial({ color: '#2b4fa8' });
+  for (const [x0, y0, x1, y1] of g.reszek || []) {
+    const lap = new THREE.Mesh(KOCKA, padloAnyag);
+    lap.scale.set(x1 - x0, 0.15, y1 - y0);
+    lap.position.set((x0 + x1) / 2, mag, (y0 + y1) / 2);
+    lap.renderOrder = 3;
+    scene.add(lap);
+    // oszlopok a széleken kb. 4 m-enként
+    const nx = Math.max(1, Math.round((x1 - x0) / 4)), ny = Math.max(1, Math.round((y1 - y0) / 4));
+    for (let i = 0; i <= nx; i++) for (let j = 0; j <= ny; j++) {
+      if (i > 0 && i < nx && j > 0 && j < ny) continue;
+      const o = new THREE.Mesh(KOCKA, kek);
+      o.scale.set(0.18, mag, 0.18);
+      o.position.set(x0 + (x1 - x0) * i / nx, mag / 2, y0 + (y1 - y0) * j / ny);
+      scene.add(o);
+    }
+    const korlat = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(x1 - x0, 1.1, y1 - y0)), korlatAnyag);
+    korlat.position.set((x0 + x1) / 2, mag + 0.55, (y0 + y1) / 2);
+    scene.add(korlat);
+  }
+  const l = g.lepcso;
+  if (l) {
+    const menten = l.irany === '+X' || l.irany === '-X';
+    const hossz = menten ? Math.abs(l.x1 - l.x0) : Math.abs(l.y1 - l.y0);
+    const n = Math.max(4, Math.round(mag / 0.19));
+    for (let k = 0; k < n; k++) {
+      const t = (k + 0.5) / n, fok = new THREE.Mesh(KOCKA, kek);
+      const elore = l.irany.startsWith('+') ? t : 1 - t;
+      const cx = menten ? Math.min(l.x0, l.x1) + elore * hossz : (l.x0 + l.x1) / 2;
+      const cy = menten ? (l.y0 + l.y1) / 2 : Math.min(l.y0, l.y1) + elore * hossz;
+      fok.scale.set(menten ? hossz / n : Math.abs(l.x1 - l.x0), 0.05, menten ? Math.abs(l.y1 - l.y0) : hossz / n);
+      fok.position.set(cx, mag * (k + 1) / n, cy);
+      scene.add(fok);
+    }
+    const t = szovegSprite('Lépcső a galériára', 0.5, { hatter: '#2b4fa8', szin: '#fff', meret: 44 });
+    t.position.set((l.x0 + l.x1) / 2, mag + 1.4, (l.y0 + l.y1) / 2);
+    scene.add(t);
+  }
+  if (g.leado) {
+    const d = g.leado, fel = Number(d.szel ?? 2) / 2;
+    const kapu = new THREE.Mesh(new THREE.PlaneGeometry(2 * fel, 1.1),
+      new THREE.MeshBasicMaterial({ color: '#1f6feb', transparent: true, opacity: 0.6, side: THREE.DoubleSide }));
+    kapu.position.set(d.x, mag + 0.6, d.y);
+    kapu.rotation.y = Math.PI / 2;
+    const t = szovegSprite(d.nev || 'Feladó / lerakó', 0.5, { hatter: '#1f6feb', szin: '#fff', meret: 44 });
+    t.position.set(d.x, mag + 1.8, d.y);
+    scene.add(kapu, t);
+  }
+  const cim = szovegSprite(g.nev || 'GALÉRIA', 0.9, { hatter: '#2b4fa8', szin: '#fff', meret: 56 });
+  const [ax0, ay0, ax1, ay1] = g.reszek[0];
+  cim.position.set((ax0 + ax1) / 2, mag + 2.6, (ay0 + ay1) / 2);
+  scene.add(cim);
 }
 // Gépek (config.js: gepek)
 for (const g of C.gepek || []) {

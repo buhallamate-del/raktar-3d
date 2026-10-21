@@ -125,6 +125,9 @@ window.RAKTAR_CONFIG = {
     // Helyszín (2026-10-21): az áruátvételi kapu (sárga gyorskapu) az áruátvételi terület
     // keleti falán; a helye a falon és a szélessége becsült.
     { nev: 'Áruátvételi kapu', x: 20.6, y: 93.8, szel: 3.5, szin: '#e0a800' },
+    // Helyszín (2026-10-21, IMG_3284–3285): sárga kijárati gyorskapu a felső szárny északi
+    // falán, a T4-06 keleti vége és a galéria lépcsője között (helye és szélessége becsült).
+    { nev: 'Kijárat (fedett rész)', x: -20.0, y: -0.4, szel: 2.4, szin: '#e0a800' },
     // A komissiózó lerakó hátsó (északi) falán: bal oldalt a logisztikai iroda, jobbra a
     // mosdó ajtaja (be lehet menni). Az X helyük becsült.
     // (vag: false = csak jelölő ajtó, amelyen nem lehet átmenni.)
@@ -143,6 +146,9 @@ window.RAKTAR_CONFIG = {
     // Helyszín (2026-10-21): a karantén tárhely az áruátvételen, a T1-29-cel szemben.
     // A hossza és a mélysége becsült.
     { nev: 'KARANTÉN', x0: 5.0, y0: 96.4, x1: 18.0, y1: 97.6, magassag: 6.5, szintek: 5, szin: '#8e5a2b' },
+    // Helyszín (IMG_3288): EAR raktár – zárt, OSB-falú rekesz a T4-01 sor északi vége mögött,
+    // az északi falnál (tomor: zárt doboz, nem polc). Mérete becsült.
+    { nev: 'EAR RAKTÁR (elzárt)', x0: -34.4, y0: -0.3, x1: -30.8, y1: 1.9, magassag: 2.5, tomor: true, szin: '#c8a165' },
   ],
   // Gépek (kör alaprajz, ütköznek)
   gepek: [
@@ -152,6 +158,14 @@ window.RAKTAR_CONFIG = {
   ],
   // Helyszíni feltételezések, amelyek nem az Excelből jönnek (pirossal jelennek meg)
   helyszinFeltetelezesek: [
+    { cim: 'A galéria mérete és magassága', x: -8.5, y: 8.7,
+      szoveg: 'A galéria a T2 polcos zóna fölött van (X −16,9…−0,2, Y 0…16 m), a padlója kb. 3 m magasan – mindez a fotókból becsült.' },
+    { cim: 'A galéria lépcsője és a sárga kijárat', x: -19.0, y: 0.6,
+      szoveg: 'A lépcső a T4-06-09 mellett indul, az északi fal mentén kelet felé emelkedik; mellette, a T4-06 vége és a lépcső között a sárga kijárati gyorskapu. Kilépve balra fedett rész (kb. 20 × 6 m). A helyek és méretek becsültek.' },
+    { cim: 'Az áru feladó / lerakó helye a galérián', x: -16.9, y: 4.0,
+      szoveg: 'A lépcső tetején jobbra, majd megint jobbra fordulva: a galéria nyugati szélén, az F-3 széles folyosó fölött (innen emelhetők fel a raklapok). A pontos hely becsült.' },
+    { cim: 'Az EAR raktár mérete', x: -32.6, y: 0.8,
+      szoveg: 'Az EAR raktár (elzárt) a T4-01 sor északi vége mögött, az északi falnál, kb. 3,6 × 2,2 m – becsült.' },
     { cim: 'Az áruátvételi terület mérete', x: 10.3, y: 93.8,
       szoveg: 'Az áruátvétel a T1-29 alatt van, a karantén tárhellyel szemben. Mélységét 8 m-nek (Y 89,8–97,8), a karantén állványt X 5–18 m-nek vettem.' },
     { cim: 'Az áruátvételi kapu helye', x: 20.6, y: 93.8,
@@ -164,6 +178,26 @@ window.RAKTAR_CONFIG = {
   // Az árukiadó fedett udvar a kék kapu előtt: helyszíni becslés kb. 14 × 50 m, a kapura
   // középre igazítva (a pontos helye becsült; null = ne rajzolja)
   arukiado: { x: 20.6, y: -7.7, szel: 14.0, mely: 50.0, nev: 'ÁRUKIADÓ (fedett udvar)' },
+  // További fedett külső részek (ugyanígy: x, y = bal felső sarok)
+  udvarok: [
+    // Helyszín: a sárga kijáraton kilépve balra, a T4 mellett fedett rész (méret becsült)
+    { x: -39.8, y: -6.4, szel: 20.0, mely: 6.0, nev: 'FEDETT RÉSZ' },
+  ],
+  // Galéria (emelet): a padló magassága, a lefedett téglalapok [x0, y0, x1, y1], a lépcső
+  // (alaprajzi téglalap + merre emelkedik: '+X', '-X', '+Y', '-Y') és az áru feladó/lerakó.
+  // A séta egyszintes, ezért a galériára nem lehet felmenni, csak látszik.
+  galeriak: [
+    {
+      // Helyszín (2026-10-21, IMG_3283–3287): galéria a T2 polcos zóna fölött. Minden méret becsült.
+      nev: 'GALÉRIA (a T2 fölött)', magassag: 3.0,
+      reszek: [
+        [-16.9, 1.4, -0.2, 16.0],    // a T2 sorok fölött (az F-3 folyosó széléig)
+        [-14.0, 0.0, -0.2,  1.4],    // északi sáv a lépcső teteje mellett
+      ],
+      lepcso: { x0: -18.5, y0: 0.0, x1: -14.0, y1: 1.3, irany: '+X' },  // az északi fal mentén, kelet felé
+      leado: { x: -16.9, y: 4.0, szel: 2.4, nev: 'Áru feladó / lerakó' }, // a nyugati szélen, az F-3 fölött
+    },
+  ],
   falMagassag: 3.0,
   falVastagsag: 0.2,
   falakUtkoznek: true,       // false: a falakon át lehet sétálni (csak az állványok ütköznek)
