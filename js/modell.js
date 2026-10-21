@@ -225,7 +225,7 @@ export function epitModell(D0, C) {
   const atj = D.kulcsok.atjaro;
   const nyilasok = [
     { nev: 'átjáró', x: atj.x, y: atj.y, fel: Number(C.atjaroSzelesseg ?? 2) / 2 },
-    ...(C.ajtok || []).map(a => ({ nev: a.nev, x: a.x, y: a.y, fel: Number(a.szel ?? 2) / 2 })),
+    ...(C.ajtok || []).filter(a => a.vag !== false).map(a => ({ nev: a.nev, x: a.x, y: a.y, fel: Number(a.szel ?? 2) / 2 })),
   ];
   const osszesFal = [
     ...(C.falak || []),
@@ -268,6 +268,13 @@ export function epitModell(D0, C) {
   if (C.falakUtkoznek !== false) {
     for (const f of falak) utkozok.push(falTeglalap(f));
     for (const f of valaszfalak) utkozok.push(falTeglalap(f));
+  }
+  for (const a of C.egyebAllvanyok || []) {
+    utkozok.push({ x0: Math.min(a.x0, a.x1), y0: Math.min(a.y0, a.y1), x1: Math.max(a.x0, a.x1), y1: Math.max(a.y0, a.y1) });
+  }
+  for (const g of C.gepek || []) {
+    const r = Number(g.r ?? 0.5);
+    utkozok.push({ x0: g.x - r, y0: g.y - r, x1: g.x + r, y1: g.y + r });
   }
   const racs = new UtkozoRacs(utkozok, 2);
 
@@ -512,6 +519,13 @@ function feltetelezesek(D, C, M) {
       }
     }
     lista.push({ cim, szoveg: sz, forras, horgonyok });
+  }
+
+  for (const f of C.helyszinFeltetelezesek || []) {
+    lista.push({
+      cim: f.cim, szoveg: f.szoveg, forras: 'config.js (helyszíni info)',
+      horgonyok: f.x != null ? [{ tipus: 'pont', x: f.x, y: f.y }] : [],
+    });
   }
 
   lista.forEach((t, i) => {

@@ -47,6 +47,7 @@ nap.position.set(-40, 80, 30);
 scene.add(nap);
 
 const KOCKA = new THREE.BoxGeometry(1, 1, 1);
+const FEHER_SZIN = new THREE.Color('#ffffff');
 const _m = new THREE.Matrix4(), _p = new THREE.Vector3(), _q = new THREE.Quaternion(), _s = new THREE.Vector3();
 function dobozMatrix(mesh, i, cx, cy, cz, sx, sy, sz) {
   _p.set(cx, cy, cz); _s.set(sx, sy, sz);
@@ -199,7 +200,7 @@ if (aru) {
 }
 // Ajtók / kapuk kerete (config.js: ajtok)
 for (const a of C.ajtok || []) {
-  const fel = Number(a.szel ?? 2) / 2, mag = 3.2;
+  const fel = Number(a.szel ?? 2) / 2, mag = a.vag === false ? 2.2 : 3.2;
   const anyag = new THREE.MeshLambertMaterial({ color: a.szin || '#1f6feb' });
   const fugg = M.falak.some(([x1, , x2]) => Math.abs(x1 - a.x) < 0.15 && Math.abs(x2 - a.x) < 0.15);
   for (const s of [-1, 1]) {
@@ -212,13 +213,52 @@ for (const a of C.ajtok || []) {
   fent.scale.set(fugg ? 0.25 : 2 * fel + 0.25, 0.25, fugg ? 2 * fel + 0.25 : 0.25);
   fent.position.set(a.x, mag, a.y);
   // áttetsző kék szalagfüggöny
-  const fuggony = new THREE.Mesh(new THREE.PlaneGeometry(2 * fel, mag),
-    new THREE.MeshBasicMaterial({ color: a.szin || '#1f6feb', transparent: true, opacity: 0.25, side: THREE.DoubleSide, depthWrite: false }));
-  fuggony.position.set(a.x, mag / 2, a.y);
+  // vágott nyílásnál áttetsző függöny, csak jelölt ajtónál (vag: false) tömör ajtólap
+  const fuggony = new THREE.Mesh(new THREE.PlaneGeometry(2 * fel, a.vag === false ? 2.1 : mag),
+    new THREE.MeshBasicMaterial({ color: a.szin || '#1f6feb', transparent: true, opacity: a.vag === false ? 0.9 : 0.25, side: THREE.DoubleSide, depthWrite: false }));
+  fuggony.position.set(a.x, a.vag === false ? 1.05 : mag / 2, a.y + (a.vag === false && !fugg ? 0.12 : 0));
   if (fugg) fuggony.rotation.y = Math.PI / 2;
   const t = szovegSprite(a.nev, 0.7, { hatter: a.szin || '#1f6feb', szin: '#fff', meret: 48 });
   t.position.set(a.x, mag + 0.8, a.y);
   scene.add(fent, fuggony, t);
+}
+// Egyéb padlóterületek (config.js: teruletek)
+for (const t of C.teruletek || []) {
+  scene.add(padloTeglalap(t.x, t.y, t.x + t.szel, t.y + t.mely,
+    new THREE.MeshBasicMaterial({ color: t.szin || '#e8e2d0', transparent: true, opacity: 0.8, depthWrite: false }), 0.006));
+  scene.add(padloFelirat(t.nev, t.x + t.szel / 2, t.y + t.mely / 2, Math.min(1.2, t.mely * 0.18), 0, { szin: '#6b5a2e' }));
+}
+// Kód nélküli állványok (config.js: egyebAllvanyok) – tömör blokk szintekkel
+for (const a of C.egyebAllvanyok || []) {
+  const x0 = Math.min(a.x0, a.x1), x1 = Math.max(a.x0, a.x1), y0 = Math.min(a.y0, a.y1), y1 = Math.max(a.y0, a.y1);
+  const mag = Number(a.magassag ?? 4), szint = Math.max(1, Number(a.szintek ?? 3));
+  const szin = new THREE.Color(a.szin || '#777');
+  const keret = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(x1 - x0, mag, y1 - y0)),
+    new THREE.LineBasicMaterial({ color: szin }));
+  keret.position.set((x0 + x1) / 2, mag / 2, (y0 + y1) / 2);
+  scene.add(keret);
+  const polcAnyag = new THREE.MeshLambertMaterial({ color: szin.clone().lerp(FEHER_SZIN, 0.55) });
+  for (let k = 0; k <= szint; k++) {
+    const p = new THREE.Mesh(KOCKA, polcAnyag);
+    p.scale.set(x1 - x0, 0.06, y1 - y0);
+    p.position.set((x0 + x1) / 2, k === 0 ? 0.05 : (k * mag) / szint, (y0 + y1) / 2);
+    scene.add(p);
+  }
+  const t = szovegSprite(a.nev, 0.8, { hatter: a.szin || '#777', szin: '#fff', meret: 48 });
+  t.position.set((x0 + x1) / 2, mag + 0.8, (y0 + y1) / 2);
+  scene.add(t);
+}
+// Gépek (config.js: gepek)
+for (const g of C.gepek || []) {
+  const r = Number(g.r ?? 0.5);
+  const asztal = new THREE.Mesh(new THREE.CylinderGeometry(r, r, 0.12, 32), new THREE.MeshLambertMaterial({ color: '#c0562b' }));
+  asztal.position.set(g.x, 0.06, g.y);
+  const oszlop = new THREE.Mesh(KOCKA, new THREE.MeshLambertMaterial({ color: '#222' }));
+  oszlop.scale.set(0.25, 2.6, 0.25);
+  oszlop.position.set(g.x + r + 0.15, 1.3, g.y);
+  const t = szovegSprite(g.nev, 0.6, { hatter: '#444', szin: '#fff', meret: 48, depthTest: false });
+  t.position.set(g.x, 3.2, g.y);
+  scene.add(asztal, oszlop, t);
 }
 {
   const k = D.kulcsok.kiindulo;
