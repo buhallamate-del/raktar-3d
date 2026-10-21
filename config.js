@@ -244,6 +244,10 @@ window.RAKTAR_CONFIG = {
   setaSebesseg: 1.8,      // m/s
   futasSebesseg: 4.5,     // m/s (Shift)
   testSugar: 0.28,        // a „gyalogos” sugara az ütközéshez
+  testMagassag: 1.8,      // a „gyalogos” magassága (ennél magasabban lévő dolgok alatt átfér)
+  fellepesMagassag: 0.35, // ekkora szintkülönbségre (pl. lépcsőfok) magától fellép
+  ugrasSebesseg: 4.2,     // m/s felfelé (kb. 0,9 m magas ugrás); 0 = nincs ugrás
+  gravitacio: 9.81,       // m/s²
   cimkeMagassag: 1.5,     // a helykód-címke magassága az állvány elején
   egerErzekenyseg: 0.0022,
   erintesErzekenyseg: 0.005,

@@ -72,8 +72,8 @@
     <h2>Irányítás</h2>
     <ul class="sugo">
       <li><b>Felülnézet:</b> húzás = mozgatás, görgő / csípés = nagyítás, jobb gomb / két ujj = forgatás. Kattints egy állványra a részletekért.</li>
-      <li><b>Belső nézet, gépen:</b> kattints a képre, aztán W A S D (vagy nyilak) = séta, egér = nézelődés, Shift = gyorsabban, Esc = egér elengedése, kattintás = a célkereszt alatti hely kiválasztása.</li>
-      <li><b>Belső nézet, telefonon:</b> bal alsó joystick = séta, jobb oldalon húzás = nézelődés, koppintás = hely kiválasztása.</li>
+      <li><b>Belső nézet, gépen:</b> kattints a képre, aztán W A S D (vagy nyilak) = séta, egér = nézelődés, Shift = gyorsabban, Szóköz = ugrás, Esc = egér elengedése, kattintás = a célkereszt alatti hely kiválasztása. A lépcsőn fel lehet menni a galériára.</li>
+      <li><b>Belső nézet, telefonon:</b> bal alsó joystick = séta, jobb oldalon húzás = nézelődés, „Ugrás” gomb = ugrás, koppintás = hely kiválasztása.</li>
       <li><b>V</b> billentyű = nézetváltás. A cím (URL) végére írt <code>#T1-05-03</code> egyből a helyre visz.</li>
     </ul>
   </section>
@@ -82,7 +82,8 @@
 
 <div id="celkereszt" hidden>+</div>
 <div id="joystick" hidden><div id="joyGomb"></div></div>
-<div id="setaSugo" hidden>Kattints a képre a sétához · WASD / nyilak · egér · Shift · Esc</div>
+<button id="ugrasGomb" hidden aria-label="Ugrás">Ugrás</button>
+<div id="setaSugo" hidden>Kattints a képre a sétához · WASD / nyilak · egér · Shift · Szóköz = ugrás · Esc</div>
 <div id="pozicio" hidden></div>
 <div id="betoltes">Raktár betöltése…</div>
 

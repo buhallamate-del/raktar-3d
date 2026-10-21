@@ -9,7 +9,8 @@ Egyetlen statikus oldal (Three.js), nincs build-lépés, GitHub Pages-re közvet
   Minden rekeszen a helykód: az elején a folyosó felé, és a tetején, felülnézetből olvashatóan.
 - **Felülnézet:** húzással mozgatod, görgővel vagy csípéssel nagyítasz, jobb gombbal vagy két ujjal forgatsz.
   Ha egy állványra kattintasz, megjelennek az adatai (zóna, sor, folyosó, X/Y, táv a kiindulóponttól stb.).
-- **Belső nézet (séta):** gépen kattints a képre, aztán W A S D vagy a nyilak, egérrel nézelődsz, Shift = gyorsabban.
+- **Belső nézet (séta):** gépen kattints a képre, aztán W A S D vagy a nyilak, egérrel nézelődsz, Shift = gyorsabban,
+  Szóköz = ugrás (telefonon az „Ugrás” gomb). A lépcsőn fel lehet menni a galériára.
   Telefonon a bal alsó joystickkal sétálsz, a jobb oldalon húzással nézelődsz. Az állványokon és a falakon nem lehet átmenni.
 - **Kereső:** beírsz egy helykódot (pl. `T1-05-03`, `t1 5 3`), és az *Odavisz* gomb vagy az Enter odavisz:
   belső nézetben a hely elé állít, a címke felé fordulva; felülnézetben fölé repül. A *Kijelöl* gomb csak kijelöli.
@@ -153,7 +154,8 @@ A modell feltevéseit a ☰ menü sárga „Modell saját feltételezései” r�
 9e. **Galéria, kijárat, EAR raktár – helyszíni info (2026-10-21, IMG_3283–3288), a `config.js`-ben:**
    - **Galéria a T2 polcos zóna fölött** (`galeriak`): kb. 3 m magasan, X −16,9…−0,2, Y 0…16 m. A lépcső a T4-06-09 mellett
      indul, az északi fal mentén kelet felé emelkedik. A tetején kétszer jobbra fordulva a galéria nyugati szélén, az F-3 fölött
-     van az **áru feladó / lerakó**. A séta egyszintes: a galériára nem lehet felmenni, de a 3D-ben látszik.
+     van az **áru feladó / lerakó**. A lépcsőn fel lehet sétálni a galériára; a szélén korlát van, a T2 alatta
+     a padlószintről továbbra is bejárható.
    - **Sárga kijárati gyorskapu** az északi falon, a T4-06 vége és a lépcső között. Kilépve balra **fedett rész** (`udvarok`).
    - **EAR raktár (elzárt):** zárt rekesz a T4-01 sor északi vége mögött, az északi falnál (`egyebAllvanyok`, `tomor: true`).
    - A gerendacímkék szerint a helykód után a szint betűje áll (pl. T4-06-09-A, -B, -C; az A a padlószint).
