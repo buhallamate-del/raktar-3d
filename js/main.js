@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { MapControls } from 'three/addons/controls/MapControls.js';
 import { epitModell, normalKod, helyElotti, folyosoSzelesseg } from './modell.js';
 import { inditKozos } from './kozos.js';
+import { inditJatek } from './jatek.js';
 
 const C = window.RAKTAR_CONFIG;
 const D = window.RAKTAR_ADATOK;
@@ -847,7 +848,7 @@ let mod = 'felul';
 // z: talpmagasság (lépcső, galéria, ugrás), vz: függőleges sebesség, kz: a kamera simított magassága
 // guggol: guggolva van-e; szemAkt: a simított szemmagasság (guggolásnál lejjebb)
 const seta = { x: D.kulcsok.kiindulo.x, y: D.kulcsok.kiindulo.y, z: 0, vz: 0, kz: 0, yaw: Math.PI, pitch: -0.05, volt: false,
-  guggol: false, szemAkt: null, maszik: false };
+  guggol: false, szemAkt: null, maszik: false, halott: false, kvx: 0, kvy: 0 }; // kvx/kvy: lökés sebessége
 let guggolKapcs = false, maszGombLe = false; // a telefonos gombok állapota
 const SZEM = Number(C.szemmagassag ?? 1.65);
 const SUGAR = Number(C.testSugar ?? 0.28);
@@ -1016,6 +1017,8 @@ addEventListener('keydown', e => {
   lenyomva.add(e.code);
   if (mod === 'seta' && e.code.startsWith('Arrow')) e.preventDefault();
   if (mod === 'seta' && e.code === 'Space') { e.preventDefault(); if (!e.repeat) ugras(); }
+  if (mod === 'seta' && !e.repeat && e.code === 'KeyF') jatek?.lokes();
+  if (mod === 'seta' && !e.repeat && e.code === 'KeyG') jatek?.dobas();
 });
 addEventListener('keyup', e => lenyomva.delete(e.code));
 addEventListener('blur', () => lenyomva.clear());
@@ -1062,8 +1065,8 @@ vaszon.addEventListener('pointerup', pointerVege);
 vaszon.addEventListener('pointercancel', pointerVege);
 document.addEventListener('pointerlockchange', () => {
   $('setaSugo').textContent = document.pointerLockElement === vaszon
-    ? 'WASD / nyilak = séta · egér = nézelődés · Shift = gyorsabban · Szóköz = ugrás · C = guggolás · E = mászás · kattintás = hely kiválasztása · Esc = egér elengedése'
-    : 'Kattints a képre a sétához · WASD / nyilak · egér · Shift · Szóköz = ugrás · C = guggolás · E = mászás · Esc';
+    ? 'WASD / nyilak = séta · egér = nézelődés · Shift = gyorsabban · Szóköz = ugrás · C = guggolás · E = mászás · F = lökés · G = palack · kattintás = hely · Esc = egér elengedése'
+    : 'Kattints a képre a sétához · WASD / nyilak · egér · Shift · Szóköz = ugrás · C = guggolás · E = mászás · F = lökés · G = palack · Esc';
 });
 
 function valaszt(nx, ny) {
@@ -1117,6 +1120,7 @@ const joy = { x: 0, y: 0, id: null };
 let utolsoPozFrissites = 0;
 function setaLeptet(dt, most) {
   if (animacio) return;
+  if (seta.halott) { setaNezet(); return; } // a játékban: amíg újra nem éled
   let elore = 0, oldal = 0, fordul = 0;
   if (lenyomva.has('KeyW') || lenyomva.has('ArrowUp')) elore += 1;
   if (lenyomva.has('KeyS') || lenyomva.has('ArrowDown')) elore -= 1;
@@ -1140,8 +1144,12 @@ function setaLeptet(dt, most) {
   const seb = (lenyomva.has('ShiftLeft') || lenyomva.has('ShiftRight') || Math.hypot(joy.x, joy.y) > 0.97
     ? C.futasSebesseg : C.setaSebesseg) * (seta.guggol ? 0.5 : 1);
   const sy = Math.sin(seta.yaw), cy = Math.cos(seta.yaw);
-  const dx = (-sy * elore + cy * oldal) * seb * dt;
-  const dz = (-cy * elore - sy * oldal) * seb * dt;
+  // lökés: a kapott sebesség hozzáadódik, és gyorsan lecseng
+  const dx = (-sy * elore + cy * oldal) * seb * dt + seta.kvx * dt;
+  const dz = (-cy * elore - sy * oldal) * seb * dt + seta.kvy * dt;
+  const lecseng = Math.exp(-5 * dt);
+  seta.kvx = Math.abs(seta.kvx * lecseng) < 0.05 ? 0 : seta.kvx * lecseng;
+  seta.kvy = Math.abs(seta.kvy * lecseng) < 0.05 ? 0 : seta.kvy * lecseng;
   if (dx || dz) {
     let zLep;
     [seta.x, seta.y, zLep] = M.racs.mozgat(seta.x, seta.y, dx, dz, SUGAR, seta.z, test);
@@ -1158,7 +1166,7 @@ function setaLeptet(dt, most) {
     seta.vz -= Number(C.gravitacio ?? 9.81) * dt;
     seta.z += seta.vz * dt;
     if (seta.vz > 0 && seta.z + test > plafon) { seta.z = plafon - test; seta.vz = 0; }
-    if (seta.z <= talaj) { seta.z = talaj; seta.vz = 0; }
+    if (seta.z <= talaj) { if (seta.vz < -9) jatek?.eses(seta.vz); seta.z = talaj; seta.vz = 0; }
   } else {
     seta.z = talaj;
     seta.vz = 0;
@@ -1353,6 +1361,7 @@ renderer.setAnimationLoop(() => {
   if (mod === 'seta') setaLeptet(dt, most);
   else if (!animacio || controls.enabled) controls.update();
   kozos?.frissit(dt);
+  jatek?.frissit(dt);
   const puls = 0.5 + 0.5 * Math.sin(most / 260);
   for (const p of pulzalok) {
     if (p.anyag) p.anyag.opacity = p.min + (p.max - p.min) * puls;
@@ -1365,8 +1374,8 @@ renderer.setAnimationLoop(() => {
 });
 $('betoltes').hidden = true;
 
-// Közös nézet: a többi látogató pálcikaemberként (config.js: kozos)
-let kozos = null;
+// Közös nézet: a többi látogató pálcikaemberként (config.js: kozos); rá épül a játék (jatek)
+let kozos = null, jatek = null;
 try {
   const k2 = v => Math.round(v * 100) / 100;
   kozos = inditKozos({
@@ -1374,9 +1383,18 @@ try {
     allapot: () => (mod === 'seta'
       ? { x: k2(seta.x), y: k2(seta.y), z: k2(seta.z), yaw: k2(seta.yaw), g: seta.guggol ? 1 : 0, m: 'seta' }
       : { x: k2(controls.target.x), y: k2(controls.target.z), z: 0, yaw: 0, g: 0, m: 'felul' }),
+    extra: () => jatek?.extra() ?? {},
+    esemeny: e => jatek?.esemeny(e),
   });
 } catch (e) {
   console.warn('[közös nézet]', e);
 }
+try {
+  jatek = inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod: () => mod, kiindulo: D.kulcsok.kiindulo });
+  $('lokesGomb').addEventListener('pointerdown', e => { e.preventDefault(); jatek.lokes(); });
+  $('dobasGomb').addEventListener('pointerdown', e => { e.preventDefault(); jatek.dobas(); });
+} catch (e) {
+  console.warn('[játék]', e);
+}
 hashbolNyit();
-window.raktar = { M, scene, camera, controls, seta, kijelol, helyhezMegy, modValt, lep: setaLeptet, ugras, lenyomva }; // hibakereséshez
+window.raktar = { M, scene, camera, controls, seta, kijelol, helyhezMegy, modValt, lep: setaLeptet, ugras, lenyomva, jatek, kozos }; // hibakereséshez

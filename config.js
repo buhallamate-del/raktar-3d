@@ -283,6 +283,16 @@ window.RAKTAR_CONFIG = {
     csatorna: 'raktar3d-nmyk2ri8qnwq',
   },
 
+  // Játék a közös nézetben (a menüben látogatónként ki-be kapcsolható)
+  jatek: {
+    bekapcsolva: true,
+    lokesSebzes: 10,      // HP
+    palackSebzes: 25,     // HP
+    esesSebzes: true,     // kb. 4 m fölötti esés sebez
+    ujraeledesMp: 3,      // halál után ennyi másodperc múlva újraéledés a kiindulóponton
+    palackSebesseg: 14,   // m/s
+  },
+
   // ------------------------------------------------------------------
   // 6) SÉTA ÉS MEGJELENÍTÉS
   // ------------------------------------------------------------------

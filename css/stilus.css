@@ -38,6 +38,7 @@ button:focus-visible, input:focus-visible { outline: 3px solid #8ab4ff; outline-
 #javaslatok li { padding: 6px 10px; cursor: pointer; display: flex; justify-content: space-between; gap: 8px; }
 #javaslatok li:hover, #javaslatok li.aktiv { background: #e8f0fe; }
 #javaslatok li .mellek { color: var(--halvany); font-size: 12px; }
+.kozosJelzo { border: 0; cursor: pointer; }
 .kozosJelzo { padding: 4px 8px; border-radius: 12px; background: #e8f0fe; color: var(--kiemel); font-weight: 600; white-space: nowrap; }
 .jelveny { display: inline-block; min-width: 18px; padding: 0 5px; border-radius: 9px; background: var(--piros);
   color: #fff; font-size: 12px; font-weight: 700; }
@@ -103,6 +104,26 @@ code { background: #eef1f5; padding: 0 4px; border-radius: 4px; }
 #maszGomb { bottom: 160px; }
 #guggolGomb { bottom: 248px; }
 #guggolGomb.aktiv { background: rgba(31, 111, 235, 0.9); }
+#lokesGomb { right: 118px; bottom: 60px; }
+#dobasGomb { right: 118px; bottom: 148px; }
+#pontPanel { top: 64px; right: 12px; width: min(380px, calc(100% - 24px)); max-height: 60vh; padding: 10px 14px; }
+#pontPanel h3 { margin: 0 30px 8px 0; }
+.pontLista { width: 100%; border-collapse: collapse; }
+.pontLista th, .pontLista td { padding: 3px 6px; border-bottom: 1px solid #edf0f4; text-align: left; }
+.pontLista tr.en td { font-weight: 700; background: #e8f0fe; }
+.kicsiCim { font-size: 14px; margin: 12px 0 4px; }
+#hpSav { position: fixed; left: 50%; bottom: 56px; transform: translateX(-50%); width: min(320px, 70vw); height: 22px; z-index: 7;
+  background: rgba(20, 30, 50, 0.7); border: 2px solid #fff; border-radius: 12px; overflow: hidden; pointer-events: none; }
+#hpErtek { height: 100%; width: 100%; transition: width 0.2s; }
+#hpSzoveg { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #fff;
+  font-size: 12px; font-weight: 700; text-shadow: 0 0 3px #000; }
+#sebzesVillanas { position: fixed; inset: 0; z-index: 6; pointer-events: none; transition: opacity 0.25s;
+  background: radial-gradient(ellipse at center, rgba(255, 0, 0, 0) 45%, rgba(220, 0, 0, 0.55) 100%); }
+#halalKep { position: fixed; inset: 0; z-index: 25; display: flex; align-items: center; justify-content: center;
+  background: rgba(60, 0, 0, 0.55); color: #fff; text-align: center; }
+.halalDoboz { padding: 20px 28px; background: rgba(20, 0, 0, 0.6); border-radius: 12px; }
+.halalCim { font-size: 34px; font-weight: 800; margin-bottom: 6px; }
+#halalKep .halvany { color: #f0d0d0; }
 #joyGomb { position: absolute; left: 50%; top: 50%; width: 56px; height: 56px; margin: -28px 0 0 -28px; border-radius: 50%;
   background: rgba(31, 111, 235, 0.85); border: 2px solid #fff; pointer-events: none; }
 #betoltes { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 30;

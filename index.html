@@ -29,7 +29,7 @@
     <button id="gombKijelol" class="masodlagos" title="Csak kijelöli">Kijelöl</button>
     <ul id="javaslatok" hidden></ul>
   </div>
-  <span id="kozosJelzo" class="kozosJelzo" hidden title="Közös nézet">👥</span>
+  <button id="kozosJelzo" class="kozosJelzo" hidden title="Közös nézet – pontlista">👥</button>
   <button id="gombMenu" class="masodlagos" title="Feltételezések, jelmagyarázat, beállítások">☰ <span id="feltSzam" class="jelveny">!</span></button>
 </header>
 
@@ -60,6 +60,10 @@
     <label>Nevem: <input type="text" id="kozosNev" maxlength="24" style="width: 12em"></label>
     <label>Színem: <input type="color" id="kozosSzin"></label>
     <p class="halvany kicsi" id="kozosAllapot"></p>
+    <h3 class="kicsiCim">Játék</h3>
+    <label><input type="checkbox" id="jatekBe"> Játék: lökés, palackdobás, életerő</label>
+    <p class="halvany kicsi">F = lökés (aki előtted áll), G = palack (amerre nézel). Lökés −10, palack −25 HP, a nagy esés is sebez. 0 HP-nál meghalsz, és újraéledsz a kiindulóponton. A pontlista a fejléc 👥 gombján. Akinél ki van kapcsolva, azt nem lehet bántani.</p>
+    <button id="jatekNullaz" class="masodlagos">Pontjaim nullázása</button>
     <p class="halvany kicsi">A neved, a színed és a helyed a modellben egy nyilvános, ingyenes üzenetközvetítőn (HiveMQ) át megy a többiekhez; más adat nem. Aki ismeri a csatorna nevét (config.js), az is láthatja.</p>
   </section>
   <section>
@@ -91,12 +95,23 @@
   <p class="halvany kicsi" id="forrasInfo"></p>
 </aside>
 
+<aside id="pontPanel" hidden>
+  <button class="bezar" id="pontBezar" aria-label="Bezár">×</button>
+  <h3>🏆 Pontlista</h3>
+  <table id="pontLista" class="pontLista"></table>
+  <p class="halvany kicsi">F = lökés · G = palack · telefonon a „Lökés” és „Dobás” gomb. A halálok és ölések ezen a gépen megmaradnak.</p>
+</aside>
+<div id="hpSav" hidden><div id="hpErtek"></div><span id="hpSzoveg"></span></div>
+<div id="sebzesVillanas" hidden></div>
+<div id="halalKep" hidden><div class="halalDoboz"><div class="halalCim">☠ Meghaltál</div><div id="halalSzoveg"></div><div class="halvany">Pillanatokon belül újraéledsz a kiindulóponton…</div></div></div>
 <div id="celkereszt" hidden>+</div>
 <div id="joystick" hidden><div id="joyGomb"></div></div>
 <button id="ugrasGomb" hidden aria-label="Ugrás">Ugrás</button>
 <button id="maszGomb" class="setaGomb" hidden aria-label="Mászás (nyomva tartva)">Mászás</button>
 <button id="guggolGomb" class="setaGomb" hidden aria-label="Guggolás be/ki">Guggolás</button>
-<div id="setaSugo" hidden>Kattints a képre a sétához · WASD / nyilak · egér · Shift · Szóköz = ugrás · C = guggolás · E = mászás · Esc</div>
+<button id="lokesGomb" class="setaGomb" hidden aria-label="Lökés">Lökés</button>
+<button id="dobasGomb" class="setaGomb" hidden aria-label="Palack dobása">Dobás</button>
+<div id="setaSugo" hidden>Kattints a képre a sétához · WASD / nyilak · egér · Shift · Szóköz = ugrás · C = guggolás · E = mászás · F = lökés · G = palack · Esc</div>
 <div id="pozicio" hidden></div>
 <div id="betoltes">Raktár betöltése…</div>
 
