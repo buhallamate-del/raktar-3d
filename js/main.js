@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { MapControls } from 'three/addons/controls/MapControls.js';
 import { epitModell, normalKod, helyElotti, folyosoSzelesseg } from './modell.js';
+import { inditKozos } from './kozos.js';
 
 const C = window.RAKTAR_CONFIG;
 const D = window.RAKTAR_ADATOK;
@@ -272,6 +273,36 @@ for (const a of C.egyebAllvanyok || []) {
     const t = szovegSprite(a.nev, 0.8, { hatter: a.szin || '#777', szin: '#fff', meret: 48 });
     t.position.set((x0 + x1) / 2, mag + 0.8, (y0 + y1) / 2);
     scene.add(t);
+  }
+}
+// Kerítések (config.js: keritesek): oszlopok, korlát és áttetsző háló
+{
+  const oszlopAnyag = new THREE.MeshLambertMaterial({ color: '#6b7684' });
+  const haloAnyag = new THREE.MeshBasicMaterial({ color: '#8d99a8', transparent: true, opacity: 0.3, side: THREE.DoubleSide, depthWrite: false });
+  for (const [x1, y1, x2, y2] of C.keritesek || []) {
+    const hossz = Math.hypot(x2 - x1, y2 - y1), n = Math.max(1, Math.round(hossz / 2.5));
+    for (let i = 0; i <= n; i++) {
+      const o = new THREE.Mesh(KOCKA, oszlopAnyag);
+      o.scale.set(0.08, 2.2, 0.08);
+      o.position.set(x1 + (x2 - x1) * i / n, 1.1, y1 + (y2 - y1) * i / n);
+      scene.add(o);
+    }
+    const halo = new THREE.Mesh(new THREE.PlaneGeometry(hossz, 2.1), haloAnyag);
+    halo.position.set((x1 + x2) / 2, 1.1, (y1 + y2) / 2);
+    halo.rotation.y = -Math.atan2(y2 - y1, x2 - x1);
+    scene.add(halo);
+  }
+}
+// Tereptárgyak (config.js: tereptargyak)
+for (const t of C.tereptargyak || []) {
+  const d = new THREE.Mesh(KOCKA, new THREE.MeshLambertMaterial({ color: t.szin || '#888' }));
+  d.scale.set(t.szel, t.mag, t.mely);
+  d.position.set(t.x, t.mag / 2, t.y);
+  scene.add(d);
+  if (t.felirat && t.nev) {
+    const f = szovegSprite(t.nev, 0.45, { hatter: '#444', szin: '#fff', meret: 44 });
+    f.position.set(t.x, t.mag + 0.6, t.y);
+    scene.add(f);
   }
 }
 // Galériák (config.js: galeriak) – áttetsző padló kék oszlopokkal, korláttal, lépcsővel
@@ -1321,6 +1352,7 @@ renderer.setAnimationLoop(() => {
   animacioFrissit(most);
   if (mod === 'seta') setaLeptet(dt, most);
   else if (!animacio || controls.enabled) controls.update();
+  kozos?.frissit(dt);
   const puls = 0.5 + 0.5 * Math.sin(most / 260);
   for (const p of pulzalok) {
     if (p.anyag) p.anyag.opacity = p.min + (p.max - p.min) * puls;
@@ -1332,5 +1364,19 @@ renderer.setAnimationLoop(() => {
   renderer.render(scene, camera);
 });
 $('betoltes').hidden = true;
+
+// Közös nézet: a többi látogató pálcikaemberként (config.js: kozos)
+let kozos = null;
+try {
+  const k2 = v => Math.round(v * 100) / 100;
+  kozos = inditKozos({
+    C, scene, szovegSprite, uzenet,
+    allapot: () => (mod === 'seta'
+      ? { x: k2(seta.x), y: k2(seta.y), z: k2(seta.z), yaw: k2(seta.yaw), g: seta.guggol ? 1 : 0, m: 'seta' }
+      : { x: k2(controls.target.x), y: k2(controls.target.z), z: 0, yaw: 0, g: 0, m: 'felul' }),
+  });
+} catch (e) {
+  console.warn('[közös nézet]', e);
+}
 hashbolNyit();
 window.raktar = { M, scene, camera, controls, seta, kijelol, helyhezMegy, modValt, lep: setaLeptet, ugras, lenyomva }; // hibakereséshez

@@ -329,6 +329,12 @@ export function epitModell(D0, C) {
       z0: Number(a.alsoMagassag ?? 0), z1: Number(a.magassag ?? 4), allvany: !a.tomor });
   }
   for (const g of C.galeriak || []) utkozok.push(...galeriaUtkozok(g));
+  for (const [x1, y1, x2, y2] of C.keritesek || []) {
+    utkozok.push({ ...falTeglalap([x1, y1, x2, y2]), z0: 0, z1: 2.2, fal: false });
+  }
+  for (const t of C.tereptargyak || []) {
+    utkozok.push({ x0: t.x - t.szel / 2, x1: t.x + t.szel / 2, y0: t.y - t.mely / 2, y1: t.y + t.mely / 2, z0: 0, z1: Number(t.mag ?? 1) });
+  }
   if (C.sorokAlattAtbujas !== false) {
     for (const r of rekeszek) {
       const p = Math.min(0.08, r.w * 0.14);

@@ -29,6 +29,7 @@
     <button id="gombKijelol" class="masodlagos" title="Csak kijelöli">Kijelöl</button>
     <ul id="javaslatok" hidden></ul>
   </div>
+  <span id="kozosJelzo" class="kozosJelzo" hidden title="Közös nézet">👥</span>
   <button id="gombMenu" class="masodlagos" title="Feltételezések, jelmagyarázat, beállítások">☰ <span id="feltSzam" class="jelveny">!</span></button>
 </header>
 
@@ -50,6 +51,16 @@
     <h2 class="borostyan">Modell saját feltételezései</h2>
     <p class="halvany">Amit a táblázat nem ad meg, és a modell becsül (részletek a README-ben; a config.js-ben átírható).</p>
     <ul id="modellFeltLista" class="feltLista modell"></ul>
+  </section>
+  <section>
+    <h2>Közös nézet</h2>
+    <p class="halvany">Aki egyszerre nézi az oldalt, az pálcikaemberként látja a többieket (felülnézetből nézőket halványan).</p>
+    <label><input type="checkbox" id="kozosBe"> Közös nézet bekapcsolva</label>
+    <label><input type="checkbox" id="kozosLathato"> Mások is lássanak engem</label>
+    <label>Nevem: <input type="text" id="kozosNev" maxlength="24" style="width: 12em"></label>
+    <label>Színem: <input type="color" id="kozosSzin"></label>
+    <p class="halvany kicsi" id="kozosAllapot"></p>
+    <p class="halvany kicsi">A neved, a színed és a helyed a modellben egy nyilvános, ingyenes üzenetközvetítőn (HiveMQ) át megy a többiekhez; más adat nem. Aki ismeri a csatorna nevét (config.js), az is láthatja.</p>
   </section>
   <section>
     <h2>Jelmagyarázat</h2>

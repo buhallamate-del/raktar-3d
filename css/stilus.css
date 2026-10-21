@@ -38,6 +38,7 @@ button:focus-visible, input:focus-visible { outline: 3px solid #8ab4ff; outline-
 #javaslatok li { padding: 6px 10px; cursor: pointer; display: flex; justify-content: space-between; gap: 8px; }
 #javaslatok li:hover, #javaslatok li.aktiv { background: #e8f0fe; }
 #javaslatok li .mellek { color: var(--halvany); font-size: 12px; }
+.kozosJelzo { padding: 4px 8px; border-radius: 12px; background: #e8f0fe; color: var(--kiemel); font-weight: 600; white-space: nowrap; }
 .jelveny { display: inline-block; min-width: 18px; padding: 0 5px; border-radius: 9px; background: var(--piros);
   color: #fff; font-size: 12px; font-weight: 700; }
 

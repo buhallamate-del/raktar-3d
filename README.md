@@ -25,6 +25,17 @@ Egyetlen statikus oldal (Three.js), nincs build-lépés, GitHub Pages-re közvet
   és lebegő „⚠ FELTÉTELEZÉS #n” tábla látszik (falon és állványon át is). A ☰ menüben megvan az összes, a táblázatbeli
   forrással (lap és cella). Ha egy tételre kattintasz, odavisz. Ha kiválasztott hely érintett, az infópanel is figyelmeztet.
 
+## Közös nézet (több látogató)
+
+Aki egyszerre nézi az oldalt, az **pálcikaemberként** látja a többieket, felettük a nevükkel. A felülnézetből nézőket
+halványan, a nézett pont fölött mutatja. A fejlécben a 👥 szám mutatja, hányan vagytok bent. A ☰ menü „Közös nézet”
+részében beállíthatod a neved és a színed, kikapcsolhatod, hogy mások lássanak, vagy az egészet kikapcsolhatod.
+
+A pozíciók egy **nyilvános, ingyenes MQTT üzenetközvetítőn** (HiveMQ) mennek át. Csak a név, a szín és a hely kerül át,
+más adat nem. A csatorna neve a `config.js`-ben (`kozos.csatorna`) véletlenszerű; aki ismeri, látja a pozíciókat.
+Ha új nevet adsz, a régi linkkel nézők nem látják az újakat. Megbízhatóbb, zárt működéshez később saját szerverre
+(pl. Firebase vagy saját MQTT) cserélhető. Teszteléshez: `?broker=ws://...&csatorna=...` a cím végén.
+
 ## Fájlok
 
 | Fájl | Mire való |
@@ -35,7 +46,9 @@ Egyetlen statikus oldal (Three.js), nincs build-lépés, GitHub Pages-re közvet
 | `tools/xlsx_to_adatok.py` | ez generálja a `data/adatok.js`-t az Excelből |
 | `js/modell.js` | geometria: irány, mélység, ütközés, a feltételezések helye |
 | `js/main.js` | 3D megjelenítés, séta, kereső, felület |
+| `js/kozos.js` | közös nézet: a többi látogató pálcikaemberként (MQTT) |
 | `vendor/three/` | Three.js r170 helyi másolata (MIT licenc), így CDN nélkül is működik |
+| `vendor/mqtt/` | MQTT.js 5.10.1 helyi másolata (MIT licenc) a közös nézethez |
 
 ## A konfiguráció átírása (`config.js`)
 
@@ -173,6 +186,10 @@ A modell feltevéseit a ☰ menü sárga „Modell saját feltételezései” r�
    (nincs köztük oszlop), utána 3 tárhelyenként van oszlop (5–7., 8–10., 11–13., …). A `config.js` `oszlopKiosztas`
    részében állítható (mely zónák, az első rekeszek mérete, utána hány hely). Ha egy hely hiányzik (pl. a 16–17. sorban
    az 1–2.), a rekesz ott kettéválik. A T1 fali sorai (31–33) és a T2/T3 most is helyenként vannak osztva.
+9g. **Az árukiadó udvar – helyszíni info (IMG_3294–3298):** körbe van kerítve (`keritesek`). A déli végén, a bálázónál
+   fal van, onnan nem lehet átmenni az áruátvétel felé (`falak`). A T1 keleti falán, a válaszfal közelében egy nem működő
+   szekcionált kapu van (zárva, `ajtok`, `vag: false`). Tereptárgyak (`tereptargyak`): bálázó, raklapok, konténerek,
+   dohányzórész székekkel. A helyek becsültek.
 10. **A 10. és 11. sor közötti válaszfal:** a két sor hátoldala között fut, Y = 36,88-on, X = 0-tól 16,2-ig, vagyis az
     S oszlop (keresztfolyosó) előtt véget ér. A táblázat feltételezését így modelleztem.
 11. **Jelöletlen helyek:** a 27 „(nincs kód)” hely ideiglenes kódot kapott: `T4-ALSO-01…24` (jelöletlen alsó sor),
