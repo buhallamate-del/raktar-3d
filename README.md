@@ -5,7 +5,7 @@ Egyetlen statikus oldal (Three.js), nincs build-lépés, GitHub Pages-re közvet
 
 **Mit tud:**
 
-- Mind a 960 tárhely állványként jelenik meg, zónánként más színnel (T1 kék, T2 zöld, T3 narancs, T4 lila).
+- Mind a 976 tárhely állványként jelenik meg, zónánként más színnel (T1 kék, T2 zöld, T3 narancs, T4 lila).
   Minden rekeszen a helykód: az elején a folyosó felé, és a tetején, felülnézetből olvashatóan.
 - **Felülnézet:** húzással mozgatod, görgővel vagy csípéssel nagyítasz, jobb gombbal vagy két ujjal forgatsz.
   Ha egy állványra kattintasz, megjelennek az adatai (zóna, sor, folyosó, X/Y, táv a kiindulóponttól stb.).
@@ -100,7 +100,7 @@ A modell feltevéseit a ☰ menü sárga „Modell saját feltételezései” r�
 5. **Folyosószélesség:** ahol a táblázat ad értéket (F-4 0,8; F-5 0,9; F-6 1,4; F-7 2,2; 29. sor alatti folyosó 2,6 m),
    azt használom. A T1-F0 (3,4 m), a T1-K (3,2 m) és az F-SÁV (2,6 m) szélességét a Paraméterek lap megjegyzéseiből számoltam.
    A többi folyosó az alapértelmezett **2,6 m**.
-6. **Állványmagasság és szintszám:** a táblázatban nincs, ezek becslések. T1: 5,0 m és 4 szint, T2 (polc): 2,2 m és 5 szint,
+6. **Állványmagasság és szintszám:** a táblázatban nincs, ezek becslések. T1: 6,5 m és 5 szint (helyszíni fotó alapján: padló + 4 gerendaszint), T2 (polc): 2,2 m és 5 szint,
    T3: 2,5 m és 4 szint, T4: 4,0 m és 3 szint.
 7. **Falak:** a táblázat csak a komissiózó bal falát (X = 0) és a T4 alsó falát (Y = 7,8) adja meg. A többi fal helyét az
    állványok szélei alapján becsültem: felső szárny X −39,8…0 és Y −12,6…7,8 (az eltolás előtt, lásd lent),
@@ -122,6 +122,24 @@ A modell feltevéseit a ☰ menü sárga „Modell saját feltételezései” r�
 
    A `config.js`-ben a `felsoSzarnyEltolasY` ezért 0. Ha egyszer újra el kellene tolni a szárnyat, ott beállítható,
    és a távolságokat a modell is újraszámolja.
+9b. **T1-03 sor, kék kapu, komissiózó bejárata – helyszíni info (2026-10-21):**
+   - A T1-F0 fejfolyosó másik oldalán is áll egy állványsor, a **T1-03**. Az Excelbe 16 helyként vettem fel, a T1-04-gyel
+     szemben, ugyanolyan számozással (X ugyanaz, Y = 15,0, a 04. sor tükörképe). A helyszám és a számozás FELTÉTELEZÉS.
+     A „Rajzon” oszlopban „nincs a rajzon (helyszíni info)” áll. A „Táv” a 04. sor logikájával számolt érték.
+   - A T1-F0 keleti vége a **kék szalagfüggönyös kapu** az árukiadó fedett udvarra (config.js: `ajtok`, `arukiado`;
+     a kapu szélessége és az udvar mérete becsült).
+   - A **komissiózó lerakó terület** a T1-03 fölött van, a bejárata a T1-03 keleti vége és a T1 jobb fala között,
+     a kék kapu mellett. Emiatt a komissiózó nem teljes szélességben nyílik a T1-F0-ra. Ez FELTÉTELEZÉS a pontos
+     helyre (a távolságokat lásd lent).
+9c. **Kiindulópont és távolságok – helyszíni info (2026-10-21):** a kiindulópont a **komissiózó lerakó terület közepe**.
+   A terület méretét X 0–20,6 m, Y 0–14,4 m-nek vettem (FELTÉTELEZÉS), így a kiindulópont (10,3; 7,2). A T1-03 sor miatt
+   a komissiózóból a keleti bejáraton át, a keresztfolyosó vonalában (X = 17,8) lehet kilépni a T1-F0-ra; a felső szárnyba
+   ezután a T1-F0-n nyugatra, az átjárón át vezet az út. Ezért az Excelben újraszámoltam a „Táv a kiindulóponttól” oszlopot
+   (a lap eddigi képletével, amely mind a 976 helyen pontosan visszaadta a régi értékeket):
+   - Folyosók lap, „Kapu → kiindulópont”: T1 19,21 → **17,6 m**, FELSŐ 17,59 → **35,4 m**;
+   - a T1-F0 „Komissiózóból közvetlenül” értéke „nem” lett, a 03. és 04. sor is a T1 kapun át számol;
+   - a változás helyenként −1,6 … +17,8 m, átlagosan +8,8 m (a felső szárny lett messzebb).
+   Az árukiadó fedett udvar kb. 14 × 50 m, a kék kapura középre igazítva; a pontos helye becsült.
 10. **A 10. és 11. sor közötti válaszfal:** a két sor hátoldala között fut, Y = 36,88-on, X = 0-tól 16,2-ig, vagyis az
     S oszlop (keresztfolyosó) előtt véget ér. A táblázat feltételezését így modelleztem.
 11. **Jelöletlen helyek:** a 27 „(nincs kód)” hely ideiglenes kódot kapott: `T4-ALSO-01…24` (jelöletlen alsó sor),

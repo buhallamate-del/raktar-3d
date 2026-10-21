@@ -36,7 +36,9 @@ window.RAKTAR_CONFIG = {
   // Zónánkénti felülírás (magasság, szintek, szín). A zóna neve a Tárhelyek
   // lap „Zóna” oszlopa; a „T1 fali” külön is megadható, különben a T1 érvényes.
   zonak: {
-    'T1': { szin: '#2f6fdb', nev: 'T1' },
+    // T1: helyszíni fotó (2026-10-21, T1-04 sor) alapján becsülve: padló + 4 gerendaszint,
+    // a legfelső raklapok kb. 6–7 m magasan. Pontos méréssel érdemes javítani.
+    'T1': { szin: '#2f6fdb', nev: 'T1', allvanyMagassag: 6.5, szintekSzama: 5 },
     'T1 fali': { szin: '#1f4fa8', nev: 'T1 fali' },
     'T2': { szin: '#2ea44f', nev: 'T2', allvanyMagassag: 2.2, szintekSzama: 5 },
     'T3': { szin: '#e8891c', nev: 'T3 (temperált)', allvanyMagassag: 2.5, szintekSzama: 4 },
@@ -72,7 +74,8 @@ window.RAKTAR_CONFIG = {
   // Ellenőrzött feltételezések: a kulcs a táblázat cellája (a ☰ menüben a „Forrás”).
   // Ezek nem pirossal, hanem zölddel, „ellenőrizve” jelöléssel látszanak.
   ellenorizve: {
-    'Folyosók!A59': 'Helyszínen pontosítva: egy átjáró van, a T1-04 mellett.',
+    'Folyosók!A60': 'Helyszínen pontosítva: egy átjáró van, a T1-04 mellett.',
+    'Folyosók!A64': 'Helyszínen pontosítva: a T1-03 ugyanúgy számozott, mint a T1-04.',
   },
 
   // ------------------------------------------------------------------
@@ -82,12 +85,10 @@ window.RAKTAR_CONFIG = {
   // (origó: a komissiózó bal felső sarka, X jobbra, Y lefelé nő).
   falak: [
     [  0.0,   0.0,   0.0,  89.8],   // komissiózó + T1 bal fala (X = 0)
-    // Komissiózó
-    [  0.0,   0.0,  16.19,  0.0],   // felső fal (becsült)
-    [ 16.19,  0.0,  16.19, 15.6],   // jobb fal (becsült; a kijárat X-e a fal közepe)
-    [ 16.19, 15.6,  20.6,  15.6],   // T1 felső fal a keresztfolyosó fölött (becsült)
-    // T1 csarnok
-    [ 20.6,  15.6,  20.6,  89.8],   // jobb fal a fali állványok mögött (becsült)
+    // Komissiózó (lerakó terület) – a T1-03 sor fölött, a jobb fala a T1 jobb falával egy vonalban
+    [  0.0,   0.0,  20.6,   0.0],   // felső fal (becsült)
+    // T1 csarnok + komissiózó jobb fala; a kék kapu nyílását az ajtok lista vágja bele
+    [ 20.6,   0.0,  20.6,  89.8],   // jobb fal a fali állványok mögött (becsült)
     [  0.0,  89.8,  20.6,  89.8],   // alsó fal: 29. sor alatti folyosó széle
   ],
   // A felső szárny (T2, T3, T4) falai az Excel koordinátáiban; a felsoSzarnyEltolasY-nal
@@ -106,13 +107,24 @@ window.RAKTAR_CONFIG = {
   // Az átjáró (Paraméterek lap: „Átjáró a felső szárnyba X/Y”) helyén a falba
   // automatikusan ekkora nyílás kerül:
   atjaroSzelesseg: 2.0,
+  // További ajtók/kapuk: a falba nyílást vágnak, és kerettel jelennek meg.
+  ajtok: [
+    // Helyszín (2026-10-21): a T1-F0 keleti vége a kék szalagfüggönyös kapu az árukiadó felé.
+    // A szélesség a fotó alapján becsült.
+    { nev: 'Kék kapu – árukiadó', x: 20.6, y: 17.3, szel: 3.0, szin: '#1f6feb' },
+  ],
+  // Az árukiadó fedett udvar a kék kapu előtt: helyszíni becslés kb. 14 × 50 m, a kapura
+  // középre igazítva (a pontos helye becsült; null = ne rajzolja)
+  arukiado: { x: 20.6, y: -7.7, szel: 14.0, mely: 50.0, nev: 'ÁRUKIADÓ (fedett udvar)' },
   falMagassag: 3.0,
   falVastagsag: 0.2,
   falakUtkoznek: true,       // false: a falakon át lehet sétálni (csak az állványok ütköznek)
 
   // Komissiózó terület a padlón (téglalap: x, y, szélesség, mélység)
-  komissiozo: { x: 0, y: 0, szel: 16.19, mely: 7.8 },
-  komissiozoEloter: { x: 0, y: 7.8, szel: 16.19, mely: 7.8 },
+  // (a T1-03 sor hátoldala 14,4 m-en van; a bejárat a 16,2–20,6 m sávban a T1-F0 felé)
+  komissiozo: { x: 0, y: 0, szel: 20.6, mely: 7.8 },
+  komissiozoEloter: { x: 0, y: 7.8, szel: 20.6, mely: 6.6 },
+  komissiozoBejarat: { x: 16.2, y: 14.4, szel: 4.4, mely: 1.3 },
 
   // ------------------------------------------------------------------
   // 5) SÉTA ÉS MEGJELENÍTÉS
