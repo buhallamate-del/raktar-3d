@@ -1,5 +1,5 @@
 // Vad kutyák (config.js: kutyak): aki a raktáron kívülre megy (udvar, fedett részek), azt egy falka
-// kergetni kezdi a futás sebességével; ha utolérik, harapásonként sebeznek. Ha visszamegy a raktárba,
+// kergetni kezdi (gyorsabban, mint ahogy futni lehet); ha utolérik, harapásonként sebeznek. Ha visszamegy a raktárba,
 // a kutyák a küszöbig jönnek, aztán elkullognak. A bázisok környéke biztonságos.
 // Mindenki a saját falkáját számolja; a helyüket a pozíció mellett küldi ({kd: 'x,y,yaw;…'}),
 // így a többiek is látják, ki elől menekül.
