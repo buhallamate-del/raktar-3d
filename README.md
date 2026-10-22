@@ -76,7 +76,7 @@ A közös nézetben játszani is lehet (a ☰ menü „Játék” kapcsolójáva
   távcső (4× nagyítás, távcsővel szinte pontos). Q = váltás AK / puska / palack. Beállítás: `config.js` → `puska`, `puskaLadak`.
 - **Gránát:** a fegyverládák 2-2 gránátot adnak (legfeljebb 4). T = dobás (telefonon „Gránát”); pattog, 2,5 mp múlva
   robban, 5 m-en belül a távolsággal csökkenő sebzés (középen 100 HP), a dobót is sebzi. Beállítás: `config.js` → `granat`.
-- **Civilek:** két raktáros békát húz a folyosókon (mint a targoncák, mindenkinél ugyanott). A béka rakománya a sor teljes
+- **Civilek:** két raktáros békát húz a folyosókon (mint a targoncák, mindenkinél ugyanott); a rakományon „ELFÉJSZ?” felirat. A béka rakománya a sor teljes
   szélességét elállja – kikerülni nem lehet, de fel lehet ugrani rá, és vele lehet utazni. Útban állót maga előtt tol.
   Beállítás: `config.js` → `civilek`.
 - **Vad kutyák:** aki a raktáron kívülre megy (árukiadó udvar, fedett rakodó, fedett rész), azt 1,5 mp múlva egy

@@ -28,6 +28,20 @@ function raktarosModell(n, szovegSprite) {
   return g;
 }
 
+// felirat a rakomány oldalára (fehér alapon fekete betűk, mint egy ráragasztott lap)
+let feliratTex = null;
+function rakomanyFelirat() {
+  if (feliratTex) return feliratTex;
+  const cv = document.createElement('canvas'); cv.width = 512; cv.height = 160;
+  const x = cv.getContext('2d');
+  x.fillStyle = '#f7f4ec'; x.fillRect(0, 0, 512, 160);
+  x.strokeStyle = '#1d2430'; x.lineWidth = 8; x.strokeRect(6, 6, 500, 148);
+  x.fillStyle = '#1d2430'; x.font = 'bold 96px system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif';
+  x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('ELFÉJSZ?', 256, 86);
+  feliratTex = new THREE.CanvasTexture(cv); feliratTex.colorSpace = THREE.SRGBColorSpace;
+  return feliratTex;
+}
+
 // béka (kézi raklapemelő) raklappal és rakománnyal; a rakomány szélessége a folyosóhoz igazodik
 function bekaModell(n) {
   const g = new THREE.Group();
@@ -43,7 +57,14 @@ function bekaModell(n) {
   rakomany.position.set(0, 0.465, 0.05); g.add(rakomany);
   const folia = new THREE.Mesh(new THREE.BoxGeometry(1, 0.46, 1.16), new THREE.MeshLambertMaterial({ color: '#dfe8ee', transparent: true, opacity: 0.25 }));
   folia.position.copy(rakomany.position); g.add(folia);
-  g.userData = { raklap, rakomany, folia };
+  // „ELFÉJSZ?” felirat a rakomány két oldalán és a hátulján (a szélességhez igazítva frissítjük)
+  const feliratAnyag = new THREE.MeshLambertMaterial({ map: rakomanyFelirat(), emissive: '#ffffff', emissiveMap: rakomanyFelirat(), emissiveIntensity: 0.15 });
+  const lap = () => { const m = new THREE.Mesh(new THREE.PlaneGeometry(1.0, 0.31), feliratAnyag); m.position.y = 0.465; g.add(m); return m; };
+  const feliratok = { bal: lap(), jobb: lap(), hat: lap() };
+  feliratok.bal.rotation.y = -Math.PI / 2; feliratok.jobb.rotation.y = Math.PI / 2;
+  feliratok.bal.position.z = feliratok.jobb.position.z = 0.05;
+  feliratok.hat.position.z = 0.05 + 0.585;
+  g.userData = { raklap, rakomany, folia, feliratok };
   return g;
 }
 
@@ -113,6 +134,9 @@ export function inditCivilek({ C, M, scene, szovegSprite, seta, getMod, targonca
       cv.beka.position.set(bx, 0, by); cv.beka.rotation.y = cv.irany;
       const ud = cv.beka.userData;
       for (const m of [ud.raklap, ud.rakomany, ud.folia]) m.scale.x = cv.w;
+      ud.feliratok.bal.position.x = -cv.w / 2 - 0.012;
+      ud.feliratok.jobb.position.x = cv.w / 2 + 0.012;
+      ud.feliratok.hat.scale.setScalar(Math.min(1, (cv.w - 0.1) / 1.0));
       // séta: lábak lengenek (rakodáskor áll)
       const e = cv.ember.userData;
       if (!l.all) e.fazis += dt * seb * 4.2;
