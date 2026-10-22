@@ -106,6 +106,11 @@ code { background: #eef1f5; padding: 0 4px; border-radius: 4px; }
 #guggolGomb.aktiv { background: rgba(31, 111, 235, 0.9); }
 #lokesGomb { right: 118px; bottom: 60px; }
 #dobasGomb { right: 118px; bottom: 148px; }
+#lampaGomb { right: 30px; bottom: 336px; }
+#napszak { position: fixed; top: 64px; left: 50%; transform: translateX(-50%); z-index: 7; pointer-events: none;
+  background: rgba(255, 248, 220, 0.9); color: #5a4300; padding: 3px 10px; border-radius: 10px; font-size: 12px; font-weight: 700; }
+#napszak.ejjel { background: rgba(10, 16, 40, 0.85); color: #cfe0ff; }
+@media (max-width: 640px) { #napszak { top: 104px; } }
 #lovesGomb { right: 118px; bottom: 236px; background: rgba(160, 20, 20, 0.8); }
 #pontPanel { top: 64px; right: 12px; width: min(380px, calc(100% - 24px)); max-height: 60vh; padding: 10px 14px; }
 #pontPanel h3 { margin: 0 30px 8px 0; }

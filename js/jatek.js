@@ -183,6 +183,7 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
   kezbenAk.visible = false;
   camera.add(kezbenAk);
   const torkolat = new THREE.Mesh(new THREE.SphereGeometry(0.035, 8, 6), new THREE.MeshBasicMaterial({ color: '#ffd84d' }));
+  torkolat.material.userData.vilagit = true;
   torkolat.position.set(0, 0.02, -0.7); torkolat.visible = false; kezbenAk.add(torkolat);
   const ladak = (C.fegyverLadak || []).map((c, idx) => {
     const g = new THREE.Group();
@@ -448,7 +449,7 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
   }
 
   return {
-    frissit, lokes, dobas, eses, esemeny, utes, csomagok, ujratolt, valt, fegyverKezben,
+    frissit, lokes, dobas, eses, esemeny, utes, csomagok, ujratolt, valt, fegyverKezben, jatekBe: () => be,
     lovesTeszt: (le) => { lovesLe = le; }, akAllapot: () => ak,
     extra: () => (be ? { j: 1, h: Math.round(hp), d: pont.d, k: pont.k, hal: halott ? 1 : 0, f: ak && fegyverValaszt === 'ak' ? 1 : 0 } : { j: 0 }),
   };

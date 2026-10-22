@@ -298,6 +298,9 @@ window.RAKTAR_CONFIG = {
   fegyverLadak: [
     { nev: 'Galéria', x: -8.5, y: 8.0, z: 3.0, ujraMp: 45 },
   ],
+  // Éjszaka a játékban: a gép órája szerint nappalMp világos, ejjelMp sötét váltakozik (mindenkinél
+  // egyszerre); csak belső nézetben. Zseblámpa: L (éjszaka magától bekapcsol).
+  ejszaka: { nappalMp: 180, ejjelMp: 180, atmenetMp: 4 },
   // Életerőcsomagok (a játékban): rámész, és +hp életerő (legfeljebb 100); utána ujraMp-ig nincs a helyén,
   // mindenkinél. x, y: a táblázat koordinátáiban.
   eletcsomagok: [
