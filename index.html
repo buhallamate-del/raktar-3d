@@ -64,6 +64,10 @@
     <label><input type="checkbox" id="jatekBe"> Játék: lökés, palackdobás, életerő</label>
     <p class="halvany kicsi">Éjszaka: 3 percenként 3 percig sötét van (mindenkinél egyszerre, csak belső nézetben); a zseblámpa magától bekapcsol, L = ki/be. AK: a galérián, a fegyverládán vehető fel; bal egérgomb (nyomva) = lövés, R = újratöltés, Q = váltás AK/palack; találat −12 HP; halálkor elveszik. F = lökés (aki előtted áll), G = palack (amerre nézel). Lökés −10, palack −25 HP, a nagy esés is sebez. 0 HP-nál meghalsz, és újraéledsz a kiindulóponton. A pontlista a fejléc 👥 gombján. Akinél ki van kapcsolva, azt nem lehet bántani.</p>
     <button id="jatekNullaz" class="masodlagos">Pontjaim nullázása</button>
+    <h3 class="kicsiCim">Zászlófoglalás</h3>
+    <label>Csapatom: <select id="ctfCsapat"></select></label>
+    <p class="halvany kicsi">Két csapat: a piros bázis az áruátvételen, a kék kint, a fedett részen (a sárga kijáraton át). Az ellenfél zászlaját rámenéssel veszed fel; ha a saját bázisotokra viszed, miközben a ti zászlótok otthon van, pont jár. Aki zászlóval hal meg, elejti; a saját elejtett zászlót rámenéssel visszaviheted, különben 30 mp múlva magától visszakerül. 3 pont nyeri a kört. Csapattársat nem lehet bántani, halál után a bázisotokon éledsz újra.</p>
+    <button id="ctfNullaz" class="masodlagos">Csapatpontok nullázása</button>
     <p class="halvany kicsi">A neved, a színed és a helyed a modellben egy nyilvános, ingyenes üzenetközvetítőn (HiveMQ) át megy a többiekhez; más adat nem. Aki ismeri a csatorna nevét (config.js), az is láthatja.</p>
   </section>
   <section>
@@ -103,10 +107,11 @@
   <p class="halvany kicsi">F = lökés · G = palack · telefonon a „Lökés” és „Dobás” gomb. A halálok és ölések ezen a gépen megmaradnak.</p>
 </aside>
 <div id="napszak" hidden></div>
+<div id="ctfHud" hidden></div>
 <button id="lampaGomb" class="setaGomb" hidden aria-label="Zseblámpa be/ki">Lámpa</button>
 <div id="hpSav" hidden><div id="hpErtek"></div><span id="hpSzoveg"></span></div>
 <div id="sebzesVillanas" hidden></div>
-<div id="halalKep" hidden><div class="halalDoboz"><div class="halalCim">☠ Meghaltál</div><div id="halalSzoveg"></div><div class="halvany">Pillanatokon belül újraéledsz a kiindulóponton…</div></div></div>
+<div id="halalKep" hidden><div class="halalDoboz"><div class="halalCim">☠ Meghaltál</div><div id="halalSzoveg"></div><div class="halvany">Pillanatokon belül újraéledsz (a kiindulóponton, zászlófoglalásnál a bázisotokon)…</div></div></div>
 <div id="celkereszt" hidden>+</div>
 <div id="joystick" hidden><div id="joyGomb"></div></div>
 <button id="ugrasGomb" hidden aria-label="Ugrás">Ugrás</button>

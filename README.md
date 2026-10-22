@@ -61,6 +61,12 @@ A közös nézetben játszani is lehet (a ☰ menü „Játék” kapcsolójáva
   nézetben). A zseblámpa magától bekapcsol, **L** = ki/be (telefonon „Lámpa”). A többiek lámpája fénykúpként látszik,
   a targoncák fényszóróval járnak, a kapufeliratok halványan világítanak. Fent kijelző mutatja, mennyi van hátra.
   Beállítás: `config.js` → `ejszaka` (`nappalMp`, `ejjelMp`).
+- **Zászlófoglalás (capture the flag):** két csapat – a piros bázis az áruátvételen, a kék kint, a fedett részen
+  (a sárga kijáraton át). A menüben választható csapat (alapból automatikusan a kisebbe kerülsz). Az ellenfél
+  zászlaját rámenéssel veszed fel; ha a saját bázisotokra viszed, miközben a ti zászlótok otthon van, pont jár,
+  3 pont nyeri a kört. Aki zászlóval hal meg, elejti; a saját elejtett zászlót rámenéssel visszaviheted, különben
+  30 mp múlva magától visszakerül. Csapattársat nem lehet bántani, halál után a bázison éledsz újra. Az állás
+  megőrzött MQTT-üzenetben van, így aki később jön, az is látja. Beállítás: `config.js` → `ctf`.
 - **Életerőcsomag** a logisztikai irodában (fehér doboz piros kereszttel): rámész, és +50 HP (legfeljebb 100).
   Utána 30 mp-ig nincs a helyén, mindenkinél. Hely és érték: `config.js` → `eletcsomagok` (több is lehet).
 - **0 HP = halál:** 3 mp múlva újraéledsz a kiindulóponton. A **pontlista** (a fejléc 👥 gombja) mutatja, ki hányszor halt
@@ -91,6 +97,7 @@ kizárt folyosók, további utak; a `mag` átírásával más útvonalakat járn
 | `js/kozos.js` | közös nézet: a többi látogató pálcikaemberként (MQTT) |
 | `js/jatek.js` | játék: lökés, palackdobás, életerő, pontlista |
 | `js/targonca.js` | targoncák: folyosóhálózat, véletlen körutak, elütés |
+| `js/ctf.js` | zászlófoglalás: csapatok, bázisok, zászlók, közös állás |
 | `js/ejszaka.js` | éjszakai mód a játékban: nappal–éjszaka ciklus, zseblámpa |
 | `vendor/three/` | Three.js r170 helyi másolata (MIT licenc), így CDN nélkül is működik |
 | `vendor/mqtt/` | MQTT.js 5.10.1 helyi másolata (MIT licenc) a közös nézethez |

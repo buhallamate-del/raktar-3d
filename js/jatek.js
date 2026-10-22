@@ -35,7 +35,8 @@ function ment(a) {
   try { localStorage.setItem(TAROL, JSON.stringify(a)); } catch { /* nincs tárhely */ }
 }
 
-export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, kiindulo }) {
+// ctf(): a zászlófoglalás (ctf.js), ha van – csapattársat nem lehet bántani, újraéledés a saját bázison
+export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, kiindulo, ctf = () => null }) {
   const J = C.jatek || {};
   const cfg = {
     lokes: Number(J.lokesSebzes ?? 10), palack: Number(J.palackSebzes ?? 25), targonca: Number(C.targoncak?.sebzes ?? 40),
@@ -56,6 +57,7 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
   el('pontBezar').addEventListener('click', () => { el('pontPanel').hidden = true; });
 
   const serulhet = () => be && getMod() === 'seta' && !halott;
+  const tars = id => !!ctf()?.csapattars(id);
   const most = () => performance.now();
 
   function villanas() {
@@ -95,7 +97,8 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
     hp = 100;
     halott = false;
     tamado = null;
-    Object.assign(seta, { halott: false, x: kiindulo.x, y: kiindulo.y, z: 0, kz: 0, vz: 0, kvx: 0, kvy: 0, guggol: false });
+    const hely = ctf()?.ujraHely() || kiindulo;
+    Object.assign(seta, { halott: false, x: hely.x, y: hely.y, z: 0, kz: 0, vz: 0, kvx: 0, kvy: 0, guggol: false });
     el('halalKep').hidden = true;
     kozos?.frissitAllapot();
   }
@@ -297,7 +300,7 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
         seta.kvy = (Number(e.dy) || 0) * 6;
         seta.vz = Math.max(seta.vz || 0, 2.5);
         uzenet(`${tamado.nev} meglökött!`);
-        sebzes(cfg.lokes, 'lokes');
+        if (!tars(e.tol)) sebzes(cfg.lokes, 'lokes');
       } else kozos.villant(e.cel);
     } else if (e.t === 'dobas') {
       const p = new THREE.Vector3(+e.x, +e.y, +e.z), v = new THREE.Vector3(+e.vx, +e.vy, +e.vz);
@@ -308,7 +311,7 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
     } else if (e.t === 'loves') {
       const o = new THREE.Vector3(+e.x, +e.y, +e.z), d = new THREE.Vector3(+e.dx, +e.dy, +e.dz);
       if ([o.x, o.y, o.z, d.x, d.y, d.z, +e.h].every(Number.isFinite)) nyomjelzo(o, d.normalize(), Math.min(+e.h, akCfg.tav));
-      if (serulhet() && lovesTalal(e)) {
+      if (serulhet() && !tars(e.tol) && lovesTalal(e)) {
         tamado = { id: e.tol, nev: e.nev || 'Valaki', ido: most() };
         if (most() - (lovesTalal.uz || 0) > 1500) { uzenet(`${tamado.nev} rád lőtt!`); lovesTalal.uz = most(); }
         sebzes(akCfg.sebzes, 'loves');
@@ -348,14 +351,14 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
   // --- pontlista ---
   function listaFrissit() {
     if (el('pontPanel').hidden) return;
-    const sorok = [{ nev: kozos?.nev() || 'Én', h: hp, d: pont.d, k: pont.k, en: true, j: be }];
+    const sorok = [{ nev: kozos?.nev() || 'Én', h: hp, d: pont.d, k: pont.k, en: true, j: be, cs: ctf()?.extra().cs }];
     for (const t of kozos?.tobbiek.values() || []) {
-      if (t.cel.j) sorok.push({ nev: t.nev, h: t.cel.h, d: t.cel.d || 0, k: t.cel.k || 0, hal: t.cel.hal });
+      if (t.cel.j) sorok.push({ nev: t.nev, h: t.cel.h, d: t.cel.d || 0, k: t.cel.k || 0, hal: t.cel.hal, cs: t.cel.cs });
     }
     sorok.sort((a, b) => b.k - a.k || a.d - b.d);
     const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
     el('pontLista').innerHTML = '<tr><th>Név</th><th>HP</th><th>☠ halál</th><th>🎯 ölés</th></tr>' + sorok.map(s =>
-      `<tr class="${s.en ? 'en' : ''}"><td>${esc(s.nev)}${s.en ? ' (te)' : ''}</td><td>${s.j === false ? '–' : s.hal ? '☠' : Math.round(s.h ?? 100)}</td><td>${s.d}</td><td>${s.k}</td></tr>`).join('');
+      `<tr class="${s.en ? 'en' : ''}"><td>${ctf()?.szin(s.cs) ? `<span style="color:${ctf().szin(s.cs)}" title="${esc(ctf().csapatNev(s.cs))} csapat">■</span> ` : ''}${esc(s.nev)}${s.en ? ' (te)' : ''}</td><td>${s.j === false ? '–' : s.hal ? '☠' : Math.round(s.h ?? 100)}</td><td>${s.d}</td><td>${s.k}</td></tr>`).join('');
   }
 
   // --- képkockánként ---
@@ -380,7 +383,7 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
         b.v.y -= 9.81 * h;
         b.p.addScaledVector(b.v, h);
         // találat rajtunk? (mi döntjük el, és mi jelentjük)
-        if (!b.sajat && b.tol !== kozos?.id && serulhet()) {
+        if (!b.sajat && b.tol !== kozos?.id && serulhet() && !tars(b.tol)) {
           const test = seta.guggol ? 1.0 : 1.8;
           if (Math.hypot(b.p.x - seta.x, b.p.z - seta.y) < 0.4 && b.p.y > seta.z && b.p.y < seta.z + test + 0.2) {
             tamado = { id: b.tol, nev: b.nev || 'Valaki', ido: t };

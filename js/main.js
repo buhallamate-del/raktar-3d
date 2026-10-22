@@ -5,6 +5,7 @@ import { inditKozos } from './kozos.js';
 import { inditJatek } from './jatek.js';
 import { inditTargoncak } from './targonca.js';
 import { inditEjszaka } from './ejszaka.js';
+import { inditCtf } from './ctf.js';
 
 const C = window.RAKTAR_CONFIG;
 const D = window.RAKTAR_ADATOK;
@@ -1198,7 +1199,7 @@ vaszon.addEventListener('pointerup', pointerVege);
 vaszon.addEventListener('pointercancel', pointerVege);
 document.addEventListener('pointerlockchange', () => {
   $('setaSugo').textContent = document.pointerLockElement === vaszon
-    ? 'WASD / nyilak = séta · egér = nézelődés · Shift = gyorsabban · Szóköz = ugrás · C = guggolás · E = mászás · F = lökés · G = palack · AK: bal gomb = lövés, R = töltés, Q = váltás · L = lámpa · Esc = egér elengedése'
+    ? 'WASD / nyilak = séta · egér = nézelődés · Shift = gyorsabban · Szóköz = ugrás · C = guggolás · E = mászás · F = lökés · G = palack · AK: bal gomb = lövés, R = töltés, Q = váltás · L = lámpa · 🚩 zászló: rámenéssel · Esc = egér elengedése'
     : 'Kattints a képre a sétához · WASD / nyilak · egér · Shift · Szóköz = ugrás · C = guggolás · E = mászás · F = lökés · G = palack · Esc';
 });
 
@@ -1498,6 +1499,7 @@ renderer.setAnimationLoop(() => {
   jatek?.frissit(dt);
   targoncak?.frissit(dt);
   ejszaka?.frissit(dt);
+  ctf?.frissit(dt);
   const puls = 0.5 + 0.5 * Math.sin(most / 260);
   for (const p of pulzalok) {
     if (p.anyag) p.anyag.opacity = p.min + (p.max - p.min) * puls;
@@ -1511,7 +1513,7 @@ renderer.setAnimationLoop(() => {
 $('betoltes').hidden = true;
 
 // Közös nézet: a többi látogató pálcikaemberként (config.js: kozos); rá épül a játék (jatek)
-let kozos = null, jatek = null, targoncak = null, ejszaka = null;
+let kozos = null, jatek = null, targoncak = null, ejszaka = null, ctf = null;
 try {
   const k2 = v => Math.round(v * 100) / 100;
   kozos = inditKozos({
@@ -1519,14 +1521,15 @@ try {
     allapot: () => (mod === 'seta'
       ? { x: k2(seta.x), y: k2(seta.y), z: k2(seta.z), yaw: k2(seta.yaw), g: seta.guggol ? 1 : 0, m: 'seta' }
       : { x: k2(controls.target.x), y: k2(controls.target.z), z: 0, yaw: 0, g: 0, m: 'felul' }),
-    extra: () => ({ ...(jatek?.extra() ?? {}), ...(ejszaka?.extra() ?? {}) }),
+    extra: () => ({ ...(jatek?.extra() ?? {}), ...(ejszaka?.extra() ?? {}), ...(ctf?.extra() ?? {}) }),
     esemeny: e => jatek?.esemeny(e),
+    allando: a => ctf?.fogad(a),
   });
 } catch (e) {
   console.warn('[közös nézet]', e);
 }
 try {
-  jatek = inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod: () => mod, kiindulo: D.kulcsok.kiindulo });
+  jatek = inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod: () => mod, kiindulo: D.kulcsok.kiindulo, ctf: () => ctf });
   $('lokesGomb').addEventListener('pointerdown', e => { e.preventDefault(); jatek.lokes(); });
   $('dobasGomb').addEventListener('pointerdown', e => { e.preventDefault(); jatek.dobas(); });
 } catch (e) {
@@ -1546,5 +1549,11 @@ try {
 } catch (e) {
   console.warn('[éjszaka]', e);
 }
+// Zászlófoglalás a játékban (config.js: ctf)
+try {
+  ctf = inditCtf({ C, scene, seta, kozos, uzenet, getMod: () => mod, jatekBe: () => !!jatek?.jatekBe?.(), szovegSprite });
+} catch (e) {
+  console.warn('[zászlófoglalás]', e);
+}
 hashbolNyit();
-window.raktar = { M, scene, camera, controls, seta, kijelol, helyhezMegy, modValt, lep: setaLeptet, ugras, lenyomva, jatek, kozos, targoncak, ejszaka }; // hibakereséshez
+window.raktar = { M, scene, camera, controls, seta, kijelol, helyhezMegy, modValt, lep: setaLeptet, ugras, lenyomva, jatek, kozos, targoncak, ejszaka, ctf }; // hibakereséshez
