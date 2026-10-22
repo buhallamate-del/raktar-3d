@@ -314,10 +314,11 @@ window.RAKTAR_CONFIG = {
     gyozelem: 3,
   },
   // Vad kutyák (a játékban): aki a raktáron kívülre megy (a teruletek valamelyikére), azt kesesMp múlva
-  // db kutya kergetni kezdi sebesseg m/s-mal (= futás); harapásonként sebzes HP, harapasMp-enként.
+  // db kutya kergetni kezdi sebesseg m/s-mal (gyorsabb a futásnál, 4,5 m/s, de lassabb a felmosókocsinál,
+  // 7 m/s); harapásonként sebzes HP, harapasMp-enként.
   // Ha visszamegy, elmenesMp múlva elmennek. A bázisok bazisVedelem m-es körzete biztonságos.
   kutyak: {
-    db: 3, sebesseg: 4.5, sebzes: 10, harapasMp: 1, kesesMp: 1.5, elmenesMp: 5, bazisVedelem: 2.5,
+    db: 3, sebesseg: 6, sebzes: 10, harapasMp: 1, kesesMp: 1.5, elmenesMp: 5, bazisVedelem: 2.5,
     teruletek: [
       { nev: 'Árukiadó udvar', x: 20.6, y: -7.7, szel: 14.0, mely: 50.0 },
       { nev: 'Fedett rakodó', x: 20.6, y: 42.3, szel: 8.0, mely: 56.0 },

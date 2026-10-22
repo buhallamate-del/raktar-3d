@@ -73,7 +73,7 @@ A közös nézetben játszani is lehet (a ☰ menü „Játék” kapcsolójáva
   mindenkinél ugyanaz (megőrzött MQTT-üzenet). Beállítás: `config.js` → `felmosoKocsi`.
 - A többiek neve és életerő-csíkja belső nézetben nem látszik át a falon és az állványon.
 - **Vad kutyák:** aki a raktáron kívülre megy (árukiadó udvar, fedett rakodó, fedett rész), azt 1,5 mp múlva egy
-  3 kutyából álló falka kergetni kezdi a futás sebességével (4,5 m/s); ha utolérik, kutyánként másodpercenként egy
+  3 kutyából álló falka kergetni kezdi 6 m/s-mal – gyorsabb a futásnál (4,5 m/s), csak a felmosókocsival lehet elmenekülni előlük; ha utolérik, kutyánként másodpercenként egy
   harapás, −10 HP. Akadályokat megkerülik, de a raktárba nem jönnek be; ha visszamész, 5 mp múlva elmennek.
   A bázisok 2,5 m-es körzete biztonságos, és aki egy tárgy tetejére mászik, azt sem érik el. A többiek is látják,
   ki elől menekülsz. Beállítás: `config.js` → `kutyak`.
