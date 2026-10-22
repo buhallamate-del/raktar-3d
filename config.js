@@ -297,6 +297,8 @@ window.RAKTAR_CONFIG = {
   // Fegyverládák (x, y, z: hely; z a magasság – a galéria teteje 3,0 m); felvétel után ujraMp-ig üres
   fegyverLadak: [
     { nev: 'Galéria', x: -8.5, y: 8.0, z: 3.0, ujraMp: 45 },
+    // a piros bázis mellett is, hogy mindkét csapat hozzájusson
+    { nev: 'Áruátvétel', x: 4.5, y: 94.5, z: 0, ujraMp: 45 },
   ],
   // Éjszaka a játékban: a gép órája szerint nappalMp világos, ejjelMp sötét váltakozik (mindenkinél
   // egyszerre); csak belső nézetben. Zseblámpa: L (éjszaka magától bekapcsol).

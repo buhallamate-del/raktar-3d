@@ -205,7 +205,7 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
     ak.toltesIg = most() + akCfg.toltes;
   }
   function valt() {
-    if (!ak) { uzenet('Nincs nálad AK – a galérián, a fegyverládán találsz'); return; }
+    if (!ak) { uzenet('Nincs nálad AK – a fegyverládán találsz (a galérián és az áruátvételen)'); return; }
     fegyverValaszt = fegyverValaszt === 'ak' ? 'palack' : 'ak';
     uzenet(fegyverValaszt === 'ak' ? '🔫 AK a kézben' : '🍾 Palack a kézben');
     kozos?.frissitAllapot();
