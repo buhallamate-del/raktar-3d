@@ -40,11 +40,17 @@ function palcikaember(szin, nev, szovegSprite) {
   pd(0.06, 0.08, 0.55, pFekete, -0.15); pd(0.05, 0.09, 0.25, pFa, 0.2); pd(0.04, 0.16, 0.06, pFekete, -0.2);
   puska.position.set(0.18, 1.25, -0.25);
   puska.visible = false;
+  // zseblámpa fénykúpja (éjszaka, ha be van kapcsolva)
+  const lampa = new THREE.Mesh(new THREE.ConeGeometry(1.3, 6, 18, 1, true),
+    new THREE.MeshBasicMaterial({ color: '#fff4dc', transparent: true, opacity: 0.1, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending }));
+  lampa.material.userData.vilagit = true;
+  lampa.rotation.x = -Math.PI / 2; lampa.position.set(0, 1.45, -3.1);
+  lampa.visible = false;
   balLab.position.x = -0.1; jobbLab.position.x = 0.1; balKar.position.x = -0.25; jobbKar.position.x = 0.25;
   // „orr”: merre néz
   const orr = new THREE.Mesh(new THREE.ConeGeometry(0.05, 0.14, 8), anyag);
   orr.rotation.x = -Math.PI / 2; orr.position.set(0, 1.62, -0.17);
-  test.add(fej, torzs, vall, balLab, jobbLab, balKar, jobbKar, orr, puska);
+  test.add(fej, torzs, vall, balLab, jobbLab, balKar, jobbKar, orr, puska, lampa);
   g.add(test);
   const felirat = szovegSprite(nev, 0.32, { hatter: szin, szin: '#fff', meret: 44, depthTest: false });
   felirat.position.y = 2.05;
@@ -57,7 +63,7 @@ function palcikaember(szin, nev, szovegSprite) {
   const hpHatter = csik('#3a0d0d'), hpEloter = csik('#3ddc5a');
   hpHatter.position.set(-0.4, 2.3, 0); hpEloter.position.set(-0.4, 2.3, 0); hpEloter.renderOrder = 12;
   g.add(hpHatter, hpEloter);
-  g.userData = { test, balLab, jobbLab, balKar, jobbKar, felirat, fazis: 0, anyag, hpHatter, hpEloter, villan: 0, puska };
+  g.userData = { test, balLab, jobbLab, balKar, jobbKar, felirat, fazis: 0, anyag, hpHatter, hpEloter, villan: 0, puska, lampa };
   return g;
 }
 
@@ -225,6 +231,7 @@ export function inditKozos({ C, scene, szovegSprite, allapot, uzenet, extra, ese
       // életerő-csík, találatnál piros villanás, halálkor eldől
       const jatszik = !!u.j && u.m !== 'felul';
       d.puska.visible = jatszik && !!u.f && !u.hal;
+      d.lampa.visible = jatszik && !!u.l && !u.hal;
       d.hpHatter.visible = d.hpEloter.visible = jatszik;
       if (jatszik) {
         const hp = Math.max(0, Math.min(100, Number(u.h ?? 100))) / 100;

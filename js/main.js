@@ -4,6 +4,7 @@ import { epitModell, normalKod, helyElotti, folyosoSzelesseg } from './modell.js
 import { inditKozos } from './kozos.js';
 import { inditJatek } from './jatek.js';
 import { inditTargoncak } from './targonca.js';
+import { inditEjszaka } from './ejszaka.js';
 
 const C = window.RAKTAR_CONFIG;
 const D = window.RAKTAR_ADATOK;
@@ -44,7 +45,8 @@ $('vaszon').appendChild(renderer.domElement);
 const scene = new THREE.Scene();
 scene.background = new THREE.Color('#e4e9f0');
 const camera = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.05, 3000);
-scene.add(new THREE.HemisphereLight(0xffffff, 0x8a909c, 2.2));
+const hemi = new THREE.HemisphereLight(0xffffff, 0x8a909c, 2.2);
+scene.add(hemi);
 const nap = new THREE.DirectionalLight(0xffffff, 1.6);
 nap.position.set(-40, 80, 30);
 scene.add(nap);
@@ -243,6 +245,7 @@ for (const a of C.ajtok || []) {
   fuggony.position.set(a.x, a.vag === false ? 1.05 : mag / 2, a.y + (a.vag === false && !fugg ? 0.12 : 0));
   if (fugg) fuggony.rotation.y = Math.PI / 2;
   const t = szovegSprite(a.nev, 0.7, { hatter: a.szin || '#1f6feb', szin: '#fff', meret: 48 });
+  t.material.userData.vilagit = true; // éjszaka is látszik, mint egy kijárat-tábla
   t.position.set(a.x, mag + 0.8, a.y);
   scene.add(fent, fuggony, t);
 }
@@ -604,7 +607,10 @@ if (MJ.oszlopvedok !== false) {
   vedo.instanceMatrix.needsUpdate = true; vedo.computeBoundingSphere();
   allvanyCsoport.add(vedo);
 }
-// Mennyezet LED-sorokkal (csak belső nézetben látszik)
+// Mennyezet LED-sorokkal (csak belső nézetben látszik); éjszaka az ejszaka.js tompítja
+const LED_ANYAG = new THREE.MeshBasicMaterial({ color: '#ffffff' });
+const CIMKE_ANYAGOK = []; // a helykód-címkék anyagai (éjszaka a saját fényük tompul)
+LED_ANYAG.userData.vilagit = true;
 const mennyezetCsoport = new THREE.Group();
 mennyezetCsoport.visible = false;
 scene.add(mennyezetCsoport);
@@ -618,7 +624,7 @@ scene.add(mennyezetCsoport);
     mennyezetCsoport.add(lap);
   }
   // fénycsíkok a folyosók fölött
-  const fenyAnyag = new THREE.MeshBasicMaterial({ color: '#ffffff' });
+  const fenyAnyag = LED_ANYAG;
   for (const f of M.folyosok.values()) {
     if (!f.padlo || f.tipus === 'gerinc') continue;
     const { x0, y0, x1, y1 } = f.padlo, ax = f.tengely === 'X';
@@ -692,8 +698,12 @@ scene.add(cimkeCsoport);
     geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
     geo.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
     geo.setIndex(idx);
+    geo.computeVertexNormals(); // a fényre reagáló anyaghoz kellenek
     geo.computeBoundingSphere();
-    cimkeCsoport.add(new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ map: tex })));
+    // fényre reagáló anyag (enyhe saját fénnyel), hogy éjszaka a zseblámpa világítsa meg
+    const cimkeAnyag = new THREE.MeshLambertMaterial({ map: tex, emissive: '#ffffff', emissiveMap: tex, emissiveIntensity: 0.35 });
+    CIMKE_ANYAGOK.push(cimkeAnyag);
+    cimkeCsoport.add(new THREE.Mesh(geo, cimkeAnyag));
   }
 }
 
@@ -1140,6 +1150,7 @@ addEventListener('keydown', e => {
   if (mod === 'seta' && !e.repeat && e.code === 'KeyG') jatek?.dobas();
   if (mod === 'seta' && !e.repeat && e.code === 'KeyR') jatek?.ujratolt();
   if (mod === 'seta' && !e.repeat && e.code === 'KeyQ') jatek?.valt();
+  if (mod === 'seta' && !e.repeat && e.code === 'KeyL') ejszaka?.kapcsol();
 });
 addEventListener('keyup', e => lenyomva.delete(e.code));
 addEventListener('blur', () => lenyomva.clear());
@@ -1187,7 +1198,7 @@ vaszon.addEventListener('pointerup', pointerVege);
 vaszon.addEventListener('pointercancel', pointerVege);
 document.addEventListener('pointerlockchange', () => {
   $('setaSugo').textContent = document.pointerLockElement === vaszon
-    ? 'WASD / nyilak = séta · egér = nézelődés · Shift = gyorsabban · Szóköz = ugrás · C = guggolás · E = mászás · F = lökés · G = palack · AK: bal gomb = lövés, R = töltés, Q = váltás · Esc = egér elengedése'
+    ? 'WASD / nyilak = séta · egér = nézelődés · Shift = gyorsabban · Szóköz = ugrás · C = guggolás · E = mászás · F = lökés · G = palack · AK: bal gomb = lövés, R = töltés, Q = váltás · L = lámpa · Esc = egér elengedése'
     : 'Kattints a képre a sétához · WASD / nyilak · egér · Shift · Szóköz = ugrás · C = guggolás · E = mászás · F = lökés · G = palack · Esc';
 });
 
@@ -1486,6 +1497,7 @@ renderer.setAnimationLoop(() => {
   kozos?.frissit(dt);
   jatek?.frissit(dt);
   targoncak?.frissit(dt);
+  ejszaka?.frissit(dt);
   const puls = 0.5 + 0.5 * Math.sin(most / 260);
   for (const p of pulzalok) {
     if (p.anyag) p.anyag.opacity = p.min + (p.max - p.min) * puls;
@@ -1499,7 +1511,7 @@ renderer.setAnimationLoop(() => {
 $('betoltes').hidden = true;
 
 // Közös nézet: a többi látogató pálcikaemberként (config.js: kozos); rá épül a játék (jatek)
-let kozos = null, jatek = null, targoncak = null;
+let kozos = null, jatek = null, targoncak = null, ejszaka = null;
 try {
   const k2 = v => Math.round(v * 100) / 100;
   kozos = inditKozos({
@@ -1507,7 +1519,7 @@ try {
     allapot: () => (mod === 'seta'
       ? { x: k2(seta.x), y: k2(seta.y), z: k2(seta.z), yaw: k2(seta.yaw), g: seta.guggol ? 1 : 0, m: 'seta' }
       : { x: k2(controls.target.x), y: k2(controls.target.z), z: 0, yaw: 0, g: 0, m: 'felul' }),
-    extra: () => jatek?.extra() ?? {},
+    extra: () => ({ ...(jatek?.extra() ?? {}), ...(ejszaka?.extra() ?? {}) }),
     esemeny: e => jatek?.esemeny(e),
   });
 } catch (e) {
@@ -1527,5 +1539,12 @@ try {
 } catch (e) {
   console.warn('[targoncák]', e);
 }
+// Éjszakai mód a játékban (config.js: ejszaka)
+try {
+  ejszaka = inditEjszaka({ C, scene, camera, fenyek: { hemi, nap }, getMod: () => mod,
+    jatekBe: () => !!jatek?.jatekBe?.(), ledAnyag: LED_ANYAG, cimkeAnyagok: CIMKE_ANYAGOK, targoncak });
+} catch (e) {
+  console.warn('[éjszaka]', e);
+}
 hashbolNyit();
-window.raktar = { M, scene, camera, controls, seta, kijelol, helyhezMegy, modValt, lep: setaLeptet, ugras, lenyomva, jatek, kozos, targoncak }; // hibakereséshez
+window.raktar = { M, scene, camera, controls, seta, kijelol, helyhezMegy, modValt, lep: setaLeptet, ugras, lenyomva, jatek, kozos, targoncak, ejszaka }; // hibakereséshez

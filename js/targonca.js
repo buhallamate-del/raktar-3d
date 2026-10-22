@@ -122,7 +122,15 @@ function targoncaModell(szam, szovegSprite) {
   const t = szovegSprite(`Targonca ${szam}`, 0.35, { hatter: '#e8561c', szin: '#fff', meret: 44 });
   t.position.set(0, 2.7, 0.2);
   g.add(t);
-  g.userData = { villa, potty };
+  potty.material.userData.vilagit = true;
+  // fényszóró (éjszaka látszik): áttetsző fénykúp előre
+  const reflektor = new THREE.Mesh(new THREE.ConeGeometry(1.4, 7, 20, 1, true),
+    new THREE.MeshBasicMaterial({ color: '#fff2c8', transparent: true, opacity: 0.12, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending }));
+  reflektor.material.userData.vilagit = true;
+  reflektor.rotation.x = -Math.PI / 2; reflektor.position.set(0, 1.4, -4.4);
+  reflektor.visible = false;
+  g.add(reflektor);
+  g.userData = { villa, potty, reflektor };
   return g;
 }
 

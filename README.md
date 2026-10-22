@@ -57,6 +57,10 @@ A közös nézetben játszani is lehet (a ☰ menü „Játék” kapcsolójáva
   (telefonon „Lövés”), R = újratöltés (30-as tár, összesen 90 lőszer), Q = váltás AK és palack között.
   Találat −12 HP; halálkor a fegyver elveszik. A többiek pálcikaemberén látszik, ha AK van náluk.
   Beállítás: `config.js` → `fegyver`, `fegyverLadak`.
+- **Éjszaka:** a játékban 3 percenként 3 percig sötét van (a gép órája szerint, mindenkinél egyszerre; csak belső
+  nézetben). A zseblámpa magától bekapcsol, **L** = ki/be (telefonon „Lámpa”). A többiek lámpája fénykúpként látszik,
+  a targoncák fényszóróval járnak, a kapufeliratok halványan világítanak. Fent kijelző mutatja, mennyi van hátra.
+  Beállítás: `config.js` → `ejszaka` (`nappalMp`, `ejjelMp`).
 - **Életerőcsomag** a logisztikai irodában (fehér doboz piros kereszttel): rámész, és +50 HP (legfeljebb 100).
   Utána 30 mp-ig nincs a helyén, mindenkinél. Hely és érték: `config.js` → `eletcsomagok` (több is lehet).
 - **0 HP = halál:** 3 mp múlva újraéledsz a kiindulóponton. A **pontlista** (a fejléc 👥 gombja) mutatja, ki hányszor halt
@@ -87,6 +91,7 @@ kizárt folyosók, további utak; a `mag` átírásával más útvonalakat járn
 | `js/kozos.js` | közös nézet: a többi látogató pálcikaemberként (MQTT) |
 | `js/jatek.js` | játék: lökés, palackdobás, életerő, pontlista |
 | `js/targonca.js` | targoncák: folyosóhálózat, véletlen körutak, elütés |
+| `js/ejszaka.js` | éjszakai mód a játékban: nappal–éjszaka ciklus, zseblámpa |
 | `vendor/three/` | Three.js r170 helyi másolata (MIT licenc), így CDN nélkül is működik |
 | `vendor/mqtt/` | MQTT.js 5.10.1 helyi másolata (MIT licenc) a közös nézethez |
 
