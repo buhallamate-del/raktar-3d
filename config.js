@@ -326,6 +326,9 @@ window.RAKTAR_CONFIG = {
   // Küldetés (komissiózás időre): db hely, celSugar m-re kell megközelíteni a hely előtti pontot;
   // a leadás a komissiózó lerakóban (lerakoSugar m-en belül)
   kuldetes: { db: 3, celSugar: 1.5, lerakoSugar: 2.5 },
+  // Katana: a küldetés jutalma (ha már van, a jutalom teljes életerő). Közelharc: hatotav m-en belül,
+  // aki előttünk áll, sebzes HP; szunetMp-enként egy csapás; a vad kutyákat is levágja.
+  katana: { sebzes: 50, hatotav: 1.9, szunetMp: 0.6 },
   // Civilek: db raktáros békát (kézi raklapemelőt) húz a folyosókon, sebesseg m/s-mal, a zsákutcák
   // végén allasMp-ig rakodnak. A béka rakománya a folyosó teljes szélességét elállja (legfeljebb
   // maxSzelesseg m): kikerülni nem lehet, de fel lehet állni rá (rakomanyMagassag m magas, ugrással elérhető).

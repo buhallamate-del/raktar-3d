@@ -1208,7 +1208,7 @@ vaszon.addEventListener('pointerup', pointerVege);
 vaszon.addEventListener('pointercancel', pointerVege);
 document.addEventListener('pointerlockchange', () => {
   $('setaSugo').textContent = document.pointerLockElement === vaszon
-    ? 'WASD / nyilak = séta · egér = nézelődés · Shift = gyorsabban · Szóköz = ugrás · C = guggolás · E = mászás · F = lökés · G = palack · AK / puska: bal gomb = lövés, R = töltés, Q = váltás, jobb gomb / Z = távcső · T = gránát · N = küldetés · L = lámpa · K = felmosókocsi · 🚩 zászló: rámenéssel · Esc = egér elengedése'
+    ? 'WASD / nyilak = séta · egér = nézelődés · Shift = gyorsabban · Szóköz = ugrás · C = guggolás · E = mászás · F = lökés · G = palack · AK / puska: bal gomb = lövés, R = töltés, Q = váltás, jobb gomb / Z = távcső · T = gránát · N = küldetés (jutalom: katana) · L = lámpa · K = felmosókocsi · 🚩 zászló: rámenéssel · Esc = egér elengedése'
     : 'Kattints a képre a sétához · WASD / nyilak · egér · Shift · Szóköz = ugrás · C = guggolás · E = mászás · F = lökés · G = palack · Esc';
 });
 
@@ -1579,7 +1579,8 @@ try {
   console.warn('[közös nézet]', e);
 }
 try {
-  jatek = inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod: () => mod, kiindulo: D.kulcsok.kiindulo, ctf: () => ctf });
+  jatek = inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod: () => mod, kiindulo: D.kulcsok.kiindulo, ctf: () => ctf,
+    kozelharc: (...a) => kutyak?.vag(...a) ?? 0 });
   $('lokesGomb').addEventListener('pointerdown', e => { e.preventDefault(); jatek.lokes(); });
   $('dobasGomb').addEventListener('pointerdown', e => { e.preventDefault(); jatek.dobas(); });
 } catch (e) {
@@ -1600,7 +1601,7 @@ try {
 }
 // Küldetés: komissiózás időre (config.js: kuldetes)
 try {
-  kuldetes = inditKuldetes({ C, M, scene, camera, seta, getMod: () => mod, uzenet, kozos, szovegSprite, lerako: D.kulcsok.kiindulo });
+  kuldetes = inditKuldetes({ C, M, scene, camera, seta, getMod: () => mod, uzenet, kozos, szovegSprite, lerako: D.kulcsok.kiindulo, jutalom: () => jatek?.jutalom() });
 } catch (e) {
   console.warn('[küldetés]', e);
 }

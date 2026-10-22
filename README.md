@@ -76,6 +76,8 @@ A közös nézetben játszani is lehet (a ☰ menü „Játék” kapcsolójáva
   Sorban fel kell keresni őket (a cél fölött zöld fénycsík a kóddal, fent kijelző az iránnyal, a távolsággal és az idővel),
   majd a kiszedett árut a komissiózó lerakóba vinni. A legjobb idő ezen a gépen megmarad, a teljesítést a többiek is
   látják. Újra N = feladás. Beállítás: `config.js` → `kuldetes`.
+  **Jutalom: katana** (Q = váltás, bal egérgomb = vágás): közelharcban −50 HP annak, aki előtted áll, és a vad kutyákat
+  is levágja. Halálkor sem veszik el, ezen a gépen megmarad. Ha már van, a jutalom teljes életerő. Beállítás: `config.js` → `katana`.
 - **Távcsöves puska:** a galérián és az áruátvételen, az AK-ládák mellett. Egyesével lő, −80 HP; jobb egérgomb vagy Z =
   távcső (4× nagyítás, távcsővel szinte pontos). Q = váltás AK / puska / palack. Beállítás: `config.js` → `puska`, `puskaLadak`.
 - **Gránát:** a fegyverládák 2-2 gránátot adnak (legfeljebb 4). T = dobás (telefonon „Gránát”); pattog, 2,5 mp múlva

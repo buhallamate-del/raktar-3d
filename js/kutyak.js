@@ -90,7 +90,7 @@ export function inditKutyak({ C, M, scene, seta, kozos, uzenet, getMod, jatek })
     const ter = jatszik ? hol(seta.x, seta.y) : null;
     if (ter && !bazisnal(seta.x, seta.y)) { kintIdo += dt; bentIdo = 0; } else { bentIdo += dt; kintIdo = 0; }
     // kiérünk: rövid szünet után jön a falka
-    if (ter && !sajat.length && kintIdo > Number(K.kesesMp ?? 1.5)) {
+    if (ter && !sajat.length && kintIdo > Number(K.kesesMp ?? 1.5) && t > pihen) {
       falka(ter);
       if (!uzent) { uzenet('🐕 Vad kutyák! Fuss vissza a raktárba!'); uzent = true; setTimeout(() => (uzent = false), 15000); }
     }
@@ -154,8 +154,22 @@ export function inditKutyak({ C, M, scene, seta, kozos, uzenet, getMod, jatek })
     }
   }
 
+  // katanacsapás: a vágó előtti kutyák (r m-en belül) elpusztulnak; utána egy ideig nem jön új falka
+  let pihen = 0;
+  function vag(x, y, fx, fy, r) {
+    let db2 = 0;
+    for (let i = sajat.length - 1; i >= 0; i--) {
+      const k = sajat[i], dx = k.x - x, dy = k.y - y, d = Math.hypot(dx, dy);
+      if (d > r + 0.3 || (d > 0.3 && (dx * fx + dy * fy) / d < 0.3)) continue;
+      scene.remove(k.g); k.g.traverse(o => o.geometry?.dispose());
+      sajat.splice(i, 1); db2++;
+    }
+    if (db2 && !sajat.length) pihen = performance.now() + Number(K.pihenoMp ?? 12) * 1000;
+    return db2;
+  }
+
   return {
-    frissit, kint: () => !!hol(seta.x, seta.y),
+    frissit, vag, kint: () => !!hol(seta.x, seta.y),
     extra: () => ({ kd: sajat.map(k => `${k.x.toFixed(1)},${k.y.toFixed(1)},${k.yaw.toFixed(1)}`).join(';') }),
   };
 }

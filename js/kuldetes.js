@@ -10,7 +10,8 @@ const betolt = () => { try { return JSON.parse(localStorage.getItem(TAROL)) || {
 const ment = a => { try { localStorage.setItem(TAROL, JSON.stringify(a)); } catch { /* nincs tárhely */ } };
 const ido = ms => { const s = Math.max(0, Math.round(ms / 1000)); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
 
-export function inditKuldetes({ C, M, scene, camera, seta, getMod, uzenet, kozos, szovegSprite, lerako }) {
+// jutalom(): a teljesítés jutalma (a játék adja: katana, ha már van, teljes életerő)
+export function inditKuldetes({ C, M, scene, camera, seta, getMod, uzenet, kozos, szovegSprite, lerako, jutalom }) {
   const K = C.kuldetes || {};
   const db = Math.max(1, Math.round(Number(K.db ?? 3))), sugar = Number(K.celSugar ?? 1.5), lerakoSugar = Number(K.lerakoSugar ?? 2.5);
   const el = id => document.getElementById(id);
@@ -79,6 +80,7 @@ export function inditKuldetes({ C, M, scene, camera, seta, getMod, uzenet, kozos
     k = null;
     jelolKi();
     allapotKiir();
+    setTimeout(() => jutalom?.(), 1800); // a gratuláció után
   }
   function allapotKiir() {
     if (el('kuldetesInfo')) el('kuldetesInfo').textContent = tar.db ? `Teljesítve: ${tar.db} · legjobb idő: ${ido(tar.legjobb)}` : 'Még nem teljesítettél küldetést.';

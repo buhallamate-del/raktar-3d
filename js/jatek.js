@@ -9,12 +9,13 @@
 //   {t:'lada', idx, ig}                – valaki felvette az idx. fegyverládából az AK-t
 //   {t:'loves', x, y, z, dx, dy, dz, h, s, fp} – lövés (kezdőpont, irány, h: meddig repült a falig/állványig;
 //                                      s: sebzés, fp: 'ak' | 'puska')
+//   {t:'vagas', cel, s}               – katanával megvágták a célt (s: sebzés)
 //   {t:'granat', id, x, y, z, vx, vy, vz} – gránát indult
 //   {t:'robban', id, x, y, z}           – a gránát felrobbant (a dobó gépe dönti el, hol); mindenki maga számolja a sebzését
 import * as THREE from 'three';
 
 const TAROL = 'raktar3d.jatek';
-const OK_SZOVEG = { lokes: 'meglökték', palack: 'palack találta el', eses: 'leesett', targonca: 'elütötte egy targonca', loves: 'lelőtték', granat: 'felrobbantották', liderc: 'elkapta a lidérc', kutya: 'széttépték a vad kutyák' };
+const OK_SZOVEG = { lokes: 'meglökték', palack: 'palack találta el', eses: 'leesett', targonca: 'elütötte egy targonca', loves: 'lelőtték', granat: 'felrobbantották', katana: 'katanával levágták', liderc: 'elkapta a lidérc', kutya: 'széttépték a vad kutyák' };
 
 // Egyszerű, rajzfilmes AK: fa tus és markolat, fekete tok és cső, ívelt tár. Előre (−Z) néz.
 function akModell() {
@@ -48,6 +49,21 @@ function puskaModell() {
   return g;
 }
 
+// Katana: hosszú, enyhén ívelt penge, kerek markolatvédő, fonott markolat. A penge −Z felé áll.
+function katanaModell() {
+  const g = new THREE.Group();
+  const acel = new THREE.MeshLambertMaterial({ color: '#d8dde3', emissive: '#2a2e33' });
+  const penge = new THREE.Mesh(new THREE.BoxGeometry(0.018, 0.035, 0.78), acel);
+  penge.position.z = -0.47; penge.rotation.x = 0.04; g.add(penge);
+  const hegy = new THREE.Mesh(new THREE.ConeGeometry(0.018, 0.08, 4), acel);
+  hegy.rotation.x = -Math.PI / 2; hegy.position.set(0, 0.016, -0.89); g.add(hegy);
+  const tsuba = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.012, 16), new THREE.MeshLambertMaterial({ color: '#8a6d2b' }));
+  tsuba.rotation.x = Math.PI / 2; tsuba.position.z = -0.07; g.add(tsuba);
+  const markolat = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.24, 8), new THREE.MeshLambertMaterial({ color: '#1d1a2a' }));
+  markolat.rotation.x = Math.PI / 2; markolat.position.z = 0.06; g.add(markolat);
+  return g;
+}
+
 // Gránát: zöld tojás, fém gyújtófej
 function granatModell() {
   const g = new THREE.Group();
@@ -66,7 +82,8 @@ function ment(a) {
 }
 
 // ctf(): a zászlófoglalás (ctf.js), ha van – csapattársat nem lehet bántani, újraéledés a saját bázison
-export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, kiindulo, ctf = () => null }) {
+// kozelharc(x, y, fx, fy, r): a katana csapása a vad kutyákon (hányat talált el)
+export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, kiindulo, ctf = () => null, kozelharc }) {
   const J = C.jatek || {};
   const cfg = {
     lokes: Number(J.lokesSebzes ?? 10), palack: Number(J.palackSebzes ?? 25), targonca: Number(C.targoncak?.sebzes ?? 40),
@@ -78,7 +95,9 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
   let be = tar.be ?? (J.bekapcsolva !== false);
   let harapasUz = 0;
   let hp = 100, halott = false, tamado = null, lokesIdo = 0, dobasIdo = 0, szamlalo = 0;
-  const mentes = () => ment({ ...pont, be });
+  // katana: a küldetés jutalma; halálkor sem veszik el (ezen a gépen megmarad)
+  let katana = !!tar.katana;
+  const mentes = () => ment({ ...pont, be, katana });
 
   // --- felület ---
   el('jatekBe').checked = be;
@@ -119,7 +138,7 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
     const ok2 = tettes && ok === 'eses' ? (tettes.id === 'targonca' ? 'targonca' : 'lokes') : ok;
     kozos?.kuldE({ t: 'halal', cel: kozos.id, celNev: kozos.nev(), tol2: tettes?.id, tol2Nev: tettes?.nev, ok: ok2 });
     el('halalSzoveg').textContent = tettes
-      ? `${tettes.nev} ${ok2 === 'palack' ? 'eltalált egy palackkal' : ok2 === 'targonca' ? 'elütött' : ok2 === 'loves' ? 'lelőtt' : ok2 === 'granat' ? 'felrobbantott' : 'meglökött'}.`
+      ? `${tettes.nev} ${ok2 === 'katana' ? 'levágott a katanájával' : ok2 === 'palack' ? 'eltalált egy palackkal' : ok2 === 'targonca' ? 'elütött' : ok2 === 'loves' ? 'lelőtt' : ok2 === 'granat' ? 'felrobbantott' : 'meglökött'}.`
       : ok2 === 'granat' ? '💥 Felrobbantál.' : ok2 === 'liderc' ? '👻 Elkapott a lidérc.' : ok2 === 'kutya' ? '🐕 Széttéptek a vad kutyák.' : OK_SZOVEG[ok2] === 'leesett' ? 'Leestél.' : 'Elfogyott az életerőd.';
     el('halalKep').hidden = false;
     kozos?.frissitAllapot();
@@ -215,7 +234,7 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
   };
   const akCfg = fCfg.ak;
   const nalam = { ak: null, puska: null }; // {tarban, tartalek, toltesIg}
-  let fegyverValaszt = 'ak';  // 'ak' | 'puska' | 'palack' (Q vált)
+  let fegyverValaszt = 'ak';  // 'ak' | 'puska' | 'katana' | 'palack' (Q vált)
   let lovesLe = false, utolsoLoves = 0, rugas = 0, celzas = false;
   const alapFov = camera.fov;
   // gránát (config.js: granat): a fegyverládákon jár, T = dobás
@@ -246,7 +265,7 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
     scene.add(g);
     return { ...c, idx, g, fegyver, ig: 0, ujraMp: Number(c.ujraMp ?? 45) };
   });
-  const aktFegyver = () => (fegyverValaszt !== 'palack' && nalam[fegyverValaszt] ? fegyverValaszt : null);
+  const aktFegyver = () => (fegyverValaszt === 'katana' ? (katana ? 'katana' : null) : fegyverValaszt !== 'palack' && nalam[fegyverValaszt] ? fegyverValaszt : null);
   const fegyverKezben = () => !!aktFegyver() && getMod() === 'seta' && !halott && be && !seta.kocsin;
   function ujratolt(f = aktFegyver()) {
     const a = f && nalam[f], c = f && fCfg[f];
@@ -255,11 +274,11 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
     if (f === 'puska') celzas = false;
   }
   function valt() {
-    const lista = ['ak', 'puska'].filter(f => nalam[f]).concat('palack');
-    if (lista.length === 1) { uzenet('Nincs nálad lőfegyver – a fegyverládákon találsz (a galérián és az áruátvételen)'); return; }
+    const lista = ['ak', 'puska'].filter(f => nalam[f]).concat(katana ? ['katana'] : [], 'palack');
+    if (lista.length === 1) { uzenet('Nincs nálad fegyver – a fegyverládákon találsz (a galérián és az áruátvételen), a katana a küldetés jutalma'); return; }
     fegyverValaszt = lista[(lista.indexOf(fegyverValaszt) + 1) % lista.length];
     celzas = false;
-    uzenet(fegyverValaszt === 'palack' ? '🍾 Palack a kézben' : `🔫 ${fCfg[fegyverValaszt].nev} a kézben`);
+    uzenet(fegyverValaszt === 'palack' ? '🍾 Palack a kézben' : fegyverValaszt === 'katana' ? '🗡 Katana a kézben – bal egérgomb = vágás' : `🔫 ${fCfg[fegyverValaszt].nev} a kézben`);
     kozos?.frissitAllapot();
   }
   // távcső (csak a puskával): jobb egérgomb vagy Z
@@ -268,6 +287,48 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
     if (nalam.puska.toltesIg) return;
     celzas = !celzas;
   }
+  // --- katana (config.js: katana) ---
+  const KT = C.katana || {};
+  const ktCfg = { sebzes: Number(KT.sebzes ?? 50), tav: Number(KT.hatotav ?? 1.9), szunet: Number(KT.szunetMp ?? 0.6) * 1000 };
+  const kezbenKatana = katanaModell();
+  kezbenKatana.position.set(0.24, -0.26, -0.42);
+  kezbenKatana.visible = false;
+  camera.add(kezbenKatana);
+  let vagasIdo = -1e9;
+  function vag() {
+    if (!szabad() || most() - vagasIdo < ktCfg.szunet) return;
+    vagasIdo = most();
+    const fx = -Math.sin(seta.yaw), fy = -Math.cos(seta.yaw);
+    // aki előttünk van karnyújtásnyira (egy csapással egyet)
+    let leg = null, legD = ktCfg.tav;
+    for (const t of kozos?.tobbiek.values() || []) {
+      const u = t.cel;
+      if (!u.j || u.m === 'felul' || u.hal) continue;
+      const dx = u.x - seta.x, dy = u.y - seta.y, d = Math.hypot(dx, dy);
+      if (d > legD || d < 0.01 || Math.abs((u.z || 0) - seta.z) > 1.3) continue;
+      if ((dx * fx + dy * fy) / d < 0.45) continue;
+      leg = t; legD = d;
+    }
+    const kutya = kozelharc?.(seta.x, seta.y, fx, fy, ktCfg.tav) || 0; // a vad kutyákat is lehet
+    if (leg) {
+      kozos.kuldE({ t: 'vagas', cel: leg.id, s: ktCfg.sebzes, nev: kozos.nev() });
+      kozos.villant(leg.id);
+      uzenet(`🗡 Megvágtad: ${leg.nev}`);
+    } else if (kutya) uzenet(kutya > 1 ? `🗡 ${kutya} kutyát levágtál!` : '🗡 Levágtál egy kutyát!');
+  }
+  // jutalom a küldetésért: katana; ha már van, teljes életerő
+  function jutalom() {
+    if (!katana) {
+      katana = true; mentes();
+      fegyverValaszt = 'katana'; celzas = false;
+      kozos?.frissitAllapot();
+      uzenet('🗡 Jutalom: KATANA! Q = váltás, bal egérgomb = vágás (közelharcban −50 HP; halálkor sem veszik el)');
+    } else {
+      hp = 100; kozos?.frissitAllapot();
+      uzenet('❤ Jutalom: teljes életerő (a katana már a tiéd)');
+    }
+  }
+
   // meddig repül a lövedék, mielőtt falba, állványba, padlóba ütközik
   function lovedekHossz(o, d, tav) {
     const p = new THREE.Vector3();
@@ -452,6 +513,13 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
         if (most() - (lovesTalal.uz || 0) > 1500) { uzenet(`${tamado.nev} rád lőtt!`); lovesTalal.uz = most(); }
         sebzes(Math.max(0, Math.min(100, Number(e.s) || akCfg.sebzes)), 'loves');
       }
+    } else if (e.t === 'vagas') {
+      if (e.cel === kozos.id) {
+        if (!serulhet() || tars(e.tol)) return;
+        tamado = { id: e.tol, nev: e.nev || 'Valaki', ido: most() };
+        uzenet(`🗡 ${tamado.nev} megvágott a katanájával!`);
+        sebzes(Math.max(0, Math.min(60, Number(e.s) || ktCfg.sebzes)), 'katana');
+      } else kozos.villant(e.cel);
     } else if (e.t === 'granat') {
       const p = new THREE.Vector3(+e.x, +e.y, +e.z), v = new THREE.Vector3(+e.vx, +e.vy, +e.vz);
       if ([p.x, p.y, p.z, v.x, v.y, v.z].every(Number.isFinite)) inditGranat(e.id, p, v, e.tol, e.nev || 'Valaki', false);
@@ -512,7 +580,7 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
       el('hpErtek').style.width = `${hp}%`;
       el('hpErtek').style.background = hp > 50 ? '#3ddc5a' : hp > 25 ? '#f0b400' : '#e5322d';
       const f = aktFegyver(), a = f && nalam[f];
-      const loszer = (a ? ` · ${f === 'puska' ? '🎯' : '🔫'} ${a.toltesIg ? 'töltés…' : `${a.tarban}/${a.tartalek}`}` : (nalam.ak || nalam.puska ? ' · 🍾 (Q)' : ''))
+      const loszer = (a ? ` · ${f === 'puska' ? '🎯' : '🔫'} ${a.toltesIg ? 'töltés…' : `${a.tarban}/${a.tartalek}`}` : f === 'katana' ? ' · 🗡' : (nalam.ak || nalam.puska || katana ? ' · 🍾 (Q)' : ''))
         + (granat ? ` · 💣 ${granat}` : '');
       el('hpSzoveg').textContent = halott ? '☠' : `${Math.round(hp)} HP · ☠ ${pont.d} · 🎯 ${pont.k}${loszer}`;
     }
@@ -596,12 +664,18 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
       }
     }
     const fk = fegyverKezben() ? aktFegyver() : null;
-    if (lovesLe && fk && t - utolsoLoves > 1000 / fCfg[fk].perMp) {
+    if (lovesLe && fk === 'katana') { lovesLe = false; vag(); }
+    else if (lovesLe && fk && t - utolsoLoves > 1000 / fCfg[fk].perMp) {
       utolsoLoves = t; lo();
       if (!fCfg[fk].sorozat) lovesLe = false; // a puska egyesével lő
     }
     if (fk !== 'puska') celzas = false;
     for (const f of ['ak', 'puska']) kezben[f].visible = fk === f && !(f === 'puska' && celzas);
+    // katana: csapáskor jobbról balra, felülről lefelé suhint
+    kezbenKatana.visible = fk === 'katana';
+    const sk = Math.min(1, (t - vagasIdo) / 260), suhint = sk < 1 ? Math.sin(sk * Math.PI) : 0;
+    kezbenKatana.rotation.set(0.5 - 1.3 * suhint, 0.15 + 1.1 * suhint, -0.5 + 0.9 * suhint);
+    kezbenKatana.position.x = 0.24 - 0.3 * suhint;
     rugas = Math.max(0, rugas - dt * 12);
     kezben.ak.position.z = -0.55 + 0.04 * rugas;
     kezben.puska.position.z = -0.5 + 0.08 * rugas;
@@ -651,8 +725,9 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
       if (most() - (harapasUz || 0) > 1500) { uzenet(`🐕 Megharapott egy kutya! −${n} HP`); harapasUz = most(); }
       sebzes(n, 'kutya');
     },
-    frissit, lokes, dobas, eses, esemeny, utes, csomagok, ujratolt, valt, celoz, granatDob, fegyverKezben, jatekBe: () => be,
+    frissit, lokes, dobas, eses, esemeny, utes, csomagok, ujratolt, valt, celoz, granatDob, fegyverKezben, jutalom, vag, jatekBe: () => be,
+    katanaVan: () => katana,
     lovesTeszt: (le) => { lovesLe = le; }, akAllapot: () => nalam.ak, fegyverAllapot: () => ({ ...nalam, valaszt: fegyverValaszt, granat, celzas }),
-    extra: () => (be ? { j: 1, h: Math.round(hp), d: pont.d, k: pont.k, hal: halott ? 1 : 0, f: { ak: 1, puska: 2 }[aktFegyver()] || 0 } : { j: 0 }),
+    extra: () => (be ? { j: 1, h: Math.round(hp), d: pont.d, k: pont.k, hal: halott ? 1 : 0, f: { ak: 1, puska: 2, katana: 3 }[aktFegyver()] || 0 } : { j: 0 }),
   };
 }
