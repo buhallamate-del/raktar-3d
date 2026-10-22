@@ -313,6 +313,10 @@ window.RAKTAR_CONFIG = {
     visszaMp: 30,
     gyozelem: 3,
   },
+  // Lidérc: éjszaka a pohármosóban születik (szuletes: kivezető út az áruátvételre), és végiglebeg
+  // a raktár összes folyosóján, a végén visszafordul. sebesseg m/s (a felmosókocsinál kicsit gyorsabb);
+  // akihez hozzáér (erintesSugar m-en belül), az meghal.
+  liderc: { sebesseg: 8, erintesSugar: 0.75, szuletes: [[7.0, 99.7], [7.0, 97.8], [7.0, 94.0]] },
   // Vezethető felmosókocsi (x, y = alaprajzi pont, irany = merre néz, radiánban; 0 = észak felé).
   // Gyorsabb a futásnál (4,5 m/s) és a targoncáknál (2,2 m/s); aki rajta ül, csak vezetni tud.
   // Helyszín (IMG_3288): az EAR raktár előtt, a folyosón, kelet felé nézve (a helye becsült).
