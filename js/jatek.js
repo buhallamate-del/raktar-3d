@@ -7,11 +7,14 @@
 //   {t:'halal', cel, celNev, tol2, tol2Nev, ok} – a cél meghalt; tol2 a tettes (ha van)
 //   {t:'csomag', idx, ig}              – valaki felvette az idx. életerőcsomagot; ig-ig (Date.now) nincs a helyén
 //   {t:'lada', idx, ig}                – valaki felvette az idx. fegyverládából az AK-t
-//   {t:'loves', x, y, z, dx, dy, dz, h} – lövés (kezdőpont, irány, h: meddig repült a falig/állványig)
+//   {t:'loves', x, y, z, dx, dy, dz, h, s, fp} – lövés (kezdőpont, irány, h: meddig repült a falig/állványig;
+//                                      s: sebzés, fp: 'ak' | 'puska')
+//   {t:'granat', id, x, y, z, vx, vy, vz} – gránát indult
+//   {t:'robban', id, x, y, z}           – a gránát felrobbant (a dobó gépe dönti el, hol); mindenki maga számolja a sebzését
 import * as THREE from 'three';
 
 const TAROL = 'raktar3d.jatek';
-const OK_SZOVEG = { lokes: 'meglökték', palack: 'palack találta el', eses: 'leesett', targonca: 'elütötte egy targonca', loves: 'lelőtték', liderc: 'elkapta a lidérc', kutya: 'széttépték a vad kutyák' };
+const OK_SZOVEG = { lokes: 'meglökték', palack: 'palack találta el', eses: 'leesett', targonca: 'elütötte egy targonca', loves: 'lelőtték', granat: 'felrobbantották', liderc: 'elkapta a lidérc', kutya: 'széttépték a vad kutyák' };
 
 // Egyszerű, rajzfilmes AK: fa tus és markolat, fekete tok és cső, ívelt tár. Előre (−Z) néz.
 function akModell() {
@@ -25,6 +28,33 @@ function akModell() {
   d(0.05, 0.09, 0.26, fa, 0, -0.03, 0.29, 0.12);   // tus
   d(0.035, 0.1, 0.04, fa, 0, -0.08, 0.1, -0.3);    // markolat
   d(0.04, 0.16, 0.06, fekete, 0, -0.12, -0.07, 0.35); // ívelt tár
+  return g;
+}
+
+// Távcsöves puska: hosszú cső, távcső, fa tus, kétlábú támasz nélkül. Előre (−Z) néz.
+function puskaModell() {
+  const g = new THREE.Group();
+  const fa = new THREE.MeshLambertMaterial({ color: '#5e3b1e' }), fekete = new THREE.MeshLambertMaterial({ color: '#1b1d21' });
+  const d = (sx, sy, sz, a, x, y, z, rx = 0) => { const m = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, sz), a); m.position.set(x, y, z); m.rotation.x = rx; g.add(m); return m; };
+  d(0.055, 0.07, 0.4, fekete, 0, 0, 0);            // tok
+  d(0.06, 0.08, 0.36, fa, 0, -0.02, -0.3);         // előagy
+  d(0.055, 0.1, 0.3, fa, 0, -0.04, 0.32, 0.1);     // tus
+  d(0.03, 0.09, 0.04, fa, 0, -0.08, 0.12, -0.3);   // markolat
+  const cso = new THREE.Mesh(new THREE.CylinderGeometry(0.011, 0.013, 0.62, 8), fekete);
+  cso.rotation.x = Math.PI / 2; cso.position.set(0, 0.02, -0.72); g.add(cso);
+  const tavcso = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.3, 12), fekete);
+  tavcso.rotation.x = Math.PI / 2; tavcso.position.set(0, 0.09, -0.02); g.add(tavcso);
+  for (const z of [-0.17, 0.13]) { const l = new THREE.Mesh(new THREE.CylinderGeometry(0.034, 0.034, 0.04, 12), fekete); l.rotation.x = Math.PI / 2; l.position.set(0, 0.09, z); g.add(l); }
+  return g;
+}
+
+// Gránát: zöld tojás, fém gyújtófej
+function granatModell() {
+  const g = new THREE.Group();
+  const test = new THREE.Mesh(new THREE.SphereGeometry(0.05, 10, 8), new THREE.MeshLambertMaterial({ color: '#3f5a2a' }));
+  test.scale.y = 1.25; g.add(test);
+  const fej = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.022, 0.04, 8), new THREE.MeshLambertMaterial({ color: '#9aa0a6' }));
+  fej.position.y = 0.075; g.add(fej);
   return g;
 }
 
@@ -81,7 +111,7 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
 
   function meghal(ok) {
     halott = true;
-    ak = null; lovesLe = false; // a fegyver elveszik
+    nalam.ak = nalam.puska = null; granat = 0; lovesLe = false; celzas = false; // a fegyverek elvesznek
     seta.halott = true;
     pont.d++;
     mentes();
@@ -89,8 +119,8 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
     const ok2 = tettes && ok === 'eses' ? (tettes.id === 'targonca' ? 'targonca' : 'lokes') : ok;
     kozos?.kuldE({ t: 'halal', cel: kozos.id, celNev: kozos.nev(), tol2: tettes?.id, tol2Nev: tettes?.nev, ok: ok2 });
     el('halalSzoveg').textContent = tettes
-      ? `${tettes.nev} ${ok2 === 'palack' ? 'eltalált egy palackkal' : ok2 === 'targonca' ? 'elütött' : ok2 === 'loves' ? 'lelőtt' : 'meglökött'}.`
-      : ok2 === 'liderc' ? '👻 Elkapott a lidérc.' : ok2 === 'kutya' ? '🐕 Széttéptek a vad kutyák.' : OK_SZOVEG[ok2] === 'leesett' ? 'Leestél.' : 'Elfogyott az életerőd.';
+      ? `${tettes.nev} ${ok2 === 'palack' ? 'eltalált egy palackkal' : ok2 === 'targonca' ? 'elütött' : ok2 === 'loves' ? 'lelőtt' : ok2 === 'granat' ? 'felrobbantott' : 'meglökött'}.`
+      : ok2 === 'granat' ? '💥 Felrobbantál.' : ok2 === 'liderc' ? '👻 Elkapott a lidérc.' : ok2 === 'kutya' ? '🐕 Széttéptek a vad kutyák.' : OK_SZOVEG[ok2] === 'leesett' ? 'Leestél.' : 'Elfogyott az életerőd.';
     el('halalKep').hidden = false;
     kozos?.frissitAllapot();
     setTimeout(ujraeled, cfg.ujraMp * 1000);
@@ -174,71 +204,170 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
     return false;
   }
 
-  // --- AK (config.js: fegyver, fegyverLadak) ---
-  const FG = C.fegyver || {};
-  const akCfg = { sebzes: Number(FG.sebzes ?? 12), perMp: Number(FG.lovesPerMp ?? 9), tar: Number(FG.tar ?? 30),
-    loszer: Number(FG.loszer ?? 90), toltes: Number(FG.ujratoltesMp ?? 2) * 1000, tav: Number(FG.hatotav ?? 60) };
-  let ak = null;              // {tarban, tartalek, toltesIg}
-  let fegyverValaszt = 'ak';  // 'ak' | 'palack' (Q vált)
-  let lovesLe = false, utolsoLoves = 0, rugas = 0;
+  // --- lőfegyverek: AK és távcsöves puska (config.js: fegyver, puska, fegyverLadak, puskaLadak) ---
+  const FG = C.fegyver || {}, PK = C.puska || {};
+  const fCfg = {
+    ak: { nev: 'AK', sebzes: Number(FG.sebzes ?? 12), perMp: Number(FG.lovesPerMp ?? 9), tar: Number(FG.tar ?? 30),
+      loszer: Number(FG.loszer ?? 90), toltes: Number(FG.ujratoltesMp ?? 2) * 1000, tav: Number(FG.hatotav ?? 60), sorozat: true },
+    puska: { nev: 'távcsöves puska', sebzes: Number(PK.sebzes ?? 80), perMp: Number(PK.lovesPerMp ?? 0.8), tar: Number(PK.tar ?? 5),
+      loszer: Number(PK.loszer ?? 20), toltes: Number(PK.ujratoltesMp ?? 3) * 1000, tav: Number(PK.hatotav ?? 150), sorozat: false,
+      nagyitas: Number(PK.nagyitas ?? 4) },
+  };
+  const akCfg = fCfg.ak;
+  const nalam = { ak: null, puska: null }; // {tarban, tartalek, toltesIg}
+  let fegyverValaszt = 'ak';  // 'ak' | 'puska' | 'palack' (Q vált)
+  let lovesLe = false, utolsoLoves = 0, rugas = 0, celzas = false;
+  const alapFov = camera.fov;
+  // gránát (config.js: granat): a fegyverládákon jár, T = dobás
+  const GR = C.granat || {};
+  const grCfg = { max: Number(GR.max ?? 4), ladankent: Number(GR.ladankent ?? 2), sebzes: Number(GR.sebzes ?? 100),
+    sugar: Number(GR.sugar ?? 5), gyujto: Number(GR.gyujtoMp ?? 2.5) * 1000, seb: Number(GR.dobasSebesseg ?? 13) };
+  let granat = 0, granatIdo = 0;
   if (!camera.parent) scene.add(camera);
-  const kezbenAk = akModell();
-  kezbenAk.position.set(0.2, -0.19, -0.55);
-  kezbenAk.scale.setScalar(0.8);
-  kezbenAk.rotation.y = 0.04;
-  kezbenAk.visible = false;
-  camera.add(kezbenAk);
-  const torkolat = new THREE.Mesh(new THREE.SphereGeometry(0.035, 8, 6), new THREE.MeshBasicMaterial({ color: '#ffd84d' }));
-  torkolat.material.userData.vilagit = true;
-  torkolat.position.set(0, 0.02, -0.7); torkolat.visible = false; kezbenAk.add(torkolat);
-  const ladak = (C.fegyverLadak || []).map((c, idx) => {
+  const kezben = {
+    ak: Object.assign(akModell(), { visible: false }),
+    puska: Object.assign(puskaModell(), { visible: false }),
+  };
+  kezben.ak.position.set(0.2, -0.19, -0.55); kezben.ak.scale.setScalar(0.8); kezben.ak.rotation.y = 0.04;
+  kezben.puska.position.set(0.2, -0.2, -0.5); kezben.puska.scale.setScalar(0.8); kezben.puska.rotation.y = 0.04;
+  const torkolatok = {};
+  for (const [f, z] of [['ak', -0.7], ['puska', -1.05]]) {
+    const tk = new THREE.Mesh(new THREE.SphereGeometry(0.035, 8, 6), new THREE.MeshBasicMaterial({ color: '#ffd84d' }));
+    tk.material.userData.vilagit = true;
+    tk.position.set(0, 0.02, z); tk.visible = false; kezben[f].add(tk); torkolatok[f] = tk;
+    camera.add(kezben[f]);
+  }
+  const ladak = [...(C.fegyverLadak || []).map(c => ({ ...c, tipus: 'ak' })), ...(C.puskaLadak || []).map(c => ({ ...c, tipus: 'puska' }))].map((c, idx) => {
     const g = new THREE.Group();
-    const lada = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.35, 0.45), new THREE.MeshLambertMaterial({ color: '#4b5320' }));
+    const lada = new THREE.Mesh(new THREE.BoxGeometry(c.tipus === 'puska' ? 1.3 : 1.0, 0.35, 0.45), new THREE.MeshLambertMaterial({ color: c.tipus === 'puska' ? '#3b4a3a' : '#4b5320' }));
     lada.position.y = 0.175; g.add(lada);
-    const fegyver = akModell(); fegyver.scale.setScalar(1.4); fegyver.position.y = 0.75; g.add(fegyver);
+    const fegyver = c.tipus === 'puska' ? puskaModell() : akModell(); fegyver.scale.setScalar(1.4); fegyver.position.y = 0.75; g.add(fegyver);
     g.position.set(c.x, Number(c.z ?? 0), c.y);
     scene.add(g);
     return { ...c, idx, g, fegyver, ig: 0, ujraMp: Number(c.ujraMp ?? 45) };
   });
-  const fegyverKezben = () => !!ak && fegyverValaszt === 'ak' && getMod() === 'seta' && !halott && be && !seta.kocsin;
-  function ujratolt() {
-    if (!ak || ak.toltesIg || ak.tarban >= akCfg.tar || ak.tartalek <= 0) return;
-    ak.toltesIg = most() + akCfg.toltes;
+  const aktFegyver = () => (fegyverValaszt !== 'palack' && nalam[fegyverValaszt] ? fegyverValaszt : null);
+  const fegyverKezben = () => !!aktFegyver() && getMod() === 'seta' && !halott && be && !seta.kocsin;
+  function ujratolt(f = aktFegyver()) {
+    const a = f && nalam[f], c = f && fCfg[f];
+    if (!a || a.toltesIg || a.tarban >= c.tar || a.tartalek <= 0) return;
+    a.toltesIg = most() + c.toltes;
+    if (f === 'puska') celzas = false;
   }
   function valt() {
-    if (!ak) { uzenet('Nincs nálad AK – a fegyverládán találsz (a galérián és az áruátvételen)'); return; }
-    fegyverValaszt = fegyverValaszt === 'ak' ? 'palack' : 'ak';
-    uzenet(fegyverValaszt === 'ak' ? '🔫 AK a kézben' : '🍾 Palack a kézben');
+    const lista = ['ak', 'puska'].filter(f => nalam[f]).concat('palack');
+    if (lista.length === 1) { uzenet('Nincs nálad lőfegyver – a fegyverládákon találsz (a galérián és az áruátvételen)'); return; }
+    fegyverValaszt = lista[(lista.indexOf(fegyverValaszt) + 1) % lista.length];
+    celzas = false;
+    uzenet(fegyverValaszt === 'palack' ? '🍾 Palack a kézben' : `🔫 ${fCfg[fegyverValaszt].nev} a kézben`);
     kozos?.frissitAllapot();
   }
+  // távcső (csak a puskával): jobb egérgomb vagy Z
+  function celoz() {
+    if (aktFegyver() !== 'puska' || !fegyverKezben()) { celzas = false; return; }
+    if (nalam.puska.toltesIg) return;
+    celzas = !celzas;
+  }
   // meddig repül a lövedék, mielőtt falba, állványba, padlóba ütközik
-  function lovedekHossz(o, d) {
+  function lovedekHossz(o, d, tav) {
     const p = new THREE.Vector3();
-    for (let t = 0.3; t < akCfg.tav; t += 0.2) { p.copy(o).addScaledVector(d, t); if (akadalyban(p)) return t; }
-    return akCfg.tav;
+    for (let t = 0.3; t < tav; t += 0.2) { p.copy(o).addScaledVector(d, t); if (akadalyban(p)) return t; }
+    return tav;
   }
   const nyomok = [];
-  function nyomjelzo(o, d, h) {
+  function nyomjelzo(o, d, h, puska) {
     const geo = new THREE.BufferGeometry().setFromPoints([o.clone().addScaledVector(d, 0.6), o.clone().addScaledVector(d, h)]);
-    const vonal = new THREE.Line(geo, new THREE.LineBasicMaterial({ color: '#ffe27a', transparent: true, opacity: 0.9 }));
+    const vonal = new THREE.Line(geo, new THREE.LineBasicMaterial({ color: puska ? '#ffffff' : '#ffe27a', transparent: true, opacity: 0.9 }));
     scene.add(vonal);
     nyomok.push({ vonal, ido: most() });
   }
   function lo() {
-    if (!ak || ak.toltesIg) return;
-    if (ak.tarban <= 0) { ujratolt(); return; }
-    ak.tarban--;
+    const f = aktFegyver(), a = f && nalam[f], c = f && fCfg[f];
+    if (!a || a.toltesIg) return;
+    if (a.tarban <= 0) { ujratolt(); return; }
+    a.tarban--;
     const o = camera.getWorldPosition(new THREE.Vector3());
     const d = camera.getWorldDirection(new THREE.Vector3());
-    d.x += (Math.random() - 0.5) * 0.02; d.y += (Math.random() - 0.5) * 0.02; d.z += (Math.random() - 0.5) * 0.02; d.normalize();
-    const h = lovedekHossz(o, d);
-    nyomjelzo(o, d, h);
+    // szórás: az AK sorozata szór, a puska távcsővel szinte pontos, anélkül pontatlan
+    const sz = f === 'puska' ? (celzas ? 0.0006 : 0.05) : 0.02;
+    d.x += (Math.random() - 0.5) * sz; d.y += (Math.random() - 0.5) * sz; d.z += (Math.random() - 0.5) * sz; d.normalize();
+    const h = lovedekHossz(o, d, c.tav);
+    nyomjelzo(o, d, h, f === 'puska');
     rugas = 1;
-    seta.pitch = Math.min(1.45, seta.pitch + 0.003); // enyhe felrúgás
+    seta.pitch = Math.min(1.45, seta.pitch + (f === 'puska' ? 0.03 : 0.003)); // felrúgás
     const k = v => +v.toFixed(3);
-    kozos?.kuldE({ t: 'loves', x: k(o.x), y: k(o.y), z: k(o.z), dx: k(d.x), dy: k(d.y), dz: k(d.z), h: +h.toFixed(2), nev: kozos.nev() });
-    if (ak.tarban === 0) ujratolt();
+    kozos?.kuldE({ t: 'loves', x: k(o.x), y: k(o.y), z: k(o.z), dx: k(d.x), dy: k(d.y), dz: k(d.z), h: +h.toFixed(2), s: c.sebzes, fp: f, nev: kozos.nev() });
+    if (a.tarban === 0) ujratolt();
   }
+
+  // --- gránát ---
+  const granatok = new Map(); // id -> {g, p, v, ido, sajat, tol, nev}
+  const robbanasok = [];
+  const robbanFeny = new THREE.PointLight('#ffa040', 0, 14, 1.5);
+  scene.add(robbanFeny);
+  function inditGranat(id, p, v, tol, nev, sajat) {
+    if (granatok.has(id)) return;
+    const g = granatModell();
+    g.position.copy(p);
+    scene.add(g);
+    granatok.set(id, { g, p: p.clone(), v: v.clone(), ido: most(), sajat, tol, nev });
+  }
+  function granatDob() {
+    if (!szabad()) return;
+    if (granat <= 0) { uzenet('Nincs gránátod – a fegyverládákon kapsz'); return; }
+    if (most() - granatIdo < 800) return;
+    granatIdo = most();
+    granat--;
+    camera.getWorldDirection(v3);
+    const p = camera.position.clone().addScaledVector(v3, 0.5);
+    const v = v3.clone().multiplyScalar(grCfg.seb).add(new THREE.Vector3(0, 2.5, 0));
+    const id = `${kozos?.id || 'helyi'}-g${++szamlalo}`;
+    inditGranat(id, p, v, kozos?.id, kozos?.nev(), true);
+    const k = x => +x.toFixed(2);
+    kozos?.kuldE({ t: 'granat', id, x: k(p.x), y: k(p.y), z: k(p.z), vx: k(v.x), vy: k(v.y), vz: k(v.z), nev: kozos.nev() });
+    uzenet(`💣 Gránát elhajítva! (${granat} maradt)`);
+  }
+  // pattog: tengelyenként mozgatjuk, és ahol akadályba ütközne, ott visszapattan
+  function granatLeptet(b, dt) {
+    b.v.y -= 9.81 * dt;
+    for (const ax of ['x', 'y', 'z']) {
+      const elotte = b.p[ax];
+      b.p[ax] += b.v[ax] * dt;
+      if (akadalyban(b.p)) {
+        b.p[ax] = elotte;
+        b.v[ax] *= -0.35;
+        if (ax === 'y') { b.v.x *= 0.7; b.v.z *= 0.7; }
+      }
+    }
+  }
+  function robbanas(id, pos, tol, nev) {
+    const b = granatok.get(id);
+    if (b) { scene.remove(b.g); granatok.delete(id); }
+    const gomb = new THREE.Mesh(new THREE.SphereGeometry(1, 20, 14),
+      new THREE.MeshBasicMaterial({ color: '#ffb347', transparent: true, opacity: 0.9, depthWrite: false, blending: THREE.AdditiveBlending }));
+    gomb.material.userData.vilagit = true;
+    gomb.position.copy(pos); gomb.scale.setScalar(0.2);
+    scene.add(gomb);
+    robbanasok.push({ gomb, ido: most() });
+    robbanFeny.position.copy(pos).setY(pos.y + 0.5); robbanFeny.intensity = 40;
+    for (let i = 0; i < 10; i++) {
+      const s2 = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.05, 0.05), new THREE.MeshLambertMaterial({ color: '#33302b' }));
+      s2.position.copy(pos);
+      scene.add(s2);
+      szilankok.push({ s: s2, v: new THREE.Vector3((Math.random() - 0.5) * 9, Math.random() * 6, (Math.random() - 0.5) * 9), ido: most() });
+    }
+    // sebzés rajtunk: a távolsággal csökken (a saját gránát is sebez)
+    if (!serulhet() || (tol !== kozos?.id && tars(tol))) return;
+    const dx = seta.x - pos.x, dy = seta.y - pos.z, dz = seta.z + 0.9 - pos.y, d = Math.hypot(dx, dy, dz);
+    if (d >= grCfg.sugar) return;
+    const ero = 1 - d / grCfg.sugar, hd = Math.hypot(dx, dy) || 1;
+    seta.kvx = (seta.kvx || 0) + dx / hd * 9 * ero; seta.kvy = (seta.kvy || 0) + dy / hd * 9 * ero;
+    seta.vz = Math.max(seta.vz || 0, 4 * ero);
+    tamado = tol && tol !== kozos?.id ? { id: tol, nev: nev || 'Valaki', ido: most() } : null;
+    uzenet(tamado ? `💥 ${tamado.nev} gránátja eltalált!` : '💥 A saját gránátod sebzett meg!');
+    sebzes(Math.round(grCfg.sebzes * ero), 'granat');
+  }
+
   // a lövés eltalált-e minket: a sugár és a testünk (függőleges szakasz) távolsága
   function lovesTalal(e) {
     const ox = +e.x, oy = +e.y, oz = +e.z, dx = +e.dx, dy = +e.dy, dz = +e.dz, h = +e.h;
@@ -253,7 +382,11 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
   const vaszon = document.querySelector('#vaszon canvas');
   vaszon?.addEventListener('pointerdown', e => {
     if (e.pointerType === 'mouse' && e.button === 0 && document.pointerLockElement === vaszon && fegyverKezben()) lovesLe = true;
+    if (e.pointerType === 'mouse' && e.button === 2 && document.pointerLockElement === vaszon) celoz();
   });
+  vaszon?.addEventListener('contextmenu', e => { if (fegyverKezben()) e.preventDefault(); });
+  el('tavcsoGomb')?.addEventListener('pointerdown', e => { e.preventDefault(); celoz(); });
+  el('granatGomb')?.addEventListener('pointerdown', e => { e.preventDefault(); granatDob(); });
   addEventListener('pointerup', e => { if (e.pointerType === 'mouse') lovesLe = false; });
   el('lovesGomb')?.addEventListener('pointerdown', e => { e.preventDefault(); lovesLe = true; el('lovesGomb').setPointerCapture(e.pointerId); });
   for (const ev of ['pointerup', 'pointercancel']) el('lovesGomb')?.addEventListener(ev, () => { lovesLe = false; });
@@ -313,12 +446,18 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
       if (e.cel !== kozos.id) kozos.villant(e.cel);
     } else if (e.t === 'loves') {
       const o = new THREE.Vector3(+e.x, +e.y, +e.z), d = new THREE.Vector3(+e.dx, +e.dy, +e.dz);
-      if ([o.x, o.y, o.z, d.x, d.y, d.z, +e.h].every(Number.isFinite)) nyomjelzo(o, d.normalize(), Math.min(+e.h, akCfg.tav));
+      if ([o.x, o.y, o.z, d.x, d.y, d.z, +e.h].every(Number.isFinite)) nyomjelzo(o, d.normalize(), Math.min(+e.h, fCfg.puska.tav), e.fp === 'puska');
       if (serulhet() && !tars(e.tol) && lovesTalal(e)) {
         tamado = { id: e.tol, nev: e.nev || 'Valaki', ido: most() };
         if (most() - (lovesTalal.uz || 0) > 1500) { uzenet(`${tamado.nev} rád lőtt!`); lovesTalal.uz = most(); }
-        sebzes(akCfg.sebzes, 'loves');
+        sebzes(Math.max(0, Math.min(100, Number(e.s) || akCfg.sebzes)), 'loves');
       }
+    } else if (e.t === 'granat') {
+      const p = new THREE.Vector3(+e.x, +e.y, +e.z), v = new THREE.Vector3(+e.vx, +e.vy, +e.vz);
+      if ([p.x, p.y, p.z, v.x, v.y, v.z].every(Number.isFinite)) inditGranat(e.id, p, v, e.tol, e.nev || 'Valaki', false);
+    } else if (e.t === 'robban') {
+      const p = new THREE.Vector3(+e.x, +e.y, +e.z);
+      if ([p.x, p.y, p.z].every(Number.isFinite)) robbanas(e.id, p, e.tol, e.nev || 'Valaki');
     } else if (e.t === 'lada') {
       const c = ladak[Number(e.idx)];
       if (c && Number.isFinite(+e.ig)) c.ig = Math.max(c.ig, +e.ig);
@@ -372,7 +511,9 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
     if (be && seta2) {
       el('hpErtek').style.width = `${hp}%`;
       el('hpErtek').style.background = hp > 50 ? '#3ddc5a' : hp > 25 ? '#f0b400' : '#e5322d';
-      const loszer = ak ? ` · 🔫 ${ak.toltesIg ? 'töltés…' : `${ak.tarban}/${ak.tartalek}`}${fegyverValaszt === 'palack' ? ' (Q)' : ''}` : '';
+      const f = aktFegyver(), a = f && nalam[f];
+      const loszer = (a ? ` · ${f === 'puska' ? '🎯' : '🔫'} ${a.toltesIg ? 'töltés…' : `${a.tarban}/${a.tartalek}`}` : (nalam.ak || nalam.puska ? ' · 🍾 (Q)' : ''))
+        + (granat ? ` · 💣 ${granat}` : '');
       el('hpSzoveg').textContent = halott ? '☠' : `${Math.round(hp)} HP · ☠ ${pont.d} · 🎯 ${pont.k}${loszer}`;
     }
     for (const id of ['lokesGomb', 'dobasGomb']) el(id).hidden = !(be && seta2 && document.body.classList.contains('erintes'));
@@ -422,36 +563,76 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
       c.doboz.rotation.y += dt * 1.5;
     }
     csomagFelvetel(t);
-    // AK: fegyverláda, lövés, újratöltés, a kézben lévő fegyver mozgása
+    // fegyverládák: AK vagy puska, ha már van nálunk, teli lőszer; mellé gránát
     for (const c of ladak) {
       c.g.visible = be;
       c.fegyver.visible = ido >= c.ig;
       c.fegyver.rotation.y += dt * 1.2;
       c.fegyver.position.y = 0.75 + 0.06 * Math.sin(t / 450);
-      // a ládánál: AK, vagy ha már van nálunk, teli lőszer (ha nem teli)
-      const teli = ak && ak.tarban + ak.tartalek >= akCfg.loszer;
+      const f = c.tipus, a = nalam[f], cf = fCfg[f];
+      const teli = a && a.tarban + a.tartalek >= cf.loszer && granat >= grCfg.max;
       if (szabad() && !teli && ido >= c.ig && Math.hypot(seta.x - c.x, seta.y - c.y) < 0.9 && Math.abs(seta.z - Number(c.z ?? 0)) < 1) {
-        const ujAk = !ak;
-        if (ujAk) ak = { tarban: akCfg.tar, tartalek: akCfg.loszer - akCfg.tar, toltesIg: 0 };
-        else { ak.tartalek = akCfg.loszer - ak.tarban; }
-        fegyverValaszt = 'ak';
+        const uj = !a;
+        if (uj) nalam[f] = { tarban: cf.tar, tartalek: cf.loszer - cf.tar, toltesIg: 0 };
+        else a.tartalek = cf.loszer - a.tarban;
+        const gr = Math.max(0, Math.min(grCfg.max - granat, grCfg.ladankent));
+        granat += gr;
+        fegyverValaszt = f; celzas = false;
         c.ig = ido + c.ujraMp * 1000;
         kozos?.kuldE({ t: 'lada', idx: c.idx, ig: c.ig });
         kozos?.frissitAllapot();
-        uzenet(ujAk ? '🔫 Felvetted az AK-t! Bal egérgomb = lövés, R = újratöltés, Q = váltás' : `🔫 Lőszer feltöltve (${ak.tarban}/${ak.tartalek})`);
-        if (!ujAk && ak.tarban < akCfg.tar) ujratolt();
+        const gSz = gr ? ` · +${gr} gránát (T = dobás)` : '';
+        uzenet(uj
+          ? `🔫 Felvetted: ${cf.nev}! Bal egérgomb = lövés, R = újratöltés, Q = váltás${f === 'puska' ? ', jobb egérgomb / Z = távcső' : ''}${gSz}`
+          : `🔫 Lőszer feltöltve (${nalam[f].tarban}/${nalam[f].tartalek})${gSz}`);
+        if (!uj && nalam[f].tarban < cf.tar) ujratolt(f);
       }
     }
-    if (ak?.toltesIg && t >= ak.toltesIg) {
-      const kell = Math.min(akCfg.tar - ak.tarban, ak.tartalek);
-      ak.tarban += kell; ak.tartalek -= kell; ak.toltesIg = 0;
+    for (const f of ['ak', 'puska']) {
+      const a = nalam[f];
+      if (a?.toltesIg && t >= a.toltesIg) {
+        const kell = Math.min(fCfg[f].tar - a.tarban, a.tartalek);
+        a.tarban += kell; a.tartalek -= kell; a.toltesIg = 0;
+      }
     }
-    if (lovesLe && fegyverKezben() && t - utolsoLoves > 1000 / akCfg.perMp) { utolsoLoves = t; lo(); }
-    kezbenAk.visible = fegyverKezben();
+    const fk = fegyverKezben() ? aktFegyver() : null;
+    if (lovesLe && fk && t - utolsoLoves > 1000 / fCfg[fk].perMp) {
+      utolsoLoves = t; lo();
+      if (!fCfg[fk].sorozat) lovesLe = false; // a puska egyesével lő
+    }
+    if (fk !== 'puska') celzas = false;
+    for (const f of ['ak', 'puska']) kezben[f].visible = fk === f && !(f === 'puska' && celzas);
     rugas = Math.max(0, rugas - dt * 12);
-    kezbenAk.position.z = -0.55 + 0.04 * rugas;
-    torkolat.visible = rugas > 0.6;
-    el('lovesGomb').hidden = !(fegyverKezben() && document.body.classList.contains('erintes'));
+    kezben.ak.position.z = -0.55 + 0.04 * rugas;
+    kezben.puska.position.z = -0.5 + 0.08 * rugas;
+    for (const f of ['ak', 'puska']) torkolatok[f].visible = rugas > 0.6;
+    // távcső: nagyítás és célkereszt
+    const celFov = celzas ? alapFov / fCfg.puska.nagyitas : alapFov;
+    if (Math.abs(camera.fov - celFov) > 0.01) { camera.fov += (celFov - camera.fov) * Math.min(1, dt * 14); if (Math.abs(camera.fov - celFov) < 0.05) camera.fov = celFov; camera.updateProjectionMatrix(); }
+    if (el('tavcso')) el('tavcso').hidden = !celzas;
+    const erintes = document.body.classList.contains('erintes');
+    el('lovesGomb').hidden = !(fk && erintes);
+    if (el('tavcsoGomb')) el('tavcsoGomb').hidden = !(fk === 'puska' && erintes);
+    if (el('granatGomb')) el('granatGomb').hidden = !(granat > 0 && szabad() && erintes);
+    // gránátok: repülnek, pattognak; a sajátunk a gyújtóidő végén felrobban (és szólunk a többieknek)
+    for (const [id, b] of granatok) {
+      const lepes = Math.max(1, Math.ceil(b.v.length() * dt / 0.08));
+      for (let i = 0; i < lepes; i++) granatLeptet(b, dt / lepes);
+      b.g.position.copy(b.p);
+      b.g.rotation.x += dt * 8 * Math.min(1, b.v.length() / 3);
+      if (b.sajat && t - b.ido > grCfg.gyujto) {
+        const k = x => +x.toFixed(2);
+        kozos?.kuldE({ t: 'robban', id, x: k(b.p.x), y: k(b.p.y), z: k(b.p.z), nev: kozos.nev() });
+        robbanas(id, b.p.clone(), kozos?.id, kozos?.nev());
+      } else if (!b.sajat && t - b.ido > grCfg.gyujto + 4000) { scene.remove(b.g); granatok.delete(id); }
+    }
+    for (let i = robbanasok.length - 1; i >= 0; i--) {
+      const r = robbanasok[i], kor = (t - r.ido) / 450;
+      r.gomb.scale.setScalar(0.2 + kor * grCfg.sugar * 0.8);
+      r.gomb.material.opacity = Math.max(0, 0.9 * (1 - kor));
+      if (kor >= 1) { scene.remove(r.gomb); r.gomb.geometry.dispose(); r.gomb.material.dispose(); robbanasok.splice(i, 1); }
+    }
+    robbanFeny.intensity = Math.max(0, robbanFeny.intensity - dt * 120);
     for (let i = nyomok.length - 1; i >= 0; i--) {
       const n = nyomok[i], kor = t - n.ido;
       n.vonal.material.opacity = Math.max(0, 0.9 - kor / 120);
@@ -470,8 +651,8 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
       if (most() - (harapasUz || 0) > 1500) { uzenet(`🐕 Megharapott egy kutya! −${n} HP`); harapasUz = most(); }
       sebzes(n, 'kutya');
     },
-    frissit, lokes, dobas, eses, esemeny, utes, csomagok, ujratolt, valt, fegyverKezben, jatekBe: () => be,
-    lovesTeszt: (le) => { lovesLe = le; }, akAllapot: () => ak,
-    extra: () => (be ? { j: 1, h: Math.round(hp), d: pont.d, k: pont.k, hal: halott ? 1 : 0, f: ak && fegyverValaszt === 'ak' ? 1 : 0 } : { j: 0 }),
+    frissit, lokes, dobas, eses, esemeny, utes, csomagok, ujratolt, valt, celoz, granatDob, fegyverKezben, jatekBe: () => be,
+    lovesTeszt: (le) => { lovesLe = le; }, akAllapot: () => nalam.ak, fegyverAllapot: () => ({ ...nalam, valaszt: fegyverValaszt, granat, celzas }),
+    extra: () => (be ? { j: 1, h: Math.round(hp), d: pont.d, k: pont.k, hal: halott ? 1 : 0, f: { ak: 1, puska: 2 }[aktFegyver()] || 0 } : { j: 0 }),
   };
 }

@@ -72,6 +72,13 @@ A közös nézetben játszani is lehet (a ☰ menü „Játék” kapcsolójáva
   tud (nem ugrik, nem lő, nem dob, zászlót és csomagot sem vesz fel). Egyszerre egy ember ülhet rajta; a helye
   mindenkinél ugyanaz (megőrzött MQTT-üzenet). Beállítás: `config.js` → `felmosoKocsi`.
 - A többiek neve és életerő-csíkja belső nézetben nem látszik át a falon és az állványon.
+- **Távcsöves puska:** a galérián és az áruátvételen, az AK-ládák mellett. Egyesével lő, −80 HP; jobb egérgomb vagy Z =
+  távcső (4× nagyítás, távcsővel szinte pontos). Q = váltás AK / puska / palack. Beállítás: `config.js` → `puska`, `puskaLadak`.
+- **Gránát:** a fegyverládák 2-2 gránátot adnak (legfeljebb 4). T = dobás (telefonon „Gránát”); pattog, 2,5 mp múlva
+  robban, 5 m-en belül a távolsággal csökkenő sebzés (középen 100 HP), a dobót is sebzi. Beállítás: `config.js` → `granat`.
+- **Civilek:** két raktáros békát húz a folyosókon (mint a targoncák, mindenkinél ugyanott). A béka rakománya a sor teljes
+  szélességét elállja – kikerülni nem lehet, de fel lehet ugrani rá, és vele lehet utazni. Útban állót maga előtt tol.
+  Beállítás: `config.js` → `civilek`.
 - **Vad kutyák:** aki a raktáron kívülre megy (árukiadó udvar, fedett rakodó, fedett rész), azt 1,5 mp múlva egy
   3 kutyából álló falka kergetni kezdi 6 m/s-mal – gyorsabb a futásnál (4,5 m/s), csak a felmosókocsival lehet elmenekülni előlük; ha utolérik, kutyánként másodpercenként egy
   harapás, −10 HP. Akadályokat megkerülik, de a raktárba nem jönnek be; ha visszamész, 5 mp múlva elmennek.
@@ -113,6 +120,7 @@ kizárt folyosók, további utak; a `mag` átírásával más útvonalakat járn
 | `js/targonca.js` | targoncák: folyosóhálózat, véletlen körutak, elütés |
 | `js/ctf.js` | zászlófoglalás: csapatok, bázisok, zászlók, közös állás |
 | `js/kocsi.js` | vezethető felmosókocsi |
+| `js/civilek.js` | békát húzó raktárosok (mozgó akadály) |
 | `js/kutyak.js` | vad kutyák a raktáron kívül |
 | `js/liderc.js` | éjszakai lidérc: végigjárja a folyosókat, érintésre öl |
 | `js/ejszaka.js` | éjszakai mód a játékban: nappal–éjszaka ciklus, zseblámpa |

@@ -107,6 +107,12 @@ code { background: #eef1f5; padding: 0 4px; border-radius: 4px; }
 #lokesGomb { right: 118px; bottom: 60px; }
 #dobasGomb { right: 118px; bottom: 148px; }
 #lampaGomb { right: 30px; bottom: 336px; }
+#granatGomb { right: 206px; bottom: 60px; background: rgba(63, 90, 42, 0.85); }
+#tavcsoGomb { right: 206px; bottom: 148px; }
+/* távcső: kör alakú látómező, célkereszttel */
+#tavcso { position: fixed; inset: 0; z-index: 6; pointer-events: none;
+  background: radial-gradient(circle at 50% 50%, transparent 0 34vmin, rgba(0, 0, 0, 0.96) 34.4vmin),
+    linear-gradient(#000, #000) 50% 50% / 1px 68vmin no-repeat, linear-gradient(#000, #000) 50% 50% / 68vmin 1px no-repeat; }
 #kocsiGomb { right: 118px; bottom: 324px; background: rgba(31, 95, 191, 0.85); }
 #napszak { position: fixed; top: 64px; left: 50%; transform: translateX(-50%); z-index: 7; pointer-events: none;
   background: rgba(255, 248, 220, 0.9); color: #5a4300; padding: 3px 10px; border-radius: 10px; font-size: 12px; font-weight: 700; }
