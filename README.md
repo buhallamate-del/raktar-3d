@@ -72,6 +72,10 @@ A közös nézetben játszani is lehet (a ☰ menü „Játék” kapcsolójáva
   tud (nem ugrik, nem lő, nem dob, zászlót és csomagot sem vesz fel). Egyszerre egy ember ülhet rajta; a helye
   mindenkinél ugyanaz (megőrzött MQTT-üzenet). Beállítás: `config.js` → `felmosoKocsi`.
 - A többiek neve és életerő-csíkja belső nézetben nem látszik át a falon és az állványon.
+- **Lidérc:** éjszakánként a pohármosóban születik egy lebegő, hosszú ősz hajú, világító szemű lidérc, és 8 m/s-mal
+  (kicsit gyorsabban a felmosókocsinál) végiglebeg a raktár összes folyosóján; ha a végére ér, visszaindul. Akihez
+  hozzáér, az azonnal meghal (a felmosókocsin ülő is). Mindenkinél ugyanott jár (a gép órájából számolódik).
+  Beállítás: `config.js` → `liderc`.
 - **Életerőcsomag** a logisztikai irodában (fehér doboz piros kereszttel): rámész, és +50 HP (legfeljebb 100).
   Utána 30 mp-ig nincs a helyén, mindenkinél. Hely és érték: `config.js` → `eletcsomagok` (több is lehet).
 - **0 HP = halál:** 3 mp múlva újraéledsz a kiindulóponton. A **pontlista** (a fejléc 👥 gombja) mutatja, ki hányszor halt
@@ -104,6 +108,7 @@ kizárt folyosók, további utak; a `mag` átírásával más útvonalakat járn
 | `js/targonca.js` | targoncák: folyosóhálózat, véletlen körutak, elütés |
 | `js/ctf.js` | zászlófoglalás: csapatok, bázisok, zászlók, közös állás |
 | `js/kocsi.js` | vezethető felmosókocsi |
+| `js/liderc.js` | éjszakai lidérc: végigjárja a folyosókat, érintésre öl |
 | `js/ejszaka.js` | éjszakai mód a játékban: nappal–éjszaka ciklus, zseblámpa |
 | `vendor/three/` | Three.js r170 helyi másolata (MIT licenc), így CDN nélkül is működik |
 | `vendor/mqtt/` | MQTT.js 5.10.1 helyi másolata (MIT licenc) a közös nézethez |

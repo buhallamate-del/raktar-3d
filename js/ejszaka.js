@@ -94,6 +94,9 @@ export function inditEjszaka({ C, scene, camera, fenyek, getMod, jatekBe, ledAny
   return {
     frissit, kapcsol,
     sotet: () => k > 0.5,
+    k: () => k,
+    // éjszaka: hány ms telt el a sötétedés kezdete óta (nappal null)
+    ejjelEltelt: () => { const t = Date.now() % (nappal + ejjel); return t >= nappal ? t - nappal : null; },
     extra: () => (k > 0.3 && lampaBe ? { l: 1 } : { l: 0 }),
   };
 }
