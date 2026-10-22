@@ -106,6 +106,7 @@ code { background: #eef1f5; padding: 0 4px; border-radius: 4px; }
 #guggolGomb.aktiv { background: rgba(31, 111, 235, 0.9); }
 #lokesGomb { right: 118px; bottom: 60px; }
 #dobasGomb { right: 118px; bottom: 148px; }
+#lovesGomb { right: 118px; bottom: 236px; background: rgba(160, 20, 20, 0.8); }
 #pontPanel { top: 64px; right: 12px; width: min(380px, calc(100% - 24px)); max-height: 60vh; padding: 10px 14px; }
 #pontPanel h3 { margin: 0 30px 8px 0; }
 .pontLista { width: 100%; border-collapse: collapse; }

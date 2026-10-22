@@ -292,6 +292,17 @@ window.RAKTAR_CONFIG = {
     ujraeledesMp: 3,      // halál után ennyi másodperc múlva újraéledés a kiindulóponton
     palackSebesseg: 14,   // m/s
   },
+  // AK a játékban: felvehető a fegyverládákon; bal egérgomb = lövés, R = újratöltés, Q = váltás AK/palack
+  fegyver: { sebzes: 12, lovesPerMp: 9, tar: 30, loszer: 90, ujratoltesMp: 2, hatotav: 60 },
+  // Fegyverládák (x, y, z: hely; z a magasság – a galéria teteje 3,0 m); felvétel után ujraMp-ig üres
+  fegyverLadak: [
+    { nev: 'Galéria', x: -8.5, y: 8.0, z: 3.0, ujraMp: 45 },
+  ],
+  // Életerőcsomagok (a játékban): rámész, és +hp életerő (legfeljebb 100); utána ujraMp-ig nincs a helyén,
+  // mindenkinél. x, y: a táblázat koordinátáiban.
+  eletcsomagok: [
+    { nev: 'Logisztikai iroda', x: 3.5, y: -4.0, hp: 50, ujraMp: 30 },
+  ],
 
   // Targoncák: véletlenszerű, zárt körutakon járnak a széles folyosókon (mindenkinél ugyanott,
   // a gép órája alapján). Aki útban van, azt elütik.

@@ -62,7 +62,7 @@
     <p class="halvany kicsi" id="kozosAllapot"></p>
     <h3 class="kicsiCim">Játék</h3>
     <label><input type="checkbox" id="jatekBe"> Játék: lökés, palackdobás, életerő</label>
-    <p class="halvany kicsi">F = lökés (aki előtted áll), G = palack (amerre nézel). Lökés −10, palack −25 HP, a nagy esés is sebez. 0 HP-nál meghalsz, és újraéledsz a kiindulóponton. A pontlista a fejléc 👥 gombján. Akinél ki van kapcsolva, azt nem lehet bántani.</p>
+    <p class="halvany kicsi">AK: a galérián, a fegyverládán vehető fel; bal egérgomb (nyomva) = lövés, R = újratöltés, Q = váltás AK/palack; találat −12 HP; halálkor elveszik. F = lökés (aki előtted áll), G = palack (amerre nézel). Lökés −10, palack −25 HP, a nagy esés is sebez. 0 HP-nál meghalsz, és újraéledsz a kiindulóponton. A pontlista a fejléc 👥 gombján. Akinél ki van kapcsolva, azt nem lehet bántani.</p>
     <button id="jatekNullaz" class="masodlagos">Pontjaim nullázása</button>
     <p class="halvany kicsi">A neved, a színed és a helyed a modellben egy nyilvános, ingyenes üzenetközvetítőn (HiveMQ) át megy a többiekhez; más adat nem. Aki ismeri a csatorna nevét (config.js), az is láthatja.</p>
   </section>
@@ -112,6 +112,7 @@
 <button id="guggolGomb" class="setaGomb" hidden aria-label="Guggolás be/ki">Guggolás</button>
 <button id="lokesGomb" class="setaGomb" hidden aria-label="Lökés">Lökés</button>
 <button id="dobasGomb" class="setaGomb" hidden aria-label="Palack dobása">Dobás</button>
+<button id="lovesGomb" class="setaGomb" hidden aria-label="Lövés (nyomva tartva)">Lövés</button>
 <div id="setaSugo" hidden>Kattints a képre a sétához · WASD / nyilak · egér · Shift · Szóköz = ugrás · C = guggolás · E = mászás · F = lökés · G = palack · Esc</div>
 <div id="pozicio" hidden></div>
 <div id="betoltes">Raktár betöltése…</div>
