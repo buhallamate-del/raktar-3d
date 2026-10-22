@@ -301,6 +301,16 @@ window.RAKTAR_CONFIG = {
   // Éjszaka a játékban: a gép órája szerint nappalMp világos, ejjelMp sötét váltakozik (mindenkinél
   // egyszerre); csak belső nézetben. Zseblámpa: L (éjszaka magától bekapcsol).
   ejszaka: { nappalMp: 180, ejjelMp: 180, atmenetMp: 4 },
+  // Zászlófoglalás (a játékban): két csapat, bázis (x, y = alaprajzi pont; z = padlómagasság);
+  // visszaMp: az elejtett zászló ennyi idő múlva magától visszakerül; gyozelem: ennyi pont nyeri a kört
+  ctf: {
+    csapatok: [
+      { id: 'p', nev: 'Piros', szin: '#e5322d', bazis: { x: 10.3, y: 93.8 } },   // áruátvétel
+      { id: 'k', nev: 'Kék', szin: '#2f6fe4', bazis: { x: -26.0, y: -3.4 } },   // fedett rész (kint)
+    ],
+    visszaMp: 30,
+    gyozelem: 3,
+  },
   // Életerőcsomagok (a játékban): rámész, és +hp életerő (legfeljebb 100); utána ujraMp-ig nincs a helyén,
   // mindenkinél. x, y: a táblázat koordinátáiban.
   eletcsomagok: [
