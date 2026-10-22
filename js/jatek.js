@@ -5,6 +5,7 @@
 //   {t:'dobas', id, x, y, z, vx, vy, vz} – palack indult (világkoordinátában, y = fel)
 //   {t:'talalat', id, cel}            – a palack eltalálta a célt (mindenki eltünteti a palackot)
 //   {t:'halal', cel, celNev, tol2, tol2Nev, ok} – a cél meghalt; tol2 a tettes (ha van)
+//   {t:'csomag', idx, ig}              – valaki felvette az idx. életerőcsomagot; ig-ig (Date.now) nincs a helyén
 import * as THREE from 'three';
 
 const TAROL = 'raktar3d.jatek';
@@ -148,6 +149,41 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
     return false;
   }
 
+  // --- életerőcsomagok (config.js: eletcsomagok) ---
+  const csomagTex = (() => {
+    const cv = document.createElement('canvas'); cv.width = cv.height = 64;
+    const x = cv.getContext('2d');
+    x.fillStyle = '#ffffff'; x.fillRect(0, 0, 64, 64);
+    x.fillStyle = '#d0261b'; x.fillRect(24, 10, 16, 44); x.fillRect(10, 24, 44, 16);
+    x.strokeStyle = '#d0261b'; x.lineWidth = 4; x.strokeRect(2, 2, 60, 60);
+    const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace; return t;
+  })();
+  const csomagok = (C.eletcsomagok || []).map((c, idx) => {
+    const g = new THREE.Group();
+    const doboz = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.32, 0.45), new THREE.MeshLambertMaterial({ map: csomagTex, emissive: '#331111' }));
+    const gyuru = new THREE.Mesh(new THREE.RingGeometry(0.35, 0.5, 28),
+      new THREE.MeshBasicMaterial({ color: '#3ddc5a', transparent: true, opacity: 0.6, side: THREE.DoubleSide, depthWrite: false }));
+    gyuru.rotation.x = -Math.PI / 2; gyuru.position.y = 0.02;
+    g.add(doboz, gyuru);
+    g.position.set(c.x, 0, c.y);
+    scene.add(g);
+    return { ...c, idx, g, doboz, ig: 0, hp: Number(c.hp ?? 50), ujraMp: Number(c.ujraMp ?? 30) };
+  });
+  function csomagFelvetel(t) {
+    if (!serulhet() || hp >= 100) return;
+    for (const c of csomagok) {
+      if (Date.now() < c.ig) continue;
+      if (Math.hypot(seta.x - c.x, seta.y - c.y) > 0.7 || Math.abs(seta.z - (c.z ?? 0)) > 1) continue;
+      const elotte = hp;
+      hp = Math.min(100, hp + c.hp);
+      c.ig = Date.now() + c.ujraMp * 1000;
+      kozos?.kuldE({ t: 'csomag', idx: c.idx, ig: c.ig });
+      kozos?.frissitAllapot();
+      uzenet(`➕ Életerőcsomag: +${Math.round(hp - elotte)} HP`);
+      return;
+    }
+  }
+
   // --- események a többiektől ---
   function esemeny(e) {
     if (e.t === 'lokes') {
@@ -166,6 +202,9 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
     } else if (e.t === 'talalat') {
       torik(e.id);
       if (e.cel !== kozos.id) kozos.villant(e.cel);
+    } else if (e.t === 'csomag') {
+      const c = csomagok[Number(e.idx)];
+      if (c && Number.isFinite(+e.ig)) c.ig = Math.max(c.ig, +e.ig);
     } else if (e.t === 'halal') {
       if (e.tol2 && e.tol2 === kozos.id) { pont.k++; mentes(); kozos.frissitAllapot(); }
       const kie = e.tol2Nev ? ` – ${e.tol2 === kozos.id ? 'te' : e.tol2Nev}` : '';
@@ -254,10 +293,18 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
       if (t - s.ido > 900) { scene.remove(s.s); s.s.geometry.dispose(); szilankok.splice(i, 1); }
     }
     if (t - listaIdo > 1000) { listaIdo = t; listaFrissit(); }
+    // életerőcsomagok: lebegnek és forognak; felvétel után ujraMp-ig nincsenek a helyükön
+    const ido = Date.now();
+    for (const c of csomagok) {
+      c.g.visible = be && ido >= c.ig;
+      c.doboz.position.y = 0.45 + 0.08 * Math.sin(t / 400 + c.idx);
+      c.doboz.rotation.y += dt * 1.5;
+    }
+    csomagFelvetel(t);
   }
 
   return {
-    frissit, lokes, dobas, eses, esemeny, utes,
+    frissit, lokes, dobas, eses, esemeny, utes, csomagok,
     extra: () => (be ? { j: 1, h: Math.round(hp), d: pont.d, k: pont.k, hal: halott ? 1 : 0 } : { j: 0 }),
   };
 }

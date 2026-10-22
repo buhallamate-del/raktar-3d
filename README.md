@@ -53,6 +53,8 @@ A közös nézetben játszani is lehet (a ☰ menü „Játék” kapcsolójáva
 - **G = palack** (telefonon „Dobás”): amerre nézel, eldobsz egy palackot; ívben repül, az állványon és a falon összetörik.
   Találat: −25 HP.
 - **Esés:** kb. 4 m fölött sebez.
+- **Életerőcsomag** a logisztikai irodában (fehér doboz piros kereszttel): rámész, és +50 HP (legfeljebb 100).
+  Utána 30 mp-ig nincs a helyén, mindenkinél. Hely és érték: `config.js` → `eletcsomagok` (több is lehet).
 - **0 HP = halál:** 3 mp múlva újraéledsz a kiindulóponton. A **pontlista** (a fejléc 👥 gombja) mutatja, ki hányszor halt
   meg (☠) és hányszor ölt (🎯); a saját pontjaid a böngésződben megmaradnak, a menüben nullázhatók.
 - Mindenki a saját életerejéért felel (ő dönti el, hogy eltalálták-e), az események az MQTT-n mennek. Akinél a játék ki van

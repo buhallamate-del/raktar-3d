@@ -292,6 +292,11 @@ window.RAKTAR_CONFIG = {
     ujraeledesMp: 3,      // halál után ennyi másodperc múlva újraéledés a kiindulóponton
     palackSebesseg: 14,   // m/s
   },
+  // Életerőcsomagok (a játékban): rámész, és +hp életerő (legfeljebb 100); utána ujraMp-ig nincs a helyén,
+  // mindenkinél. x, y: a táblázat koordinátáiban.
+  eletcsomagok: [
+    { nev: 'Logisztikai iroda', x: 3.5, y: -4.0, hp: 50, ujraMp: 30 },
+  ],
 
   // Targoncák: véletlenszerű, zárt körutakon járnak a széles folyosókon (mindenkinél ugyanott,
   // a gép órája alapján). Aki útban van, azt elütik.
