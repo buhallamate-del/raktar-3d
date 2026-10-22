@@ -8,7 +8,7 @@
 import * as THREE from 'three';
 
 const TAROL = 'raktar3d.jatek';
-const OK_SZOVEG = { lokes: 'meglökték', palack: 'palack találta el', eses: 'leesett' };
+const OK_SZOVEG = { lokes: 'meglökték', palack: 'palack találta el', eses: 'leesett', targonca: 'elütötte egy targonca' };
 
 function betolt() {
   try { return JSON.parse(localStorage.getItem(TAROL)) || {}; } catch { return {}; }
@@ -20,7 +20,7 @@ function ment(a) {
 export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, kiindulo }) {
   const J = C.jatek || {};
   const cfg = {
-    lokes: Number(J.lokesSebzes ?? 10), palack: Number(J.palackSebzes ?? 25),
+    lokes: Number(J.lokesSebzes ?? 10), palack: Number(J.palackSebzes ?? 25), targonca: Number(C.targoncak?.sebzes ?? 40),
     eses: J.esesSebzes !== false, ujraMp: Number(J.ujraeledesMp ?? 3), palackSeb: Number(J.palackSebesseg ?? 14),
   };
   const el = id => document.getElementById(id);
@@ -62,10 +62,10 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
     pont.d++;
     mentes();
     const tettes = tamado && most() - tamado.ido < 6000 ? tamado : null;
-    const ok2 = tettes && ok === 'eses' ? 'lokes' : ok;
+    const ok2 = tettes && ok === 'eses' ? (tettes.id === 'targonca' ? 'targonca' : 'lokes') : ok;
     kozos?.kuldE({ t: 'halal', cel: kozos.id, celNev: kozos.nev(), tol2: tettes?.id, tol2Nev: tettes?.nev, ok: ok2 });
     el('halalSzoveg').textContent = tettes
-      ? `${tettes.nev} ${ok2 === 'palack' ? 'eltalált egy palackkal' : 'meglökött'}.`
+      ? `${tettes.nev} ${ok2 === 'palack' ? 'eltalált egy palackkal' : ok2 === 'targonca' ? 'elütött' : 'meglökött'}.`
       : OK_SZOVEG[ok2] === 'leesett' ? 'Leestél.' : 'Elfogyott az életerőd.';
     el('halalKep').hidden = false;
     kozos?.frissitAllapot();
@@ -174,6 +174,17 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
     }
   }
 
+  // targonca ütötte el: nagyot lök; sebez, ha a játék be van kapcsolva
+  function utes({ nev, dx, dy }) {
+    if (getMod() !== 'seta' || halott) return;
+    seta.kvx = dx * 14; seta.kvy = dy * 14;
+    seta.vz = Math.max(seta.vz || 0, 3.5);
+    if (!be) { uzenet(`Vigyázz, ${nev} majdnem elütött!`); return; }
+    tamado = { id: 'targonca', nev, ido: most() };
+    uzenet(`💥 ${nev} elütött!`);
+    sebzes(cfg.targonca, 'targonca');
+  }
+
   // esés: ~4 m fölött sebez (vz: a földet érés pillanatnyi sebessége, negatív)
   function eses(vz) {
     if (!cfg.eses || !serulhet()) return;
@@ -246,7 +257,7 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
   }
 
   return {
-    frissit, lokes, dobas, eses, esemeny,
+    frissit, lokes, dobas, eses, esemeny, utes,
     extra: () => (be ? { j: 1, h: Math.round(hp), d: pont.d, k: pont.k, hal: halott ? 1 : 0 } : { j: 0 }),
   };
 }

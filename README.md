@@ -58,6 +58,16 @@ A közös nézetben játszani is lehet (a ☰ menü „Játék” kapcsolójáva
 - Mindenki a saját életerejéért felel (ő dönti el, hogy eltalálták-e), az események az MQTT-n mennek. Akinél a játék ki van
   kapcsolva, azt nem lehet bántani. A sebzések a `config.js` `jatek` részében állíthatók.
 
+### Targoncák
+
+Három targonca jár folyamatosan véletlenszerű, zárt körutakon a széles folyosókon (a T1 folyosói és keresztfolyosója,
+a fejfolyosó, a felső szárny alsó sávja és széles folyosói, a komissiózó és az áruátvétel; a szűk T2 folyosókba és a
+T3-ba nem mennek be). A zsákutcák végén megállnak „rakodni” (a villa fel-le jár), előttük kék biztonsági fénypötty.
+A mozgásuk a gép órájából számolódik, így **mindenkinél ugyanott vannak**, hálózat nélkül is (ha a gépek órája pár
+másodpercen belül egyezik). **Aki útban van, azt elütik:** nagyot lök, és ha a játék be van kapcsolva, −40 HP
+(„elütötte egy targonca”). Beállítások: `config.js` → `targoncak` (darabszám, sebesség, rakodási idő, sebzés,
+kizárt folyosók, további utak; a `mag` átírásával más útvonalakat járnak).
+
 ## Fájlok
 
 | Fájl | Mire való |
@@ -70,6 +80,7 @@ A közös nézetben játszani is lehet (a ☰ menü „Játék” kapcsolójáva
 | `js/main.js` | 3D megjelenítés, séta, kereső, felület |
 | `js/kozos.js` | közös nézet: a többi látogató pálcikaemberként (MQTT) |
 | `js/jatek.js` | játék: lökés, palackdobás, életerő, pontlista |
+| `js/targonca.js` | targoncák: folyosóhálózat, véletlen körutak, elütés |
 | `vendor/three/` | Three.js r170 helyi másolata (MIT licenc), így CDN nélkül is működik |
 | `vendor/mqtt/` | MQTT.js 5.10.1 helyi másolata (MIT licenc) a közös nézethez |
 

@@ -3,6 +3,7 @@ import { MapControls } from 'three/addons/controls/MapControls.js';
 import { epitModell, normalKod, helyElotti, folyosoSzelesseg } from './modell.js';
 import { inditKozos } from './kozos.js';
 import { inditJatek } from './jatek.js';
+import { inditTargoncak } from './targonca.js';
 
 const C = window.RAKTAR_CONFIG;
 const D = window.RAKTAR_ADATOK;
@@ -1481,6 +1482,7 @@ renderer.setAnimationLoop(() => {
   else if (!animacio || controls.enabled) controls.update();
   kozos?.frissit(dt);
   jatek?.frissit(dt);
+  targoncak?.frissit(dt);
   const puls = 0.5 + 0.5 * Math.sin(most / 260);
   for (const p of pulzalok) {
     if (p.anyag) p.anyag.opacity = p.min + (p.max - p.min) * puls;
@@ -1494,7 +1496,7 @@ renderer.setAnimationLoop(() => {
 $('betoltes').hidden = true;
 
 // Közös nézet: a többi látogató pálcikaemberként (config.js: kozos); rá épül a játék (jatek)
-let kozos = null, jatek = null;
+let kozos = null, jatek = null, targoncak = null;
 try {
   const k2 = v => Math.round(v * 100) / 100;
   kozos = inditKozos({
@@ -1515,5 +1517,12 @@ try {
 } catch (e) {
   console.warn('[játék]', e);
 }
+// Targoncák (config.js: targoncak) – a játék nélkül is járnak, csak akkor sebeznek, ha be van kapcsolva
+try {
+  targoncak = inditTargoncak({ C, M, D, scene, szovegSprite, seta, getMod: () => mod,
+    utes: u => jatek ? jatek.utes(u) : Object.assign(seta, { kvx: u.dx * 14, kvy: u.dy * 14, vz: 3.5 }) });
+} catch (e) {
+  console.warn('[targoncák]', e);
+}
 hashbolNyit();
-window.raktar = { M, scene, camera, controls, seta, kijelol, helyhezMegy, modValt, lep: setaLeptet, ugras, lenyomva, jatek, kozos }; // hibakereséshez
+window.raktar = { M, scene, camera, controls, seta, kijelol, helyhezMegy, modValt, lep: setaLeptet, ugras, lenyomva, jatek, kozos, targoncak }; // hibakereséshez

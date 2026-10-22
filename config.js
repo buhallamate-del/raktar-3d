@@ -293,6 +293,24 @@ window.RAKTAR_CONFIG = {
     palackSebesseg: 14,   // m/s
   },
 
+  // Targoncák: véletlenszerű, zárt körutakon járnak a széles folyosókon (mindenkinél ugyanott,
+  // a gép órája alapján). Aki útban van, azt elütik.
+  targoncak: {
+    db: 3,
+    sebesseg: 2.2,              // m/s
+    rakodasMp: 3,               // a zsákutca végén ennyit áll (a villa fel-le jár)
+    sebzes: 40,                 // HP (ha a játék be van kapcsolva; különben csak arrébb lök)
+    minFolyosoSzelesseg: 1.9,   // ennél szűkebb folyosóba nem megy
+    kizartFolyosok: ['F-T3'],   // ide sem (a T3-00 elzárja az alsó sávot)
+    mag: 'raktar',              // más érték = más útvonalak
+    // további utak: [[x, y], [x, y], …] – a komissiózóba és az áruátvételre
+    extraUtak: [
+      [[17.8, 17.3], [17.8, 7.2], [10.3, 7.2]],
+      [[17.8, 88.46], [17.8, 93.8], [4.0, 93.8]],
+      [[0.0, 17.3], [1.3, 17.3]],
+    ],
+  },
+
   // Realisztikus megjelenés (a helyszíni fotók alapján)
   megjelenes: {
     szinezes: 'valos',     // 'valos' (fotók szerint) | 'zona' | 'rajzon' – a menüben is váltható
