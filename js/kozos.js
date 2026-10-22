@@ -4,6 +4,7 @@
 // Üres üzenet = az illető kilépett (ezt a szerver is elküldi helyettünk, ha megszakad a kapcsolat).
 //   <csatorna>/e  ->  játékesemények (lökés, dobás, találat, halál), lásd jatek.js
 //   <csatorna>/ctf ->  a zászlófoglalás megőrzött (retained) állapota, lásd ctf.js
+//   <csatorna>/kocsi -> a felmosókocsi megőrzött állapota, lásd kocsi.js
 import * as THREE from 'three';
 
 const TAROL = 'raktar3d.kozos';
@@ -73,7 +74,7 @@ function palcikaember(szin, nev, szovegSprite, mezSzin) {
 }
 
 // extra(): a pozíció mellé küldött további adatok (pl. életerő); esemeny(e): a <csatorna>/e üzenetei;
-// allando(a): a <csatorna>/ctf megőrzött állapota
+// allando(a, tema): a <csatorna>/ctf és a <csatorna>/kocsi megőrzött állapota
 export function inditKozos({ C, scene, szovegSprite, allapot, uzenet, extra, esemeny, allando }) {
   const K = C.kozos || {};
   const param = new URLSearchParams(location.search);
@@ -140,6 +141,7 @@ export function inditKozos({ C, scene, szovegSprite, allapot, uzenet, extra, ese
       kliens.subscribe(`${csatorna}/poz/+`);
       kliens.subscribe(`${csatorna}/e`);
       kliens.subscribe(`${csatorna}/ctf`);
+      kliens.subscribe(`${csatorna}/kocsi`);
       utolsoAllapot = null;
       allapotKiir();
     });
@@ -150,8 +152,8 @@ export function inditKozos({ C, scene, szovegSprite, allapot, uzenet, extra, ese
         try { const e = JSON.parse(adat.toString()); if (e && e.tol !== b.id) esemeny?.(e); } catch { /* hibás üzenet */ }
         return;
       }
-      if (tema === `${csatorna}/ctf`) {
-        try { allando?.(JSON.parse(adat.toString())); } catch { /* hibás üzenet */ }
+      if (tema === `${csatorna}/ctf` || tema === `${csatorna}/kocsi`) {
+        try { allando?.(JSON.parse(adat.toString()), tema.split('/').pop()); } catch { /* hibás üzenet */ }
         return;
       }
       const id = tema.split('/').pop();
@@ -208,6 +210,8 @@ export function inditKozos({ C, scene, szovegSprite, allapot, uzenet, extra, ese
   // Minden képkockánál: saját állapot küldése, a többiek simított mozgatása.
   function frissit(dt) {
     const most = performance.now();
+    // a nevek és az életerő-csíkok belső nézetben nem látszanak át a falon (felülnézetből igen)
+    const atlat = allapot().m === 'felul';
     if (kliens && kapcsolodva && b.lathato && most - utolsoKuld > KULD_MS) {
       const a = allapot();
       const p = utolsoAllapot;
@@ -253,6 +257,7 @@ export function inditKozos({ C, scene, szovegSprite, allapot, uzenet, extra, ese
         const fy = 2.3 * d.test.scale.y + 0.1;
         d.hpHatter.position.y = d.hpEloter.position.y = fy;
       }
+      for (const s of [d.felirat, d.hpHatter, d.hpEloter]) if (s.material.depthTest === atlat) { s.material.depthTest = !atlat; s.material.needsUpdate = true; }
       d.villan = Math.max(0, d.villan - dt);
       d.anyag.emissive?.set(d.villan > 0 ? '#ff2020' : '#000000');
       const dol = u.hal ? Math.PI / 2 : 0;
@@ -273,7 +278,7 @@ export function inditKozos({ C, scene, szovegSprite, allapot, uzenet, extra, ese
     nev: () => b.nev,
     kapcsolodva: () => kapcsolodva && !!kliens,
     lathato: () => b.lathato,
-    kuldR: a => { if (kliens && kapcsolodva) kliens.publish(`${csatorna}/ctf`, JSON.stringify(a), { qos: 0, retain: true }); },
+    kuldR: (a, tema = 'ctf') => { if (kliens && kapcsolodva) kliens.publish(`${csatorna}/${tema}`, JSON.stringify(a), { qos: 0, retain: true }); },
     kuldE: e => { if (kliens && kapcsolodva) kliens.publish(`${csatorna}/e`, JSON.stringify({ ...e, tol: b.id }), { qos: 0 }); },
     villant: id => { const t = tobbiek.get(id); if (t) t.g.userData.villan = 0.25; },
     frissitAllapot: () => { utolsoAllapot = null; },

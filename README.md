@@ -53,7 +53,7 @@ A közös nézetben játszani is lehet (a ☰ menü „Játék” kapcsolójáva
 - **G = palack** (telefonon „Dobás”): amerre nézel, eldobsz egy palackot; ívben repül, az állványon és a falon összetörik.
   Találat: −25 HP.
 - **Esés:** kb. 4 m fölött sebez.
-- **AK:** a galérián, a fegyverládán vehető fel (utána 45 mp-ig üres a láda). Bal egérgomb nyomva = sorozatlövés
+- **AK:** a galérián, a fegyverládán vehető fel (utána 45 mp-ig üres a láda); ha már van nálad, a ládánál lőszert töltesz. Bal egérgomb nyomva = sorozatlövés
   (telefonon „Lövés”), R = újratöltés (30-as tár, összesen 90 lőszer), Q = váltás AK és palack között.
   Találat −12 HP; halálkor a fegyver elveszik. A többiek pálcikaemberén látszik, ha AK van náluk.
   Beállítás: `config.js` → `fegyver`, `fegyverLadak`.
@@ -62,11 +62,16 @@ A közös nézetben játszani is lehet (a ☰ menü „Játék” kapcsolójáva
   a targoncák fényszóróval járnak, a kapufeliratok halványan világítanak. Fent kijelző mutatja, mennyi van hátra.
   Beállítás: `config.js` → `ejszaka` (`nappalMp`, `ejjelMp`).
 - **Zászlófoglalás (capture the flag):** két csapat – a piros bázis az áruátvételen, a kék kint, a fedett részen
-  (a sárga kijáraton át). A menüben választható csapat (alapból automatikusan a kisebbe kerülsz). Az ellenfél
+  (a sárga kijáraton át). A menüben választható csapat (alapból automatikusan a kisebbe kerülsz; ha az egyik csapat 2 fővel nagyobb, valaki automatikusan átkerül). Az ellenfél
   zászlaját rámenéssel veszed fel; ha a saját bázisotokra viszed, miközben a ti zászlótok otthon van, pont jár,
   3 pont nyeri a kört. Aki zászlóval hal meg, elejti; a saját elejtett zászlót rámenéssel visszaviheted, különben
   30 mp múlva magától visszakerül. Csapattársat nem lehet bántani, halál után a bázison éledsz újra. Az állás
   megőrzött MQTT-üzenetben van, így aki később jön, az is látja. Beállítás: `config.js` → `ctf`.
+- **Felmosókocsi:** az EAR raktár előtt vezethető felmosókocsi áll (K = fel/le, telefonon „Kocsi”; W/S = gáz/fék,
+  A/D vagy egér = kormány). 7 m/s-mal megy – gyorsabb a futásnál és a targoncáknál –, de aki rajta ül, csak vezetni
+  tud (nem ugrik, nem lő, nem dob, zászlót és csomagot sem vesz fel). Egyszerre egy ember ülhet rajta; a helye
+  mindenkinél ugyanaz (megőrzött MQTT-üzenet). Beállítás: `config.js` → `felmosoKocsi`.
+- A többiek neve és életerő-csíkja belső nézetben nem látszik át a falon és az állványon.
 - **Életerőcsomag** a logisztikai irodában (fehér doboz piros kereszttel): rámész, és +50 HP (legfeljebb 100).
   Utána 30 mp-ig nincs a helyén, mindenkinél. Hely és érték: `config.js` → `eletcsomagok` (több is lehet).
 - **0 HP = halál:** 3 mp múlva újraéledsz a kiindulóponton. A **pontlista** (a fejléc 👥 gombja) mutatja, ki hányszor halt
@@ -98,6 +103,7 @@ kizárt folyosók, további utak; a `mag` átírásával más útvonalakat járn
 | `js/jatek.js` | játék: lökés, palackdobás, életerő, pontlista |
 | `js/targonca.js` | targoncák: folyosóhálózat, véletlen körutak, elütés |
 | `js/ctf.js` | zászlófoglalás: csapatok, bázisok, zászlók, közös állás |
+| `js/kocsi.js` | vezethető felmosókocsi |
 | `js/ejszaka.js` | éjszakai mód a játékban: nappal–éjszaka ciklus, zseblámpa |
 | `vendor/three/` | Three.js r170 helyi másolata (MIT licenc), így CDN nélkül is működik |
 | `vendor/mqtt/` | MQTT.js 5.10.1 helyi másolata (MIT licenc) a közös nézethez |

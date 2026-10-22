@@ -42,6 +42,31 @@ export function inditCtf({ C, scene, seta, kozos, uzenet, getMod, jatekBe, szove
   let allapot = { ts: 0, pont: { [A]: 0, [B]: 0 }, z: { [A]: { a: 'bazis' }, [B]: { a: 'bazis' } } };
   let valasztas = betolt().cs || 'auto', autoCs = null;
   const indult = performance.now();
+  let kapcsIdo = 0, egyenlotlenSince = 0;
+  // a többi játékos csapatonként (a saját magunkat nem számolva)
+  function letszam() {
+    const db = { [A]: 0, [B]: 0 };
+    for (const t of kozos?.tobbiek.values() || []) if (t.cel.j && db[t.cel.cs] !== undefined) db[t.cel.cs]++;
+    return db;
+  }
+  // Kiegyenlítés: ha az egyik csapat legalább 2 fővel nagyobb, az „automatikus” játékosai közül a
+  // legkisebb azonosítójú (aki épp nem visz zászlót) átmegy – mindenki ugyanígy számol, így csak egy vált.
+  function kiegyenlit(t) {
+    if (valasztas !== 'auto' || !autoCs || !jatekBe()) { egyenlotlenSince = 0; return; }
+    const db = letszam(); db[autoCs]++;
+    if (db[autoCs] - db[masik(autoCs)] < 2) { egyenlotlenSince = 0; return; }
+    if (!egyenlotlenSince) egyenlotlenSince = t;
+    if (t - egyenlotlenSince < 3000) return;
+    const visz = new Set([A, B].map(f => allapot.z[f].a === 'visz' && allapot.z[f].ki).filter(Boolean));
+    const jeloltek = [...(kozos?.tobbiek.values() || [])].filter(v => v.cel.j && v.cel.cs === autoCs && v.cel.ca && !visz.has(v.id)).map(v => v.id);
+    if (!visz.has(enId())) jeloltek.push(enId());
+    jeloltek.sort();
+    if (jeloltek[0] !== enId()) return;
+    egyenlotlenSince = 0;
+    autoCs = masik(autoCs);
+    uzenet(`🚩 Kiegyenlítés: átkerültél a ${cs[autoCs].nev} csapatba`);
+    kozos?.frissitAllapot();
+  }
 
   // --- bázisok és zászlók ---
   const jelek = {};
@@ -83,9 +108,11 @@ export function inditCtf({ C, scene, seta, kozos, uzenet, getMod, jatekBe, szove
   function csapat() {
     if (valasztas === A || valasztas === B) return valasztas;
     if (valasztas === 'ki') return null;
-    if (!autoCs && performance.now() - indult > 2500) {
-      const db = { [A]: 0, [B]: 0 };
-      for (const t of kozos?.tobbiek.values() || []) if (t.cel.j && db[t.cel.cs] !== undefined) db[t.cel.cs]++;
+    // csak akkor döntünk, ha már látjuk a többieket (kapcsolódás után kb. 4 mp; szerver nélkül 15 mp)
+    if (!autoCs) {
+      if (kozos?.kapcsolodva?.()) { if (!kapcsIdo) kapcsIdo = performance.now(); }
+      if (!(kapcsIdo && performance.now() - kapcsIdo > 4000) && performance.now() - indult < 15000) return null;
+      const db = letszam();
       autoCs = db[A] < db[B] ? A : db[B] < db[A] ? B : (Math.random() < 0.5 ? A : B);
       uzenet(`🚩 Zászlófoglalás: a ${cs[autoCs].nev} csapatba kerültél`);
       kozos?.frissitAllapot();
@@ -93,7 +120,7 @@ export function inditCtf({ C, scene, seta, kozos, uzenet, getMod, jatekBe, szove
     return autoCs;
   }
   const jatszik = () => jatekBe() && !!csapat();
-  const aktiv = () => jatszik() && getMod() === 'seta' && !seta.halott && kozos?.lathato?.() !== false;
+  const aktiv = () => jatszik() && getMod() === 'seta' && !seta.halott && !seta.kocsin && kozos?.lathato?.() !== false;
 
   // --- állapot ---
   function alkalmaz(uj, tavoli) {
@@ -125,6 +152,7 @@ export function inditCtf({ C, scene, seta, kozos, uzenet, getMod, jatekBe, szove
   // --- képkockánként ---
   function frissit() {
     const t = performance.now(), ido = Date.now();
+    kiegyenlit(t);
     const sajat = csapat(), ell = sajat && masik(sajat);
     const vf = nalam();
     // ha nem játszik tovább (meghalt, felülnézet, kikapcsolta, csapatot váltott), elejti a zászlót
@@ -215,6 +243,6 @@ export function inditCtf({ C, scene, seta, kozos, uzenet, getMod, jatekBe, szove
     csapattars: id => { const s = jatszik() && csapat(); return !!s && kozos?.tobbiek.get(id)?.cel.cs === s; },
     // újraéledés: a saját bázison
     ujraHely: () => { const s = jatszik() && csapat(); return s ? { x: cs[s].bazis.x, y: cs[s].bazis.y } : null; },
-    extra: () => { const s = jatszik() && csapat(); return s ? { cs: s } : { cs: 0 }; },
+    extra: () => { const s = jatszik() && csapat(); return s ? { cs: s, ca: valasztas === 'auto' ? 1 : 0 } : { cs: 0 }; },
   };
 }
