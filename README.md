@@ -53,6 +53,10 @@ A közös nézetben játszani is lehet (a ☰ menü „Játék” kapcsolójáva
 - **G = palack** (telefonon „Dobás”): amerre nézel, eldobsz egy palackot; ívben repül, az állványon és a falon összetörik.
   Találat: −25 HP.
 - **Esés:** kb. 4 m fölött sebez.
+- **AK:** a galérián, a fegyverládán vehető fel (utána 45 mp-ig üres a láda). Bal egérgomb nyomva = sorozatlövés
+  (telefonon „Lövés”), R = újratöltés (30-as tár, összesen 90 lőszer), Q = váltás AK és palack között.
+  Találat −12 HP; halálkor a fegyver elveszik. A többiek pálcikaemberén látszik, ha AK van náluk.
+  Beállítás: `config.js` → `fegyver`, `fegyverLadak`.
 - **Életerőcsomag** a logisztikai irodában (fehér doboz piros kereszttel): rámész, és +50 HP (legfeljebb 100).
   Utána 30 mp-ig nincs a helyén, mindenkinél. Hely és érték: `config.js` → `eletcsomagok` (több is lehet).
 - **0 HP = halál:** 3 mp múlva újraéledsz a kiindulóponton. A **pontlista** (a fejléc 👥 gombja) mutatja, ki hányszor halt

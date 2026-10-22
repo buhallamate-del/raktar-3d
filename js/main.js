@@ -1138,6 +1138,8 @@ addEventListener('keydown', e => {
   if (mod === 'seta' && e.code === 'Space') { e.preventDefault(); if (!e.repeat) ugras(); }
   if (mod === 'seta' && !e.repeat && e.code === 'KeyF') jatek?.lokes();
   if (mod === 'seta' && !e.repeat && e.code === 'KeyG') jatek?.dobas();
+  if (mod === 'seta' && !e.repeat && e.code === 'KeyR') jatek?.ujratolt();
+  if (mod === 'seta' && !e.repeat && e.code === 'KeyQ') jatek?.valt();
 });
 addEventListener('keyup', e => lenyomva.delete(e.code));
 addEventListener('blur', () => lenyomva.clear());
@@ -1177,6 +1179,7 @@ const pointerVege = e => {
     vaszon.requestPointerLock?.();
     if (vaszon.requestPointerLock) return;
   }
+  if (mod === 'seta' && jatek?.fegyverKezben?.()) return; // AK-val a kattintás lövés, nem kiválasztás
   if (mod === 'seta' && document.pointerLockElement === vaszon) valaszt(0, 0);
   else valaszt((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
 };
@@ -1184,7 +1187,7 @@ vaszon.addEventListener('pointerup', pointerVege);
 vaszon.addEventListener('pointercancel', pointerVege);
 document.addEventListener('pointerlockchange', () => {
   $('setaSugo').textContent = document.pointerLockElement === vaszon
-    ? 'WASD / nyilak = séta · egér = nézelődés · Shift = gyorsabban · Szóköz = ugrás · C = guggolás · E = mászás · F = lökés · G = palack · kattintás = hely · Esc = egér elengedése'
+    ? 'WASD / nyilak = séta · egér = nézelődés · Shift = gyorsabban · Szóköz = ugrás · C = guggolás · E = mászás · F = lökés · G = palack · AK: bal gomb = lövés, R = töltés, Q = váltás · Esc = egér elengedése'
     : 'Kattints a képre a sétához · WASD / nyilak · egér · Shift · Szóköz = ugrás · C = guggolás · E = mászás · F = lökés · G = palack · Esc';
 });
 

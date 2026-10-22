@@ -33,11 +33,18 @@ function palcikaember(szin, nev, szovegSprite) {
   const lab = () => { const p = new THREE.Group(); const l = henger(0.86); l.position.y = -0.43; p.add(l); p.position.y = 0.87; return p; };
   const kar = () => { const p = new THREE.Group(); const k = henger(0.6, 0.035); k.position.y = -0.3; p.add(k); p.position.y = 1.42; return p; };
   const balLab = lab(), jobbLab = lab(), balKar = kar(), jobbKar = kar();
+  // AK a kezében (csak ha van nála): fekete tok, fa tus, előre (−Z) néz
+  const puska = new THREE.Group();
+  const pFekete = new THREE.MeshLambertMaterial({ color: '#23262b' }), pFa = new THREE.MeshLambertMaterial({ color: '#8a5a2b' });
+  const pd = (sx, sy, sz, a, z) => { const m = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, sz), a); m.position.z = z; puska.add(m); };
+  pd(0.06, 0.08, 0.55, pFekete, -0.15); pd(0.05, 0.09, 0.25, pFa, 0.2); pd(0.04, 0.16, 0.06, pFekete, -0.2);
+  puska.position.set(0.18, 1.25, -0.25);
+  puska.visible = false;
   balLab.position.x = -0.1; jobbLab.position.x = 0.1; balKar.position.x = -0.25; jobbKar.position.x = 0.25;
   // „orr”: merre néz
   const orr = new THREE.Mesh(new THREE.ConeGeometry(0.05, 0.14, 8), anyag);
   orr.rotation.x = -Math.PI / 2; orr.position.set(0, 1.62, -0.17);
-  test.add(fej, torzs, vall, balLab, jobbLab, balKar, jobbKar, orr);
+  test.add(fej, torzs, vall, balLab, jobbLab, balKar, jobbKar, orr, puska);
   g.add(test);
   const felirat = szovegSprite(nev, 0.32, { hatter: szin, szin: '#fff', meret: 44, depthTest: false });
   felirat.position.y = 2.05;
@@ -50,7 +57,7 @@ function palcikaember(szin, nev, szovegSprite) {
   const hpHatter = csik('#3a0d0d'), hpEloter = csik('#3ddc5a');
   hpHatter.position.set(-0.4, 2.3, 0); hpEloter.position.set(-0.4, 2.3, 0); hpEloter.renderOrder = 12;
   g.add(hpHatter, hpEloter);
-  g.userData = { test, balLab, jobbLab, balKar, jobbKar, felirat, fazis: 0, anyag, hpHatter, hpEloter, villan: 0 };
+  g.userData = { test, balLab, jobbLab, balKar, jobbKar, felirat, fazis: 0, anyag, hpHatter, hpEloter, villan: 0, puska };
   return g;
 }
 
@@ -217,6 +224,7 @@ export function inditKozos({ C, scene, szovegSprite, allapot, uzenet, extra, ese
       d.anyag.opacity = u.m === 'felul' ? 0.45 : 1;
       // életerő-csík, találatnál piros villanás, halálkor eldől
       const jatszik = !!u.j && u.m !== 'felul';
+      d.puska.visible = jatszik && !!u.f && !u.hal;
       d.hpHatter.visible = d.hpEloter.visible = jatszik;
       if (jatszik) {
         const hp = Math.max(0, Math.min(100, Number(u.h ?? 100))) / 100;
