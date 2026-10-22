@@ -311,6 +311,10 @@ window.RAKTAR_CONFIG = {
     visszaMp: 30,
     gyozelem: 3,
   },
+  // Vezethető felmosókocsi (x, y = alaprajzi pont, irany = merre néz, radiánban; 0 = észak felé).
+  // Gyorsabb a futásnál (4,5 m/s) és a targoncáknál (2,2 m/s); aki rajta ül, csak vezetni tud.
+  // Helyszín (IMG_3288): az EAR raktár előtt, a folyosón, kelet felé nézve (a helye becsült).
+  felmosoKocsi: { x: -29.6, y: 2.8, irany: -Math.PI / 2, sebesseg: 7, hatraSebesseg: 2.5, gyorsulas: 4, sugar: 0.55, szemmagassag: 1.75 },
   // Életerőcsomagok (a játékban): rámész, és +hp életerő (legfeljebb 100); utána ujraMp-ig nincs a helyén,
   // mindenkinél. x, y: a táblázat koordinátáiban.
   eletcsomagok: [

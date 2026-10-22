@@ -107,6 +107,7 @@ code { background: #eef1f5; padding: 0 4px; border-radius: 4px; }
 #lokesGomb { right: 118px; bottom: 60px; }
 #dobasGomb { right: 118px; bottom: 148px; }
 #lampaGomb { right: 30px; bottom: 336px; }
+#kocsiGomb { right: 118px; bottom: 324px; background: rgba(31, 95, 191, 0.85); }
 #napszak { position: fixed; top: 64px; left: 50%; transform: translateX(-50%); z-index: 7; pointer-events: none;
   background: rgba(255, 248, 220, 0.9); color: #5a4300; padding: 3px 10px; border-radius: 10px; font-size: 12px; font-weight: 700; }
 #napszak.ejjel { background: rgba(10, 16, 40, 0.85); color: #cfe0ff; }

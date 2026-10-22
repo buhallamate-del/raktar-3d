@@ -58,6 +58,8 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
 
   const serulhet = () => be && getMod() === 'seta' && !halott;
   const tars = id => !!ctf()?.csapattars(id);
+  // a felmosókocsin ülve semmi mást nem lehet csinálni, csak vezetni
+  const szabad = () => serulhet() && !seta.kocsin;
   const most = () => performance.now();
 
   function villanas() {
@@ -105,7 +107,7 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
 
   // --- lökés ---
   function lokes() {
-    if (!serulhet() || most() - lokesIdo < 800) return;
+    if (!szabad() || most() - lokesIdo < 800) return;
     lokesIdo = most();
     const fx = -Math.sin(seta.yaw), fy = -Math.cos(seta.yaw);
     let leg = null, legD = 1.4;
@@ -152,7 +154,7 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
   }
   function dobas() {
     if (fegyverKezben()) return; // AK-val a kézben a G nem dob (Q-val lehet palackra váltani)
-    if (!serulhet() || most() - dobasIdo < 600) return;
+    if (!szabad() || most() - dobasIdo < 600) return;
     dobasIdo = most();
     camera.getWorldDirection(v3);
     const p = camera.position.clone().addScaledVector(v3, 0.5);
@@ -197,7 +199,7 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
     scene.add(g);
     return { ...c, idx, g, fegyver, ig: 0, ujraMp: Number(c.ujraMp ?? 45) };
   });
-  const fegyverKezben = () => !!ak && fegyverValaszt === 'ak' && getMod() === 'seta' && !halott && be;
+  const fegyverKezben = () => !!ak && fegyverValaszt === 'ak' && getMod() === 'seta' && !halott && be && !seta.kocsin;
   function ujratolt() {
     if (!ak || ak.toltesIg || ak.tarban >= akCfg.tar || ak.tartalek <= 0) return;
     ak.toltesIg = most() + akCfg.toltes;
@@ -276,7 +278,7 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
     return { ...c, idx, g, doboz, ig: 0, hp: Number(c.hp ?? 50), ujraMp: Number(c.ujraMp ?? 30) };
   });
   function csomagFelvetel(t) {
-    if (!serulhet() || hp >= 100) return;
+    if (!szabad() || hp >= 100) return;
     for (const c of csomagok) {
       if (Date.now() < c.ig) continue;
       if (Math.hypot(seta.x - c.x, seta.y - c.y) > 0.7 || Math.abs(seta.z - (c.z ?? 0)) > 1) continue;
@@ -425,13 +427,18 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
       c.fegyver.visible = ido >= c.ig;
       c.fegyver.rotation.y += dt * 1.2;
       c.fegyver.position.y = 0.75 + 0.06 * Math.sin(t / 450);
-      if (serulhet() && !ak && ido >= c.ig && Math.hypot(seta.x - c.x, seta.y - c.y) < 0.9 && Math.abs(seta.z - Number(c.z ?? 0)) < 1) {
-        ak = { tarban: akCfg.tar, tartalek: akCfg.loszer - akCfg.tar, toltesIg: 0 };
+      // a ládánál: AK, vagy ha már van nálunk, teli lőszer (ha nem teli)
+      const teli = ak && ak.tarban + ak.tartalek >= akCfg.loszer;
+      if (szabad() && !teli && ido >= c.ig && Math.hypot(seta.x - c.x, seta.y - c.y) < 0.9 && Math.abs(seta.z - Number(c.z ?? 0)) < 1) {
+        const ujAk = !ak;
+        if (ujAk) ak = { tarban: akCfg.tar, tartalek: akCfg.loszer - akCfg.tar, toltesIg: 0 };
+        else { ak.tartalek = akCfg.loszer - ak.tarban; }
         fegyverValaszt = 'ak';
         c.ig = ido + c.ujraMp * 1000;
         kozos?.kuldE({ t: 'lada', idx: c.idx, ig: c.ig });
         kozos?.frissitAllapot();
-        uzenet('🔫 Felvetted az AK-t! Bal egérgomb = lövés, R = újratöltés, Q = váltás');
+        uzenet(ujAk ? '🔫 Felvetted az AK-t! Bal egérgomb = lövés, R = újratöltés, Q = váltás' : `🔫 Lőszer feltöltve (${ak.tarban}/${ak.tartalek})`);
+        if (!ujAk && ak.tarban < akCfg.tar) ujratolt();
       }
     }
     if (ak?.toltesIg && t >= ak.toltesIg) {

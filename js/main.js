@@ -6,6 +6,7 @@ import { inditJatek } from './jatek.js';
 import { inditTargoncak } from './targonca.js';
 import { inditEjszaka } from './ejszaka.js';
 import { inditCtf } from './ctf.js';
+import { inditKocsi } from './kocsi.js';
 
 const C = window.RAKTAR_CONFIG;
 const D = window.RAKTAR_ADATOK;
@@ -1025,7 +1026,7 @@ function setaNezet() {
 }
 
 function ugras() {
-  if (mod !== 'seta' || animacio || !(Number(C.ugrasSebesseg) > 0)) return;
+  if (mod !== 'seta' || animacio || seta.kocsin || !(Number(C.ugrasSebesseg) > 0)) return;
   if (seta.z - M.racs.talaj(seta.x, seta.y, seta.z) < 0.02) seta.vz = Number(C.ugrasSebesseg);
 }
 
@@ -1152,6 +1153,7 @@ addEventListener('keydown', e => {
   if (mod === 'seta' && !e.repeat && e.code === 'KeyR') jatek?.ujratolt();
   if (mod === 'seta' && !e.repeat && e.code === 'KeyQ') jatek?.valt();
   if (mod === 'seta' && !e.repeat && e.code === 'KeyL') ejszaka?.kapcsol();
+  if (mod === 'seta' && !e.repeat && e.code === 'KeyK') kocsi?.valt();
 });
 addEventListener('keyup', e => lenyomva.delete(e.code));
 addEventListener('blur', () => lenyomva.clear());
@@ -1199,7 +1201,7 @@ vaszon.addEventListener('pointerup', pointerVege);
 vaszon.addEventListener('pointercancel', pointerVege);
 document.addEventListener('pointerlockchange', () => {
   $('setaSugo').textContent = document.pointerLockElement === vaszon
-    ? 'WASD / nyilak = séta · egér = nézelődés · Shift = gyorsabban · Szóköz = ugrás · C = guggolás · E = mászás · F = lökés · G = palack · AK: bal gomb = lövés, R = töltés, Q = váltás · L = lámpa · 🚩 zászló: rámenéssel · Esc = egér elengedése'
+    ? 'WASD / nyilak = séta · egér = nézelődés · Shift = gyorsabban · Szóköz = ugrás · C = guggolás · E = mászás · F = lökés · G = palack · AK: bal gomb = lövés, R = töltés, Q = váltás · L = lámpa · K = felmosókocsi · 🚩 zászló: rámenéssel · Esc = egér elengedése'
     : 'Kattints a képre a sétához · WASD / nyilak · egér · Shift · Szóköz = ugrás · C = guggolás · E = mászás · F = lökés · G = palack · Esc';
 });
 
@@ -1265,6 +1267,7 @@ function setaLeptet(dt, most) {
   elore += joy.y; oldal += joy.x;
   const l = Math.hypot(elore, oldal);
   if (l > 1) { elore /= l; oldal /= l; }
+  if (seta.kocsin) { kocsiLeptet(dt, elore, oldal - fordul); return; }
   seta.yaw += fordul * 1.8 * dt;
   // guggolás: amíg a C nyomva van (vagy a gomb be van kapcsolva); felállni csak akkor lehet,
   // ha a fej fölött van hely
@@ -1323,6 +1326,41 @@ function setaLeptet(dt, most) {
       + (seta.maszik ? ' · mászik' : seta.guggol ? ' · guggolva' : '');
     $('pozicio').textContent = `X ${sz(seta.x, 1)} m · Y ${sz(seta.y, 1)} m${szint}${legk && seta.z < 0.5 ? ' · ' + legk.kod : ''}`;
   }
+}
+
+// Felmosókocsi vezetése (config.js: felmosoKocsi): gáz/fék előre-hátra, kormányzás; csak a padlón
+// gurul (nem ugrik, nem mászik), az állványokba és a falakba ütközik
+function kocsiLeptet(dt, gaz, kormany) {
+  const K = C.felmosoKocsi || {};
+  const max = Number(K.sebesseg ?? 7), hatra = Number(K.hatraSebesseg ?? 2.5), R = kocsi?.sugar ?? 0.55;
+  const v = seta.kv || 0;
+  const cel = gaz > 0 ? max * gaz : gaz < 0 ? -hatra * -gaz : 0;
+  const gyorsulas = cel === 0 ? 4 : (v && Math.sign(cel) !== Math.sign(v)) ? 10 : Number(K.gyorsulas ?? 4);
+  seta.kv = v + Math.sign(cel - v) * Math.min(Math.abs(cel - v), gyorsulas * dt);
+  // kormányzás: álló helyzetben is fordul egy kicsit, menet közben jobban; tolatva fordítva
+  seta.yaw -= kormany * 1.9 * dt * Math.min(1, 0.35 + Math.abs(seta.kv) / 3) * (seta.kv < -0.05 ? -1 : 1);
+  seta.kvx = seta.kvy = 0;
+  seta.guggol = seta.maszik = false;
+  const dx = -Math.sin(seta.yaw) * seta.kv * dt, dz = -Math.cos(seta.yaw) * seta.kv * dt;
+  if (dx || dz) {
+    const x0 = seta.x, y0 = seta.y;
+    let zLep;
+    [seta.x, seta.y, zLep] = M.racs.mozgat(seta.x, seta.y, dx, dz, R, seta.z, 1.6);
+    if (seta.vz === 0) seta.z = zLep;
+    // ütközés: lefékez
+    if (Math.hypot(seta.x - x0, seta.y - y0) < 0.5 * Math.hypot(dx, dz)) seta.kv *= 0.3;
+  }
+  const talaj = M.racs.talaj(seta.x, seta.y, seta.z);
+  if (seta.vz > 0 || seta.z > talaj + 0.001) {
+    seta.vz -= Number(C.gravitacio ?? 9.81) * dt;
+    seta.z += seta.vz * dt;
+    if (seta.z <= talaj) { if (seta.vz < -9) jatek?.eses(seta.vz); seta.z = talaj; seta.vz = 0; }
+  } else { seta.z = talaj; seta.vz = 0; }
+  seta.kz = seta.vz !== 0 ? seta.z : seta.kz + (seta.z - seta.kz) * Math.min(1, dt * 12);
+  const celSzem = Number(K.szemmagassag ?? 1.75);
+  seta.szemAkt = (seta.szemAkt ?? SZEM) + (celSzem - (seta.szemAkt ?? SZEM)) * Math.min(1, dt * 10);
+  setaNezet();
+  $('pozicio').textContent = `🧽 Felmosókocsi · ${Math.round(Math.abs(seta.kv) * 3.6)} km/h · K = leszállás`;
 }
 
 // ---------------------------------------------------------------------
@@ -1500,6 +1538,7 @@ renderer.setAnimationLoop(() => {
   targoncak?.frissit(dt);
   ejszaka?.frissit(dt);
   ctf?.frissit(dt);
+  kocsi?.frissit(dt);
   const puls = 0.5 + 0.5 * Math.sin(most / 260);
   for (const p of pulzalok) {
     if (p.anyag) p.anyag.opacity = p.min + (p.max - p.min) * puls;
@@ -1513,7 +1552,7 @@ renderer.setAnimationLoop(() => {
 $('betoltes').hidden = true;
 
 // Közös nézet: a többi látogató pálcikaemberként (config.js: kozos); rá épül a játék (jatek)
-let kozos = null, jatek = null, targoncak = null, ejszaka = null, ctf = null;
+let kozos = null, jatek = null, targoncak = null, ejszaka = null, ctf = null, kocsi = null;
 try {
   const k2 = v => Math.round(v * 100) / 100;
   kozos = inditKozos({
@@ -1523,7 +1562,7 @@ try {
       : { x: k2(controls.target.x), y: k2(controls.target.z), z: 0, yaw: 0, g: 0, m: 'felul' }),
     extra: () => ({ ...(jatek?.extra() ?? {}), ...(ejszaka?.extra() ?? {}), ...(ctf?.extra() ?? {}) }),
     esemeny: e => jatek?.esemeny(e),
-    allando: a => ctf?.fogad(a),
+    allando: (a, tema) => (tema === 'kocsi' ? kocsi?.fogad(a) : ctf?.fogad(a)),
   });
 } catch (e) {
   console.warn('[közös nézet]', e);
@@ -1555,5 +1594,11 @@ try {
 } catch (e) {
   console.warn('[zászlófoglalás]', e);
 }
+// Vezethető felmosókocsi az EAR raktár előtt (config.js: felmosoKocsi)
+try {
+  kocsi = inditKocsi({ C, M, scene, seta, kozos, uzenet, getMod: () => mod, szovegSprite });
+} catch (e) {
+  console.warn('[felmosókocsi]', e);
+}
 hashbolNyit();
-window.raktar = { M, scene, camera, controls, seta, kijelol, helyhezMegy, modValt, lep: setaLeptet, ugras, lenyomva, jatek, kozos, targoncak, ejszaka, ctf }; // hibakereséshez
+window.raktar = { M, scene, camera, controls, seta, kijelol, helyhezMegy, modValt, lep: setaLeptet, ugras, lenyomva, jatek, kozos, targoncak, ejszaka, ctf, kocsi }; // hibakereséshez
