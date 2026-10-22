@@ -72,6 +72,11 @@ A közös nézetben játszani is lehet (a ☰ menü „Játék” kapcsolójáva
   tud (nem ugrik, nem lő, nem dob, zászlót és csomagot sem vesz fel). Egyszerre egy ember ülhet rajta; a helye
   mindenkinél ugyanaz (megőrzött MQTT-üzenet). Beállítás: `config.js` → `felmosoKocsi`.
 - A többiek neve és életerő-csíkja belső nézetben nem látszik át a falon és az állványon.
+- **Vad kutyák:** aki a raktáron kívülre megy (árukiadó udvar, fedett rakodó, fedett rész), azt 1,5 mp múlva egy
+  3 kutyából álló falka kergetni kezdi a futás sebességével (4,5 m/s); ha utolérik, kutyánként másodpercenként egy
+  harapás, −10 HP. Akadályokat megkerülik, de a raktárba nem jönnek be; ha visszamész, 5 mp múlva elmennek.
+  A bázisok 2,5 m-es körzete biztonságos, és aki egy tárgy tetejére mászik, azt sem érik el. A többiek is látják,
+  ki elől menekülsz. Beállítás: `config.js` → `kutyak`.
 - **Lidérc:** éjszakánként a pohármosóban születik egy lebegő, hosszú ősz hajú, világító szemű lidérc, és 8 m/s-mal
   (kicsit gyorsabban a felmosókocsinál) végiglebeg a raktár összes folyosóján; ha a végére ér, visszaindul. Akihez
   hozzáér, az azonnal meghal (a felmosókocsin ülő is). Mindenkinél ugyanott jár (a gép órájából számolódik).
@@ -108,6 +113,7 @@ kizárt folyosók, további utak; a `mag` átírásával más útvonalakat járn
 | `js/targonca.js` | targoncák: folyosóhálózat, véletlen körutak, elütés |
 | `js/ctf.js` | zászlófoglalás: csapatok, bázisok, zászlók, közös állás |
 | `js/kocsi.js` | vezethető felmosókocsi |
+| `js/kutyak.js` | vad kutyák a raktáron kívül |
 | `js/liderc.js` | éjszakai lidérc: végigjárja a folyosókat, érintésre öl |
 | `js/ejszaka.js` | éjszakai mód a játékban: nappal–éjszaka ciklus, zseblámpa |
 | `vendor/three/` | Three.js r170 helyi másolata (MIT licenc), így CDN nélkül is működik |

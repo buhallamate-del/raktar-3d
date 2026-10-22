@@ -8,6 +8,7 @@ import { inditEjszaka } from './ejszaka.js';
 import { inditCtf } from './ctf.js';
 import { inditKocsi } from './kocsi.js';
 import { inditLiderc } from './liderc.js';
+import { inditKutyak } from './kutyak.js';
 
 const C = window.RAKTAR_CONFIG;
 const D = window.RAKTAR_ADATOK;
@@ -1541,6 +1542,7 @@ renderer.setAnimationLoop(() => {
   ctf?.frissit(dt);
   kocsi?.frissit(dt);
   liderc?.frissit(dt);
+  kutyak?.frissit(dt);
   const puls = 0.5 + 0.5 * Math.sin(most / 260);
   for (const p of pulzalok) {
     if (p.anyag) p.anyag.opacity = p.min + (p.max - p.min) * puls;
@@ -1554,7 +1556,7 @@ renderer.setAnimationLoop(() => {
 $('betoltes').hidden = true;
 
 // Közös nézet: a többi látogató pálcikaemberként (config.js: kozos); rá épül a játék (jatek)
-let kozos = null, jatek = null, targoncak = null, ejszaka = null, ctf = null, kocsi = null, liderc = null;
+let kozos = null, jatek = null, targoncak = null, ejszaka = null, ctf = null, kocsi = null, liderc = null, kutyak = null;
 try {
   const k2 = v => Math.round(v * 100) / 100;
   kozos = inditKozos({
@@ -1562,7 +1564,7 @@ try {
     allapot: () => (mod === 'seta'
       ? { x: k2(seta.x), y: k2(seta.y), z: k2(seta.z), yaw: k2(seta.yaw), g: seta.guggol ? 1 : 0, m: 'seta' }
       : { x: k2(controls.target.x), y: k2(controls.target.z), z: 0, yaw: 0, g: 0, m: 'felul' }),
-    extra: () => ({ ...(jatek?.extra() ?? {}), ...(ejszaka?.extra() ?? {}), ...(ctf?.extra() ?? {}) }),
+    extra: () => ({ ...(jatek?.extra() ?? {}), ...(ejszaka?.extra() ?? {}), ...(ctf?.extra() ?? {}), ...(kutyak?.extra() ?? {}) }),
     esemeny: e => jatek?.esemeny(e),
     allando: (a, tema) => (tema === 'kocsi' ? kocsi?.fogad(a) : ctf?.fogad(a)),
   });
@@ -1596,6 +1598,12 @@ try {
 } catch (e) {
   console.warn('[lidérc]', e);
 }
+// Vad kutyák a raktáron kívül (config.js: kutyak)
+try {
+  kutyak = inditKutyak({ C, M, scene, seta, kozos, uzenet, getMod: () => mod, jatek });
+} catch (e) {
+  console.warn('[kutyák]', e);
+}
 // Zászlófoglalás a játékban (config.js: ctf)
 try {
   ctf = inditCtf({ C, scene, seta, kozos, uzenet, getMod: () => mod, jatekBe: () => !!jatek?.jatekBe?.(), szovegSprite });
@@ -1609,4 +1617,4 @@ try {
   console.warn('[felmosókocsi]', e);
 }
 hashbolNyit();
-window.raktar = { M, scene, camera, controls, seta, kijelol, helyhezMegy, modValt, lep: setaLeptet, ugras, lenyomva, jatek, kozos, targoncak, ejszaka, ctf, kocsi, liderc }; // hibakereséshez
+window.raktar = { M, scene, camera, controls, seta, kijelol, helyhezMegy, modValt, lep: setaLeptet, ugras, lenyomva, jatek, kozos, targoncak, ejszaka, ctf, kocsi, liderc, kutyak }; // hibakereséshez

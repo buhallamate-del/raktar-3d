@@ -11,7 +11,7 @@
 import * as THREE from 'three';
 
 const TAROL = 'raktar3d.jatek';
-const OK_SZOVEG = { lokes: 'meglökték', palack: 'palack találta el', eses: 'leesett', targonca: 'elütötte egy targonca', loves: 'lelőtték', liderc: 'elkapta a lidérc' };
+const OK_SZOVEG = { lokes: 'meglökték', palack: 'palack találta el', eses: 'leesett', targonca: 'elütötte egy targonca', loves: 'lelőtték', liderc: 'elkapta a lidérc', kutya: 'széttépték a vad kutyák' };
 
 // Egyszerű, rajzfilmes AK: fa tus és markolat, fekete tok és cső, ívelt tár. Előre (−Z) néz.
 function akModell() {
@@ -46,6 +46,7 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
   const tar = betolt();
   const pont = { d: Number(tar.d) || 0, k: Number(tar.k) || 0 };
   let be = tar.be ?? (J.bekapcsolva !== false);
+  let harapasUz = 0;
   let hp = 100, halott = false, tamado = null, lokesIdo = 0, dobasIdo = 0, szamlalo = 0;
   const mentes = () => ment({ ...pont, be });
 
@@ -89,7 +90,7 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
     kozos?.kuldE({ t: 'halal', cel: kozos.id, celNev: kozos.nev(), tol2: tettes?.id, tol2Nev: tettes?.nev, ok: ok2 });
     el('halalSzoveg').textContent = tettes
       ? `${tettes.nev} ${ok2 === 'palack' ? 'eltalált egy palackkal' : ok2 === 'targonca' ? 'elütött' : ok2 === 'loves' ? 'lelőtt' : 'meglökött'}.`
-      : ok2 === 'liderc' ? '👻 Elkapott a lidérc.' : OK_SZOVEG[ok2] === 'leesett' ? 'Leestél.' : 'Elfogyott az életerőd.';
+      : ok2 === 'liderc' ? '👻 Elkapott a lidérc.' : ok2 === 'kutya' ? '🐕 Széttéptek a vad kutyák.' : OK_SZOVEG[ok2] === 'leesett' ? 'Leestél.' : 'Elfogyott az életerőd.';
     el('halalKep').hidden = false;
     kozos?.frissitAllapot();
     setTimeout(ujraeled, cfg.ujraMp * 1000);
@@ -461,6 +462,14 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
   return {
     // a lidérc hozzáért: azonnali halál
     liderc: () => { if (!serulhet()) return; tamado = null; sebzes(100000, 'liderc'); },
+    // egy kutya megharapott (dx, dy: merről jött – egy kicsit meglök)
+    harapas: (n, dx, dy) => {
+      if (!serulhet()) return;
+      tamado = null;
+      seta.kvx = (seta.kvx || 0) + dx * 2; seta.kvy = (seta.kvy || 0) + dy * 2;
+      if (most() - (harapasUz || 0) > 1500) { uzenet(`🐕 Megharapott egy kutya! −${n} HP`); harapasUz = most(); }
+      sebzes(n, 'kutya');
+    },
     frissit, lokes, dobas, eses, esemeny, utes, csomagok, ujratolt, valt, fegyverKezben, jatekBe: () => be,
     lovesTeszt: (le) => { lovesLe = le; }, akAllapot: () => ak,
     extra: () => (be ? { j: 1, h: Math.round(hp), d: pont.d, k: pont.k, hal: halott ? 1 : 0, f: ak && fegyverValaszt === 'ak' ? 1 : 0 } : { j: 0 }),
