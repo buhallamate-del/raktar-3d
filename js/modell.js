@@ -471,6 +471,8 @@ export class UtkozoRacs {
     this.lepes = lepes;
     this.test = test;
     this.m = new Map();
+    // mozgó akadályok (pl. a civilek békája): a helyüket a tulajdonosuk frissíti képkockánként
+    this.dinamikus = [];
     teglalapok.forEach((r, i) => {
       for (let cx = Math.floor(r.x0 / cella); cx <= Math.floor(r.x1 / cella); cx++) {
         for (let cy = Math.floor(r.y0 / cella); cy <= Math.floor(r.y1 / cella); cy++) {
@@ -490,7 +492,9 @@ export class UtkozoRacs {
         if (l) for (const i of l) ki.add(i);
       }
     }
-    return [...ki].map(i => this.t[i]);
+    const lista = [...ki].map(i => this.t[i]);
+    for (const d of this.dinamikus) if (d.aktiv !== false && d.x0 < x + r && d.x1 > x - r && d.y0 < y + r && d.y1 > y - r) lista.push(d);
+    return lista;
   }
   // test: a gyalogos aktuális magassága (guggolva kisebb)
   akadaly(t, z, test = this.test) {

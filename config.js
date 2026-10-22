@@ -300,6 +300,16 @@ window.RAKTAR_CONFIG = {
     // a piros bázis mellett is, hogy mindkét csapat hozzájusson
     { nev: 'Áruátvétel', x: 4.5, y: 94.5, z: 0, ujraMp: 45 },
   ],
+  // Távcsöves puska: egyesével lő, nagyot sebez; jobb egérgomb / Z = távcső (nagyitas-szoros)
+  puska: { sebzes: 80, lovesPerMp: 0.8, tar: 5, loszer: 20, ujratoltesMp: 3, hatotav: 150, nagyitas: 4 },
+  // a puskák ládái az AK-ládák közelében
+  puskaLadak: [
+    { nev: 'Galéria', x: -8.5, y: 11.0, z: 3.0, ujraMp: 60 },
+    { nev: 'Áruátvétel', x: 2.5, y: 91.0, z: 0, ujraMp: 60 },
+  ],
+  // Gránát: a fegyverládákon jár (ladankent db, legfeljebb max); T = dobás; gyujtoMp után robban,
+  // a sugar m-en belül a távolsággal csökkenő sebzés (középen sebzes HP)
+  granat: { max: 4, ladankent: 2, sebzes: 100, sugar: 5, gyujtoMp: 2.5, dobasSebesseg: 13 },
   // Éjszaka a játékban: a gép órája szerint nappalMp világos, ejjelMp sötét váltakozik (mindenkinél
   // egyszerre); csak belső nézetben. Zseblámpa: L (éjszaka magától bekapcsol).
   ejszaka: { nappalMp: 180, ejjelMp: 180, atmenetMp: 4 },
@@ -313,6 +323,10 @@ window.RAKTAR_CONFIG = {
     visszaMp: 30,
     gyozelem: 3,
   },
+  // Civilek: db raktáros békát (kézi raklapemelőt) húz a folyosókon, sebesseg m/s-mal, a zsákutcák
+  // végén allasMp-ig rakodnak. A béka rakománya a folyosó teljes szélességét elállja (legfeljebb
+  // maxSzelesseg m): kikerülni nem lehet, de fel lehet állni rá (rakomanyMagassag m magas, ugrással elérhető).
+  civilek: { db: 2, sebesseg: 1.3, allasMp: 4, rakomanyMagassag: 0.75, maxSzelesseg: 4 },
   // Vad kutyák (a játékban): aki a raktáron kívülre megy (a teruletek valamelyikére), azt kesesMp múlva
   // db kutya kergetni kezdi sebesseg m/s-mal (gyorsabb a futásnál, 4,5 m/s, de lassabb a felmosókocsinál,
   // 7 m/s); harapásonként sebzes HP, harapasMp-enként.

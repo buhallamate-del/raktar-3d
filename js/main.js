@@ -9,6 +9,7 @@ import { inditCtf } from './ctf.js';
 import { inditKocsi } from './kocsi.js';
 import { inditLiderc } from './liderc.js';
 import { inditKutyak } from './kutyak.js';
+import { inditCivilek } from './civilek.js';
 
 const C = window.RAKTAR_CONFIG;
 const D = window.RAKTAR_ADATOK;
@@ -1156,6 +1157,8 @@ addEventListener('keydown', e => {
   if (mod === 'seta' && !e.repeat && e.code === 'KeyQ') jatek?.valt();
   if (mod === 'seta' && !e.repeat && e.code === 'KeyL') ejszaka?.kapcsol();
   if (mod === 'seta' && !e.repeat && e.code === 'KeyK') kocsi?.valt();
+  if (mod === 'seta' && !e.repeat && e.code === 'KeyT') jatek?.granatDob();
+  if (mod === 'seta' && !e.repeat && e.code === 'KeyZ') jatek?.celoz();
 });
 addEventListener('keyup', e => lenyomva.delete(e.code));
 addEventListener('blur', () => lenyomva.clear());
@@ -1203,7 +1206,7 @@ vaszon.addEventListener('pointerup', pointerVege);
 vaszon.addEventListener('pointercancel', pointerVege);
 document.addEventListener('pointerlockchange', () => {
   $('setaSugo').textContent = document.pointerLockElement === vaszon
-    ? 'WASD / nyilak = séta · egér = nézelődés · Shift = gyorsabban · Szóköz = ugrás · C = guggolás · E = mászás · F = lökés · G = palack · AK: bal gomb = lövés, R = töltés, Q = váltás · L = lámpa · K = felmosókocsi · 🚩 zászló: rámenéssel · Esc = egér elengedése'
+    ? 'WASD / nyilak = séta · egér = nézelődés · Shift = gyorsabban · Szóköz = ugrás · C = guggolás · E = mászás · F = lökés · G = palack · AK / puska: bal gomb = lövés, R = töltés, Q = váltás, jobb gomb / Z = távcső · T = gránát · L = lámpa · K = felmosókocsi · 🚩 zászló: rámenéssel · Esc = egér elengedése'
     : 'Kattints a képre a sétához · WASD / nyilak · egér · Shift · Szóköz = ugrás · C = guggolás · E = mászás · F = lökés · G = palack · Esc';
 });
 
@@ -1538,6 +1541,7 @@ renderer.setAnimationLoop(() => {
   kozos?.frissit(dt);
   jatek?.frissit(dt);
   targoncak?.frissit(dt);
+  civilek?.frissit(dt);
   ejszaka?.frissit(dt);
   ctf?.frissit(dt);
   kocsi?.frissit(dt);
@@ -1556,7 +1560,7 @@ renderer.setAnimationLoop(() => {
 $('betoltes').hidden = true;
 
 // Közös nézet: a többi látogató pálcikaemberként (config.js: kozos); rá épül a játék (jatek)
-let kozos = null, jatek = null, targoncak = null, ejszaka = null, ctf = null, kocsi = null, liderc = null, kutyak = null;
+let kozos = null, jatek = null, targoncak = null, ejszaka = null, ctf = null, kocsi = null, liderc = null, kutyak = null, civilek = null;
 try {
   const k2 = v => Math.round(v * 100) / 100;
   kozos = inditKozos({
@@ -1584,6 +1588,12 @@ try {
     utes: u => jatek ? jatek.utes(u) : Object.assign(seta, { kvx: u.dx * 14, kvy: u.dy * 14, vz: 3.5 }) });
 } catch (e) {
   console.warn('[targoncák]', e);
+}
+// Civilek: békát húzó raktárosok a folyosókon (config.js: civilek)
+try {
+  civilek = inditCivilek({ C, M, scene, szovegSprite, seta, getMod: () => mod, targoncak });
+} catch (e) {
+  console.warn('[civilek]', e);
 }
 // Éjszakai mód a játékban (config.js: ejszaka)
 try {
@@ -1617,4 +1627,4 @@ try {
   console.warn('[felmosókocsi]', e);
 }
 hashbolNyit();
-window.raktar = { M, scene, camera, controls, seta, kijelol, helyhezMegy, modValt, lep: setaLeptet, ugras, lenyomva, jatek, kozos, targoncak, ejszaka, ctf, kocsi, liderc, kutyak }; // hibakereséshez
+window.raktar = { M, scene, camera, controls, seta, kijelol, helyhezMegy, modValt, lep: setaLeptet, ugras, lenyomva, jatek, kozos, targoncak, ejszaka, ctf, kocsi, liderc, kutyak, civilek }; // hibakereséshez
