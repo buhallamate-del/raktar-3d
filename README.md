@@ -53,7 +53,7 @@ A közös nézetben játszani is lehet (a ☰ menü „Játék” kapcsolójáva
 - **G = palack** (telefonon „Dobás”): amerre nézel, eldobsz egy palackot; ívben repül, az állványon és a falon összetörik.
   Találat: −25 HP.
 - **Esés:** kb. 4 m fölött sebez.
-- **AK:** a galérián, a fegyverládán vehető fel (utána 45 mp-ig üres a láda); ha már van nálad, a ládánál lőszert töltesz. Bal egérgomb nyomva = sorozatlövés
+- **AK:** két fegyverládán vehető fel – a galérián és az áruátvételen, a piros bázis mellett – (utána 45 mp-ig üres a láda); ha már van nálad, a ládánál lőszert töltesz. Bal egérgomb nyomva = sorozatlövés
   (telefonon „Lövés”), R = újratöltés (30-as tár, összesen 90 lőszer), Q = váltás AK és palack között.
   Találat −12 HP; halálkor a fegyver elveszik. A többiek pálcikaemberén látszik, ha AK van náluk.
   Beállítás: `config.js` → `fegyver`, `fegyverLadak`.
