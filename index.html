@@ -64,6 +64,10 @@
     <label><input type="checkbox" id="jatekBe"> Játék: lökés, palackdobás, életerő</label>
     <p class="halvany kicsi">Éjszaka: 3 percenként 3 percig sötét van (mindenkinél egyszerre, csak belső nézetben); a zseblámpa magától bekapcsol, L = ki/be. A raktáron kívül (udvar, fedett részek) vad kutyák kergetnek, harapásonként −10 HP; a bázisoknál biztonságban vagy. Éjszaka a pohármosóból kiszabadul a lidérc, és végiglebeg a raktáron – akihez hozzáér, az meghal. AK és távcsöves puska: a fegyverládákon vehető fel (a galérián és az áruátvételen, a piros bázis mellett); bal egérgomb (nyomva) = lövés, R = újratöltés, Q = váltás AK/puska/palack; AK-találat −12 HP, puska −80 HP; a puskával jobb egérgomb vagy Z = távcső. A ládák 2 gránátot is adnak (legfeljebb 4): T = dobás, 2,5 mp múlva robban, 5 m-en belül sebez (a dobót is). Halálkor minden elveszik. F = lökés (aki előtted áll), G = palack (amerre nézel). Lökés −10, palack −25 HP, a nagy esés is sebez. 0 HP-nál meghalsz, és újraéledsz a kiindulóponton. A pontlista a fejléc 👥 gombján. Két raktáros békát húz a folyosókon: a rakomány elállja a sort, kikerülni nem lehet, de fel lehet ugrani rá. Az EAR raktár előtt vezethető felmosókocsi áll (K = fel/le, W/S = gáz/fék, A/D = kormány); aki rajta ül, csak vezetni tud. Akinél ki van kapcsolva, azt nem lehet bántani.</p>
     <button id="jatekNullaz" class="masodlagos">Pontjaim nullázása</button>
+    <h3 class="kicsiCim">Küldetés</h3>
+    <p class="halvany kicsi">Komissiózás időre: a gép kioszt 3 tárhelyet, ezeket sorban fel kell keresni (a cél fölött zöld fénycsík, fent iránytű és távolság), aztán a kiszedett árut a komissiózó lerakóba vinni. Belső nézetben, N vagy a gomb indítja (újra megnyomva feladja). Jutalom: katana (Q = váltás, bal egérgomb = vágás, közelharcban −50 HP, a kutyákat is levágja; halálkor sem veszik el) – ha már van, teljes életerő.</p>
+    <button id="kuldetesGomb" class="masodlagos">Új küldetés (N)</button>
+    <p class="halvany kicsi" id="kuldetesInfo"></p>
     <h3 class="kicsiCim">Zászlófoglalás</h3>
     <label>Csapatom: <select id="ctfCsapat"></select></label>
     <p class="halvany kicsi">Két csapat: a piros bázis az áruátvételen, a kék kint, a fedett részen (a sárga kijáraton át). Az ellenfél zászlaját rámenéssel veszed fel; ha a saját bázisotokra viszed, miközben a ti zászlótok otthon van, pont jár. Aki zászlóval hal meg, elejti; a saját elejtett zászlót rámenéssel visszaviheted, különben 30 mp múlva magától visszakerül. 3 pont nyeri a kört. Csapattársat nem lehet bántani, halál után a bázisotokon éledsz újra.</p>
@@ -108,6 +112,7 @@
 </aside>
 <div id="napszak" hidden></div>
 <div id="ctfHud" hidden></div>
+<div id="kuldetesHud" hidden></div>
 <button id="granatGomb" class="setaGomb" hidden aria-label="Gránát dobása">Gránát</button>
 <button id="tavcsoGomb" class="setaGomb" hidden aria-label="Távcső be/ki">Távcső</button>
 <div id="tavcso" hidden></div>

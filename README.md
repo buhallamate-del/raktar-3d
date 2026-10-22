@@ -72,6 +72,12 @@ A közös nézetben játszani is lehet (a ☰ menü „Játék” kapcsolójáva
   tud (nem ugrik, nem lő, nem dob, zászlót és csomagot sem vesz fel). Egyszerre egy ember ülhet rajta; a helye
   mindenkinél ugyanaz (megőrzött MQTT-üzenet). Beállítás: `config.js` → `felmosoKocsi`.
 - A többiek neve és életerő-csíkja belső nézetben nem látszik át a falon és az állványon.
+- **Küldetés (komissiózás időre):** N (vagy a menü „Új küldetés” gombja) belső nézetben 3 véletlen tárhelyet oszt ki.
+  Sorban fel kell keresni őket (a cél fölött zöld fénycsík a kóddal, fent kijelző az iránnyal, a távolsággal és az idővel),
+  majd a kiszedett árut a komissiózó lerakóba vinni. A legjobb idő ezen a gépen megmarad, a teljesítést a többiek is
+  látják. Újra N = feladás. Beállítás: `config.js` → `kuldetes`.
+  **Jutalom: katana** (Q = váltás, bal egérgomb = vágás): közelharcban −50 HP annak, aki előtted áll, és a vad kutyákat
+  is levágja. Halálkor sem veszik el, ezen a gépen megmarad. Ha már van, a jutalom teljes életerő. Beállítás: `config.js` → `katana`.
 - **Távcsöves puska:** a galérián és az áruátvételen, az AK-ládák mellett. Egyesével lő, −80 HP; jobb egérgomb vagy Z =
   távcső (4× nagyítás, távcsővel szinte pontos). Q = váltás AK / puska / palack. Beállítás: `config.js` → `puska`, `puskaLadak`.
 - **Gránát:** a fegyverládák 2-2 gránátot adnak (legfeljebb 4). T = dobás (telefonon „Gránát”); pattog, 2,5 mp múlva
@@ -120,6 +126,7 @@ kizárt folyosók, további utak; a `mag` átírásával más útvonalakat járn
 | `js/targonca.js` | targoncák: folyosóhálózat, véletlen körutak, elütés |
 | `js/ctf.js` | zászlófoglalás: csapatok, bázisok, zászlók, közös állás |
 | `js/kocsi.js` | vezethető felmosókocsi |
+| `js/kuldetes.js` | küldetés: komissiózás időre |
 | `js/civilek.js` | békát húzó raktárosok (mozgó akadály) |
 | `js/kutyak.js` | vad kutyák a raktáron kívül |
 | `js/liderc.js` | éjszakai lidérc: végigjárja a folyosókat, érintésre öl |
