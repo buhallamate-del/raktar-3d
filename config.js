@@ -323,6 +323,9 @@ window.RAKTAR_CONFIG = {
     visszaMp: 30,
     gyozelem: 3,
   },
+  // Küldetés (komissiózás időre): db hely, celSugar m-re kell megközelíteni a hely előtti pontot;
+  // a leadás a komissiózó lerakóban (lerakoSugar m-en belül)
+  kuldetes: { db: 3, celSugar: 1.5, lerakoSugar: 2.5 },
   // Civilek: db raktáros békát (kézi raklapemelőt) húz a folyosókon, sebesseg m/s-mal, a zsákutcák
   // végén allasMp-ig rakodnak. A béka rakománya a folyosó teljes szélességét elállja (legfeljebb
   // maxSzelesseg m): kikerülni nem lehet, de fel lehet állni rá (rakomanyMagassag m magas, ugrással elérhető).

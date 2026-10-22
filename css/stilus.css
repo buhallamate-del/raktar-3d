@@ -121,6 +121,10 @@ code { background: #eef1f5; padding: 0 4px; border-radius: 4px; }
 #ctfHud { position: fixed; top: 90px; left: 50%; transform: translateX(-50%); z-index: 7; pointer-events: none; text-align: center;
   background: rgba(20, 24, 32, 0.8); color: #fff; padding: 3px 10px; border-radius: 10px; font-size: 12px; font-weight: 700; white-space: nowrap; }
 #ctfHud .ctfNalad { color: #ffd84d; margin-top: 2px; }
+#kuldetesHud { position: fixed; top: 116px; left: 50%; transform: translateX(-50%); z-index: 7; pointer-events: none; white-space: nowrap;
+  background: rgba(20, 70, 40, 0.85); color: #fff; padding: 3px 10px; border-radius: 10px; font-size: 13px; font-weight: 600; }
+#kuldetesHud .nyil { display: inline-block; font-size: 15px; }
+@media (max-width: 640px) { #kuldetesHud { top: 160px; white-space: normal; max-width: calc(100% - 32px); text-align: center; } }
 @media (max-width: 640px) { #ctfHud { top: 130px; white-space: normal; max-width: calc(100% - 32px); } }
 #lovesGomb { right: 118px; bottom: 236px; background: rgba(160, 20, 20, 0.8); }
 #pontPanel { top: 64px; right: 12px; width: min(380px, calc(100% - 24px)); max-height: 60vh; padding: 10px 14px; }
