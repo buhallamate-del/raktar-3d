@@ -11,6 +11,7 @@ import { inditLiderc } from './liderc.js';
 import { inditKutyak } from './kutyak.js';
 import { inditCivilek } from './civilek.js';
 import { inditKuldetes } from './kuldetes.js';
+import { inditKillcam } from './killcam.js';
 
 const C = window.RAKTAR_CONFIG;
 const D = window.RAKTAR_ADATOK;
@@ -334,11 +335,11 @@ for (const t of C.tereptargyak || []) {
     scene.add(f);
   }
 }
-// Galériák (config.js: galeriak) – áttetsző padló kék oszlopokkal, korláttal, lépcsővel
+// Galériák (config.js: galeriak) – tömör (nem átlátszó) padló kék oszlopokkal, korláttal, lépcsővel
 for (const g of C.galeriak || []) {
   const mag = Number(g.magassag ?? 3);
   const kek = new THREE.MeshLambertMaterial({ color: '#2b4fa8' });
-  const padloAnyag = new THREE.MeshLambertMaterial({ color: '#b9c3d6', transparent: true, opacity: 0.45, depthWrite: false });
+  const padloAnyag = new THREE.MeshLambertMaterial({ color: '#8d939b' }); // acél járórács, tömören
   const korlatAnyag = new THREE.LineBasicMaterial({ color: '#2b4fa8' });
   for (const [x0, y0, x1, y1] of g.reszek || []) {
     const lap = new THREE.Mesh(KOCKA, padloAnyag);
@@ -1159,6 +1160,7 @@ addEventListener('keydown', e => {
   if (mod === 'seta' && !e.repeat && e.code === 'KeyL') ejszaka?.kapcsol();
   if (mod === 'seta' && !e.repeat && e.code === 'KeyK') kocsi?.valt();
   if (mod === 'seta' && !e.repeat && e.code === 'KeyT') jatek?.granatDob();
+  if (mod === 'seta' && !e.repeat && e.code === 'KeyX') jatek?.aknaLe();
   if (!e.repeat && e.code === 'KeyN') kuldetes?.uj();
   if (mod === 'seta' && !e.repeat && e.code === 'KeyZ') jatek?.celoz();
 });
@@ -1208,7 +1210,7 @@ vaszon.addEventListener('pointerup', pointerVege);
 vaszon.addEventListener('pointercancel', pointerVege);
 document.addEventListener('pointerlockchange', () => {
   $('setaSugo').textContent = document.pointerLockElement === vaszon
-    ? 'WASD / nyilak = séta · egér = nézelődés · Shift = gyorsabban · Szóköz = ugrás · C = guggolás · E = mászás · F = lökés · G = palack · AK / puska: bal gomb = lövés, R = töltés, Q = váltás, jobb gomb / Z = távcső · T = gránát · N = küldetés (jutalom: katana) · L = lámpa · K = felmosókocsi · 🚩 zászló: rámenéssel · Esc = egér elengedése'
+    ? 'WASD / nyilak = séta · egér = nézelődés · Shift = gyorsabban · Szóköz = ugrás · C = guggolás · E = mászás · F = lökés · G = palack · AK / puska / bazooka: bal gomb = lövés, R = töltés, Q = váltás, jobb gomb / Z = távcső · T = gránát · X = akna · N = küldetés (jutalom: katana) · L = lámpa · K = felmosókocsi · 🚩 zászló: rámenéssel · Esc = egér elengedése'
     : 'Kattints a képre a sétához · WASD / nyilak · egér · Shift · Szóköz = ugrás · C = guggolás · E = mászás · F = lökés · G = palack · Esc';
 });
 
@@ -1558,12 +1560,13 @@ renderer.setAnimationLoop(() => {
   if (kijelolCsoport.visible) {
     kijelolAnyag.opacity = mod === 'seta' ? 0.06 + 0.14 * puls : 0.25 + 0.35 * puls;
   }
+  killcam?.frissit(dt); // halál után: a kamera a tettes szemszögéből (felülírja a fentit)
   renderer.render(scene, camera);
 });
 $('betoltes').hidden = true;
 
 // Közös nézet: a többi látogató pálcikaemberként (config.js: kozos); rá épül a játék (jatek)
-let kozos = null, jatek = null, targoncak = null, ejszaka = null, ctf = null, kocsi = null, liderc = null, kutyak = null, civilek = null, kuldetes = null;
+let kozos = null, jatek = null, targoncak = null, ejszaka = null, ctf = null, kocsi = null, liderc = null, kutyak = null, civilek = null, kuldetes = null, killcam = null;
 try {
   const k2 = v => Math.round(v * 100) / 100;
   kozos = inditKozos({
@@ -1580,7 +1583,7 @@ try {
 }
 try {
   jatek = inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod: () => mod, kiindulo: D.kulcsok.kiindulo, ctf: () => ctf,
-    kozelharc: (...a) => kutyak?.vag(...a) ?? 0 });
+    kozelharc: (...a) => kutyak?.vag(...a) ?? 0, halalKamera: (t, ok) => killcam?.indit(t, ok) });
   $('lokesGomb').addEventListener('pointerdown', e => { e.preventDefault(); jatek.lokes(); });
   $('dobasGomb').addEventListener('pointerdown', e => { e.preventDefault(); jatek.dobas(); });
 } catch (e) {
@@ -1598,6 +1601,12 @@ try {
   civilek = inditCivilek({ C, M, scene, szovegSprite, seta, getMod: () => mod, targoncak });
 } catch (e) {
   console.warn('[civilek]', e);
+}
+// Killcam: halálkor visszajátszás a tettes szemszögéből (config.js: killcam)
+try {
+  killcam = inditKillcam({ C, scene, camera, seta, kozos, szovegSprite, getMod: () => mod });
+} catch (e) {
+  console.warn('[killcam]', e);
 }
 // Küldetés: komissiózás időre (config.js: kuldetes)
 try {
@@ -1637,4 +1646,4 @@ try {
   console.warn('[felmosókocsi]', e);
 }
 hashbolNyit();
-window.raktar = { M, scene, camera, controls, seta, kijelol, helyhezMegy, modValt, lep: setaLeptet, ugras, lenyomva, jatek, kozos, targoncak, ejszaka, ctf, kocsi, liderc, kutyak, civilek, kuldetes }; // hibakereséshez
+window.raktar = { M, scene, camera, controls, seta, kijelol, helyhezMegy, modValt, lep: setaLeptet, ugras, lenyomva, jatek, kozos, targoncak, ejszaka, ctf, kocsi, liderc, kutyak, civilek, kuldetes, killcam }; // hibakereséshez
