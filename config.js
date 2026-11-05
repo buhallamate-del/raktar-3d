@@ -319,6 +319,9 @@ window.RAKTAR_CONFIG = {
   akna: { max: 2, ladankent: 1, elesitesMp: 2, elettartamMp: 180, erzekelesSugar: 0.7, sugar: 3, sebzes: 100 },
   // Hangok: a böngészőben készülnek (nincs hangfájl); a menüben ki-be kapcsolható, a hangerő állítható
   hang: { bekapcsolva: true, hangero: 0.6, maxTavolsag: 60 },
+  // Véletlen események (a játékban): gyakorisagPerc-enként egy (vagy semmi), az időszak kesleltetesMp-étől
+  // hosszMp-ig: áramszünet, tűzriadó (aki bent marad: tuzSebzes HP), aranyraklap (aranyBonusz pont a meccsben)
+  esemenyek: { bekapcsolva: true, gyakorisagPerc: 4, kesleltetesMp: 60, hosszMp: 60, tuzSebzes: 50, aranyBonusz: 3 },
   // Meccsek (a játékban): a gép órája szerint percek hosszú meccsek, köztük szunetMp szünet az összesítővel
   meccs: { bekapcsolva: true, percek: 10, szunetMp: 15 },
   // Killcam: ha egy másik játékos öl meg, mp másodpercnyi visszajátszás az ő szemszögéből
@@ -365,6 +368,9 @@ window.RAKTAR_CONFIG = {
   // a raktár összes folyosóján, a végén visszafordul. sebesseg m/s (a felmosókocsinál kicsit gyorsabb);
   // akihez hozzáér (erintesSugar m-en belül), az meghal.
   liderc: { sebesseg: 8, erintesSugar: 0.75, szuletes: [[7.0, 99.7], [7.0, 97.8], [7.0, 94.0]] },
+  // Vezethető targonca: K = fel/le; E = villa fel, C = villa le (villaMax m-ig, villaSebesseg m/s). A villán raklap:
+  // rá lehet állni, és felemel. A helye becsült (a komissiózó előtérben).
+  vezethetoTarganca: { x: 14.0, y: 11.0, irany: Math.PI, sebesseg: 3.5, hatraSebesseg: 2, gyorsulas: 2.5, sugar: 0.75, szemmagassag: 2.0, villaMax: 3.2, villaSebesseg: 0.7 },
   // Vezethető felmosókocsi (x, y = alaprajzi pont, irany = merre néz, radiánban; 0 = észak felé).
   // Gyorsabb a futásnál (4,5 m/s) és a targoncáknál (2,2 m/s); aki rajta ül, csak vezetni tud.
   // Helyszín (IMG_3288): az EAR raktár előtt, a folyosón, kelet felé nézve (a helye becsült).

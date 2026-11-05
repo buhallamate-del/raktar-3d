@@ -32,7 +32,8 @@ function kocsiModell() {
   return g;
 }
 
-export function inditKocsi({ C, M, scene, seta, kozos, uzenet, getMod, szovegSprite }) {
+// jarmuKozel / jarmuValt: a vezethető targonca (jarmu.js) – a telefonos gomb azt is kezeli
+export function inditKocsi({ C, M, scene, seta, kozos, uzenet, getMod, szovegSprite, jarmuKozel, jarmuValt }) {
   const K = C.felmosoKocsi;
   if (!K) return null;
   const el = id => document.getElementById(id);
@@ -50,7 +51,7 @@ export function inditKocsi({ C, M, scene, seta, kozos, uzenet, getMod, szovegSpr
     if (!uj || !(Number(uj.ts) > allapot.ts) || ![uj.x, uj.y].every(Number.isFinite)) return;
     allapot = { ts: Number(uj.ts), x: +uj.x, y: +uj.y, yaw: Number(uj.yaw) || 0, ki: uj.ki || null, nev: uj.nev };
     // valaki más ült fel, mint aki mi vagyunk – ha épp mi is (egyszerre szálltunk fel), a korábbi nyer
-    if (seta.kocsin && allapot.ki !== enId()) { seta.kocsin = false; uzenet(`${allapot.nev || 'Valaki'} ült fel előbb a felmosókocsira`); }
+    if (seta.kocsin === 'kocsi' && allapot.ki !== enId()) { seta.kocsin = false; uzenet(`${allapot.nev || 'Valaki'} ült fel előbb a felmosókocsira`); }
   }
   function valtoztat(uj) {
     uj.ts = Math.max(Date.now(), allapot.ts + 1);
@@ -64,12 +65,12 @@ export function inditKocsi({ C, M, scene, seta, kozos, uzenet, getMod, szovegSpr
     if (getMod() !== 'seta' || seta.halott || seta.kocsin) return;
     if (!kozel()) { uzenet('Menj közelebb a felmosókocsihoz (az EAR raktár előtt áll)'); return; }
     if (!szabad()) { uzenet(`${allapot.nev || 'Valaki'} már vezeti a felmosókocsit`); return; }
-    Object.assign(seta, { x: allapot.x, y: allapot.y, yaw: allapot.yaw, kocsin: true, kv: 0, kvx: 0, kvy: 0, guggol: false, maszik: false });
+    Object.assign(seta, { x: allapot.x, y: allapot.y, yaw: allapot.yaw, kocsin: 'kocsi', kv: 0, kvx: 0, kvy: 0, guggol: false, maszik: false });
     valtoztat({ x: allapot.x, y: allapot.y, yaw: allapot.yaw, ki: enId(), nev: kozos?.nev() || 'Én' });
     uzenet('🧽 Felszálltál a felmosókocsira! W/S = gáz/fék, A/D (vagy egér) = kormány, K = leszállás');
   }
   function leszall(csendes) {
-    if (!seta.kocsin) return;
+    if (seta.kocsin !== 'kocsi') return;
     seta.kocsin = false;
     const x = seta.x, y = seta.y, yaw = seta.yaw;
     // a kocsi mellé lépünk (balra, jobbra vagy hátra – ahol van hely)
@@ -80,14 +81,14 @@ export function inditKocsi({ C, M, scene, seta, kozos, uzenet, getMod, szovegSpr
     valtoztat({ x: +x.toFixed(2), y: +y.toFixed(2), yaw: +yaw.toFixed(3), ki: null });
     if (!csendes) uzenet('Leszálltál a felmosókocsiról');
   }
-  const valt = () => (seta.kocsin ? leszall() : felszall());
-  el('kocsiGomb')?.addEventListener('pointerdown', e => { e.preventDefault(); valt(); });
+  const valt = () => (seta.kocsin === 'kocsi' ? leszall() : felszall());
+  el('kocsiGomb')?.addEventListener('pointerdown', e => { e.preventDefault(); if (seta.kocsin === 'targonca' || (!seta.kocsin && jarmuKozel?.())) jarmuValt?.(); else valt(); });
 
   function frissit(dt) {
     const t = performance.now();
-    if (seta.kocsin && (seta.halott || getMod() !== 'seta')) leszall(true);
+    if (seta.kocsin === 'kocsi' && (seta.halott || getMod() !== 'seta')) leszall(true);
     let x = allapot.x, y = allapot.y, z = 0, yaw = allapot.yaw, seb = 0;
-    if (seta.kocsin) {
+    if (seta.kocsin === 'kocsi') {
       x = seta.x; y = seta.y; z = seta.z; yaw = seta.yaw; seb = seta.kv || 0;
       // vezetés közben időnként frissítjük a megőrzött helyet is (ha a vezető eltűnik, ott marad)
       if (t - utolsoKuld > 3000) { utolsoKuld = t; valtoztat({ x: +x.toFixed(2), y: +y.toFixed(2), yaw: +yaw.toFixed(3), ki: enId(), nev: kozos?.nev() || 'Én' }); }
@@ -109,17 +110,17 @@ export function inditKocsi({ C, M, scene, seta, kozos, uzenet, getMod, szovegSpr
     g.position.set(x, z, y);
     g.rotation.y = yaw;
     for (const k of g.userData.kerekek) k.rotation.x -= seb * dt / 0.13;
-    g.userData.villogo.visible = (seta.kocsin || (allapot.ki && allapot.ki !== enId())) ? Math.sin(t / 150) > 0 : true;
-    felirat.visible = !seta.kocsin;
+    g.userData.villogo.visible = (seta.kocsin === 'kocsi' || (allapot.ki && allapot.ki !== enId())) ? Math.sin(t / 150) > 0 : true;
+    felirat.visible = seta.kocsin !== 'kocsi';
     // súgó és telefonos gomb, ha a közelében vagyunk
-    const kozelben = getMod() === 'seta' && !seta.halott && !seta.kocsin && szabad() && kozel();
+    const kozelben = getMod() === 'seta' && !seta.halott && !seta.kocsin && ((szabad() && kozel()) || !!jarmuKozel?.());
     if (kozelben && t - sugoIdo > 8000) { sugoIdo = t; uzenet('🧽 K = felszállás a felmosókocsira'); }
     const gomb = el('kocsiGomb');
     if (gomb) {
       gomb.hidden = !((kozelben || seta.kocsin) && document.body.classList.contains('erintes'));
-      gomb.textContent = seta.kocsin ? 'Leszállás' : 'Kocsi';
+      gomb.textContent = seta.kocsin ? 'Leszállás' : 'Jármű';
     }
   }
 
-  return { frissit, valt, fogad: alkalmaz, allapot: () => allapot, sugar: SUGAR };
+  return { frissit, valt, fogad: alkalmaz, allapot: () => allapot, sugar: SUGAR, kozel: () => kozel() && szabad() };
 }

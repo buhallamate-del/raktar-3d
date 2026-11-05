@@ -72,6 +72,22 @@ A közös nézetben játszani is lehet (a ☰ menü „Játék” kapcsolójáva
   tud (nem ugrik, nem lő, nem dob, zászlót és csomagot sem vesz fel). Egyszerre egy ember ülhet rajta; a helye
   mindenkinél ugyanaz (megőrzött MQTT-üzenet). Beállítás: `config.js` → `felmosoKocsi`.
 - A többiek neve és életerő-csíkja belső nézetben nem látszik át a falon és az állványon.
+- **Minitérkép** (M = ki/be): az alaprajz, a helyed és irányod, a csapattársaid, a zászlók és a küldetés célja.
+  Ellenfelet nem mutat.
+- **Fegyverváltás számgombbal:** 1 = AK, 2 = puska, 3 = bazooka, 4 = katana, 5 = palack (a Q is marad).
+- **Beállítások** (menü): egérérzékenység, látószög (FOV), a billentyűk átállítása (ha foglalt, a kettő helyet cserél).
+- **Gyors üzenetek:** 6 = „Ide!”, 7 = „Segítség!”, 8 = „Vigyázz, lidérc!”, 9 = „Köszi!” – buborékban a fejed fölött;
+  H = integetés. Telefonon a 💬 gomb (ott a nézőmód is).
+- **Kinézet** (menü → Közös nézet): baseballsapka, láthatósági mellény; 3 küldetés után védősisak, 10 után korona.
+- **Heti ranglista** (👥 → pontlista): a hét leggyorsabb küldetései és a legtöbb ölés, mindenkinél ugyanaz;
+  hétfőn új lista indul.
+- **Nézőmód** (B): a többi játékost követed a válla mögül (←/→ = másik játékos); közben nem bántanak, és te sem játszol.
+- **Véletlen események** (4 percenként jöhet egy, mindenkinél egyszerre): ⚡ áramszünet (nappal is sötét),
+  🔥 tűzriadó (1 percen belül ki kell érni a raktárból, különben −50 HP – kint a kutyák várnak), 🟨 aranyraklap
+  (aki elsőként odaér, +3 bónuszpont a meccsben). Beállítás: `config.js` → `esemenyek`.
+- **Vezethető targonca** a komissiózó előtérben: K = fel/le, W/S/A/D = vezetés, E = villa fel, C = villa le
+  (3,2 m-ig). A villán raklap van: rá lehet állni, és a targonca felemel – akár a polc tetejére.
+  Beállítás: `config.js` → `vezethetoTarganca`.
 - **Meccsek:** 10 percenként új meccs indul (a gép órája szerint, mindenkinél egyszerre), utána 15 mp szünet
   összesítő táblával: ki ölt a legtöbbet, melyik csapat nyert zászlófoglalásban. Fent jobbra a hátralévő idő és a
   meccsbeli ölések/halálok; új meccsnél a zászlófoglalás pontjai nullázódnak. Beállítás: `config.js` → `meccs`.
@@ -142,6 +158,13 @@ kizárt folyosók, további utak; a `mag` átírásával más útvonalakat járn
 | `js/targonca.js` | targoncák: folyosóhálózat, véletlen körutak, elütés |
 | `js/ctf.js` | zászlófoglalás: csapatok, bázisok, zászlók, közös állás |
 | `js/kocsi.js` | vezethető felmosókocsi |
+| `js/minimap.js` | minitérkép |
+| `js/beallitas.js` | beállítások, billentyűk átállítása |
+| `js/uzenetek.js` | gyors üzenetek, integetés |
+| `js/rang.js` | heti ranglista (közös) |
+| `js/nezo.js` | nézőmód |
+| `js/esemenyek.js` | véletlen események |
+| `js/jarmu.js` | vezethető targonca emelhető villával |
 | `js/meccs.js` | meccsek időre, összesítő tábla |
 | `js/hang.js` | szintetizált hangok (Web Audio) |
 | `js/killcam.js` | killcam: visszajátszás a tettes szemszögéből |

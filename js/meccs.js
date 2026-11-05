@@ -20,16 +20,19 @@ export function inditMeccs({ C, jatek, kozos, getCtf, uzenet, getMod }) {
   }
   const sajat = () => { const e = jatek?.extra() || {}; return { k: Number(e.k) || 0, d: Number(e.d) || 0 }; };
   // meccsbeli ölések/halálok: az összesített számlálók növekménye a meccs kezdete óta
-  const meccsbeli = () => { const s = sajat(); return alap ? { mk: Math.max(0, s.k - alap.k), md: Math.max(0, s.d - alap.d) } : { mk: 0, md: 0 }; };
+  let bonusz = 0; // pl. az aranyraklap (esemenyek.js) – a meccs pontszámába beszámít
+  const meccsbeli = () => { const s = sajat(); return alap ? { mk: Math.max(0, s.k - alap.k), md: Math.max(0, s.d - alap.d), mb: bonusz } : { mk: 0, md: 0, mb: bonusz }; };
 
   function osszesit(idx) {
     const ctf = getCtf?.();
     const sorok = [{ nev: kozos?.nev() || 'Én', ...meccsbeli(), cs: ctf?.extra().cs, en: true }];
     for (const t of kozos?.tobbiek.values() || []) {
       const u = t.cel;
-      if (u.j && Number(u.mi) === idx) sorok.push({ nev: t.nev, mk: Number(u.mk) || 0, md: Number(u.md) || 0, cs: u.cs });
+      if (u.j && Number(u.mi) === idx) sorok.push({ nev: t.nev, mk: Number(u.mk) || 0, md: Number(u.md) || 0, mb: Number(u.mb) || 0, cs: u.cs });
     }
-    sorok.sort((a, b) => b.mk - a.mk || a.md - b.md);
+    // pontszám: ölések + bónusz (aranyraklap)
+    for (const s2 of sorok) s2.p = s2.mk + (s2.mb || 0);
+    sorok.sort((a, b) => b.p - a.p || a.md - b.md);
     const p = ctf?.allapot()?.pont || {}, [A, B] = ctf?.csapatok?.() || [];
     let csapatSor = '';
     if (A && (p[A] || p[B])) {
@@ -37,12 +40,12 @@ export function inditMeccs({ C, jatek, kozos, getCtf, uzenet, getMod }) {
       csapatSor = `<p class="meccsCsapat">🚩 Zászlófoglalás: <span style="color:${ctf.szin(A)}">${esc(ctf.csapatNev(A))} ${p[A]}</span> : <span style="color:${ctf.szin(B)}">${p[B]} ${esc(ctf.csapatNev(B))}</span>`
         + (nyero ? ` – a <b style="color:${ctf.szin(nyero)}">${esc(ctf.csapatNev(nyero))}</b> csapat nyert!` : ' – döntetlen') + '</p>';
     }
-    const gyoztes = sorok[0]?.mk ? sorok[0] : null;
-    el('meccsTablazat').innerHTML = '<tr><th>#</th><th>Név</th><th>🎯 ölés</th><th>☠ halál</th></tr>' + sorok.map((s, i) =>
-      `<tr class="${s.en ? 'en' : ''}"><td>${i === 0 && gyoztes ? '🏆' : i + 1}</td><td>${s.cs && ctf?.szin(s.cs) ? `<span style="color:${ctf.szin(s.cs)}">■</span> ` : ''}${esc(s.nev)}${s.en ? ' (te)' : ''}</td><td>${s.mk}</td><td>${s.md}</td></tr>`).join('');
+    const gyoztes = sorok[0]?.p ? sorok[0] : null;
+    el('meccsTablazat').innerHTML = '<tr><th>#</th><th>Név</th><th>🎯 ölés</th><th>⭐ bónusz</th><th>☠ halál</th></tr>' + sorok.map((s, i) =>
+      `<tr class="${s.en ? 'en' : ''}"><td>${i === 0 && gyoztes ? '🏆' : i + 1}</td><td>${s.cs && ctf?.szin(s.cs) ? `<span style="color:${ctf.szin(s.cs)}">■</span> ` : ''}${esc(s.nev)}${s.en ? ' (te)' : ''}</td><td>${s.mk}</td><td>${s.mb || 0}</td><td>${s.md}</td></tr>`).join('');
     el('meccsCsapat').innerHTML = csapatSor;
     el('meccsCim').textContent = gyoztes ? `🏆 Meccs vége – a győztes: ${gyoztes.nev}${gyoztes.en ? ' (te)' : ''}` : '🏁 Meccs vége';
-    if (gyoztes) uzenet(`🏆 A meccs győztese: ${gyoztes.nev} (${gyoztes.mk} ölés)`);
+    if (gyoztes) uzenet(`🏆 A meccs győztese: ${gyoztes.nev} (${gyoztes.mk} ölés${gyoztes.mb ? `, +${gyoztes.mb} bónusz` : ''})`);
   }
 
   function frissit() {
@@ -51,7 +54,7 @@ export function inditMeccs({ C, jatek, kozos, getCtf, uzenet, getMod }) {
     // új meccs (vagy most csatlakoztunk): az alap a mostani állás
     if (a.idx !== index) {
       const elso = index < 0;
-      index = a.idx; alap = sajat(); osszesitve = -1;
+      index = a.idx; alap = sajat(); osszesitve = -1; bonusz = 0;
       if (!elso && jatszik) {
         uzenet(`⏱ Új meccs indult (${Math.round(hossz / 60000)} perc)!`);
         hang('kurt');
@@ -73,5 +76,5 @@ export function inditMeccs({ C, jatek, kozos, getCtf, uzenet, getMod }) {
     }
   }
 
-  return { frissit, extra: () => (jatek?.jatekBe?.() ? { mi: index, ...meccsbeli() } : {}) };
+  return { frissit, bonusz: n => { bonusz += n; }, szunet: () => allas().szunet, extra: () => (jatek?.jatekBe?.() ? { mi: index, ...meccsbeli() } : {}) };
 }

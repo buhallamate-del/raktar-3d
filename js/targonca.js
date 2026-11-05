@@ -92,7 +92,7 @@ export function korut(halo, mag, lepesek = 90) {
 }
 
 // --- megjelenítés és mozgás ---------------------------------------------
-function targoncaModell(szam, szovegSprite) {
+export function targoncaModell(szam, szovegSprite, nev) {
   const g = new THREE.Group();
   const narancs = new THREE.MeshLambertMaterial({ color: '#e8561c' });
   const sotet = new THREE.MeshLambertMaterial({ color: '#2b2f36' });
@@ -119,7 +119,7 @@ function targoncaModell(szam, szovegSprite) {
     new THREE.MeshBasicMaterial({ color: '#2f7dff', transparent: true, opacity: 0.8, depthWrite: false }));
   potty.rotation.x = -Math.PI / 2; potty.position.set(0, 0.02, -3.2);
   g.add(potty);
-  const t = szovegSprite(`Targonca ${szam}`, 0.35, { hatter: '#e8561c', szin: '#fff', meret: 44 });
+  const t = szovegSprite(nev || `Targonca ${szam}`, 0.35, { hatter: '#e8561c', szin: '#fff', meret: 44 });
   t.position.set(0, 2.7, 0.2);
   g.add(t);
   potty.material.userData.vilagit = true;

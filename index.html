@@ -59,12 +59,15 @@
     <label><input type="checkbox" id="kozosLathato"> Mások is lássanak engem</label>
     <label>Nevem: <input type="text" id="kozosNev" maxlength="24" style="width: 12em"></label>
     <label>Színem: <input type="color" id="kozosSzin"></label>
+    <label>Kinézetem: <select id="kozosKinezet"></select></label>
+    <p class="halvany kicsi">A védősisakhoz 3, a koronához 10 teljesített küldetés kell. Gyors üzenetek: 6 = „Ide!”, 7 = „Segítség!”, 8 = „Vigyázz, lidérc!”, 9 = „Köszi!”, H = integetés (telefonon a 💬 gomb).</p>
     <p class="halvany kicsi" id="kozosAllapot"></p>
     <h3 class="kicsiCim">Játék</h3>
     <label><input type="checkbox" id="jatekBe"> Játék: lökés, palackdobás, életerő</label>
     <p class="halvany kicsi">Éjszaka: 3 percenként 3 percig sötét van (mindenkinél egyszerre, csak belső nézetben); a zseblámpa magától bekapcsol, L = ki/be. A raktáron kívül (udvar, fedett részek) vad kutyák kergetnek, harapásonként −10 HP; a bázisoknál biztonságban vagy. Éjszaka a pohármosóból kiszabadul a lidérc, és végiglebeg a raktáron – akihez hozzáér, az meghal. AK és távcsöves puska: a fegyverládákon vehető fel (a galérián és az áruátvételen, a piros bázis mellett); bal egérgomb (nyomva) = lövés, R = újratöltés, Q = váltás AK/puska/palack; AK-találat −12 HP, puska −80 HP; a puskával jobb egérgomb vagy Z = távcső. A ládák 2 gránátot és 1 taposóaknát is adnak: T = gránát (2,5 mp múlva robban, 5 m-en belül sebez, a dobót is), X = akna a lábad elé (2 mp múlva éles, aki rálép, felrobban – te is). Bazooka a komissiózó előtérben: a rakéta becsapódáskor robban (4 m, középen −100 HP). Ha egy másik játékos öl meg, killcam mutatja az ő szemszögéből. Halálkor minden elveszik. F = lökés (aki előtted áll), G = palack (amerre nézel). Lökés −10, palack −25 HP, a nagy esés is sebez. 0 HP-nál meghalsz, és újraéledsz a kiindulóponton. A pontlista a fejléc 👥 gombján. Két raktáros békát húz a folyosókon: a rakomány elállja a sort, kikerülni nem lehet, de fel lehet ugrani rá. Az EAR raktár előtt vezethető felmosókocsi áll (K = fel/le, W/S = gáz/fék, A/D = kormány); aki rajta ül, csak vezetni tud. Akinél ki van kapcsolva, azt nem lehet bántani.</p>
     <button id="jatekNullaz" class="masodlagos">Pontjaim nullázása</button>
     <p class="halvany kicsi">Meccsek: 10 percenként új meccs indul (mindenkinél egyszerre), utána 15 mp szünet összesítő táblával – ki ölt a legtöbbet, melyik csapat nyert. Fent jobbra a hátralévő idő és a meccsbeli ölések/halálok.</p>
+    <p class="halvany kicsi">Véletlen események (4 percenként jöhet egy, mindenkinél egyszerre): ⚡ áramszünet – nappal is sötét; 🔥 tűzriadó – 1 percen belül ki kell érni a raktárból (udvar, fedett rész), különben füstmérgezés (−50 HP), és kint a kutyák várnak; 🟨 aranyraklap – aki elsőként odaér, +3 bónuszpont a meccsben.</p>
     <h3 class="kicsiCim">Küldetés</h3>
     <p class="halvany kicsi">Komissiózás időre: a gép kioszt 3 tárhelyet, ezeket sorban fel kell keresni (a cél fölött zöld fénycsík, fent iránytű és távolság), aztán a kiszedett árut a komissiózó lerakóba vinni. Belső nézetben, N vagy a gomb indítja (újra megnyomva feladja). Jutalom: katana (Q = váltás, bal egérgomb = vágás, közelharcban −50 HP, a kutyákat is levágja; halálkor sem veszik el) – ha már van, teljes életerő.</p>
     <button id="kuldetesGomb" class="masodlagos">Új küldetés (N)</button>
@@ -97,6 +100,14 @@
     </label>
   </section>
   <section>
+    <h2>Beállítások</h2>
+    <label>Egérérzékenység: <input type="range" id="beErzek" min="0.3" max="3" step="0.1" style="width: 9em; vertical-align: middle"> <span id="beErzekErtek"></span></label>
+    <label>Látószög (FOV): <input type="range" id="beFov" min="45" max="95" step="1" style="width: 9em; vertical-align: middle"> <span id="beFovErtek"></span></label>
+    <p class="halvany kicsi">Billentyűk – kattints egy gombra, majd nyomd meg az új billentyűt (Esc = mégse). Ha már foglalt, a két művelet helyet cserél. Számgombok: 1 = AK, 2 = puska, 3 = bazooka, 4 = katana, 5 = palack; 6–9 = gyors üzenetek.</p>
+    <ul id="beBillentyuk" class="billLista"></ul>
+    <button id="beAlap" class="masodlagos">Alapértékek</button>
+  </section>
+  <section>
     <h2>Irányítás</h2>
     <ul class="sugo">
       <li><b>Felülnézet:</b> húzás = mozgatás, görgő / csípés = nagyítás, jobb gomb / két ujj = forgatás. Kattints egy állványra a részletekért.</li>
@@ -112,12 +123,20 @@
   <button class="bezar" id="pontBezar" aria-label="Bezár">×</button>
   <h3>🏆 Pontlista</h3>
   <table id="pontLista" class="pontLista"></table>
+  <h3>📅 Heti ranglista</h3>
+  <div id="rangLista" class="rangLista"></div>
   <p class="halvany kicsi">F = lökés · G = palack · telefonon a „Lökés” és „Dobás” gomb. A halálok és ölések ezen a gépen megmaradnak.</p>
 </aside>
 <div id="napszak" hidden></div>
 <div id="ctfHud" hidden></div>
 <div id="kuldetesHud" hidden></div>
 <div id="meccsHud" hidden></div>
+<div id="nezoSav" hidden></div>
+<div id="esemenyHud" hidden></div>
+<div id="tuzVillog" hidden></div>
+<canvas id="minimap" hidden></canvas>
+<button id="uziGomb" class="setaGomb" hidden aria-label="Gyors üzenetek">💬</button>
+<div id="uziPanel" hidden></div>
 <div id="meccsVege" hidden><div class="meccsDoboz"><h3 id="meccsCim">🏁 Meccs vége</h3><table id="meccsTablazat" class="pontLista"></table><div id="meccsCsapat"></div><p class="halvany" id="meccsKovetkezo"></p></div></div>
 <button id="aknaGomb" class="setaGomb" hidden aria-label="Taposóakna lerakása">Akna</button>
 <div id="killcamSav" hidden></div>
