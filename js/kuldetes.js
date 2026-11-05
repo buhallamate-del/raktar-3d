@@ -3,6 +3,7 @@
 // lerakóba vinni. A kijelző mutatja a következő helyet, a távolságot és az irányt; a célt fénycsík
 // jelöli. A legjobb idő ezen a gépen megmarad; a teljesítést a többiek is látják.
 import * as THREE from 'three';
+import { hang } from './hang.js';
 import { helyElotti } from './modell.js';
 
 const TAROL = 'raktar3d.kuldetes';
@@ -77,6 +78,7 @@ export function inditKuldetes({ C, M, scene, camera, seta, getMod, uzenet, kozos
     ment(tar);
     uzenet(`🏁 Küldetés teljesítve ${ido(t)} alatt!${rekord ? ' 🏆 Új egyéni rekord!' : ` (legjobb: ${ido(tar.legjobb)})`}`);
     kozos?.kuldE({ t: 'kuldetes', nev: kozos.nev(), ido: Math.round(t), db: k.celok.length });
+    hang('dicsoseg');
     k = null;
     jelolKi();
     allapotKiir();
@@ -99,6 +101,7 @@ export function inditKuldetes({ C, M, scene, camera, seta, getMod, uzenet, kozos
     if (getMod() === 'seta' && !seta.halott) {
       if (!lerakni && d < sugar && seta.z < 1.5) {
         k.idx++;
+        hang('felvesz');
         uzenet(`✔ ${k.celok[k.idx - 1].h.kod} kiszedve (${k.idx}/${k.celok.length})${k.idx >= k.celok.length ? ' – irány a komissiózó lerakó!' : ''}`);
         kovetkezo();
         return; // a kijelző a következő képkockán már az új célt mutatja

@@ -72,6 +72,15 @@ A közös nézetben játszani is lehet (a ☰ menü „Játék” kapcsolójáva
   tud (nem ugrik, nem lő, nem dob, zászlót és csomagot sem vesz fel). Egyszerre egy ember ülhet rajta; a helye
   mindenkinél ugyanaz (megőrzött MQTT-üzenet). Beállítás: `config.js` → `felmosoKocsi`.
 - A többiek neve és életerő-csíkja belső nézetben nem látszik át a falon és az állványon.
+- **Meccsek:** 10 percenként új meccs indul (a gép órája szerint, mindenkinél egyszerre), utána 15 mp szünet
+  összesítő táblával: ki ölt a legtöbbet, melyik csapat nyert zászlófoglalásban. Fent jobbra a hátralévő idő és a
+  meccsbeli ölések/halálok; új meccsnél a zászlófoglalás pontjai nullázódnak. Beállítás: `config.js` → `meccs`.
+- **Hangok:** lövés, puska, bazooka, robbanás, palacktörés, lökés, találat, halál, felvétel, újratöltés, katana,
+  kutyaugatás és harapás, akna, gránátpattanás, targoncacsipogás, a lidérc suttogása, küldetés- és meccshangok.
+  Minden hang a böngészőben készül (nincs hangfájl), a távolsággal halkul, és jobbra-balra szól, merre van.
+  Menü → Megjelenítés: Hangok ki/be, hangerő. Beállítás: `config.js` → `hang`.
+- **Gyengébb gép:** menü → Megjelenítés → „Gyengébb gép”: kisebb felbontás, rövidebb látótáv belső nézetben, a
+  pontfények (lidérc, robbanás) nélkül. Telefonon alapból be van kapcsolva. Telefonon a gombok rácsban, kisebben.
 - **Küldetés (komissiózás időre):** N (vagy a menü „Új küldetés” gombja) belső nézetben 3 véletlen tárhelyet oszt ki.
   Sorban fel kell keresni őket (a cél fölött zöld fénycsík a kóddal, fent kijelző az iránnyal, a távolsággal és az idővel),
   majd a kiszedett árut a komissiózó lerakóba vinni. A legjobb idő ezen a gépen megmarad, a teljesítést a többiek is
@@ -133,6 +142,8 @@ kizárt folyosók, további utak; a `mag` átírásával más útvonalakat járn
 | `js/targonca.js` | targoncák: folyosóhálózat, véletlen körutak, elütés |
 | `js/ctf.js` | zászlófoglalás: csapatok, bázisok, zászlók, közös állás |
 | `js/kocsi.js` | vezethető felmosókocsi |
+| `js/meccs.js` | meccsek időre, összesítő tábla |
+| `js/hang.js` | szintetizált hangok (Web Audio) |
 | `js/killcam.js` | killcam: visszajátszás a tettes szemszögéből |
 | `js/kuldetes.js` | küldetés: komissiózás időre |
 | `js/civilek.js` | békát húzó raktárosok (mozgó akadály) |

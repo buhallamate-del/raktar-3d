@@ -7,6 +7,7 @@
 //   zászló: {a: 'bazis'} | {a: 'visz', ki, nev} | {a: 'le', x, y, z, ig}
 // Mindig a frissebb (nagyobb ts) állapot érvényes.
 import * as THREE from 'three';
+import { hang } from './hang.js';
 
 const TAROL = 'raktar3d.ctf';
 
@@ -126,7 +127,7 @@ export function inditCtf({ C, scene, seta, kozos, uzenet, getMod, jatekBe, szove
   function alkalmaz(uj, tavoli) {
     if (!uj || !(Number(uj.ts) > allapot.ts) || !uj.z?.[A] || !uj.z?.[B]) return;
     allapot = { ts: Number(uj.ts), pont: { [A]: Number(uj.pont?.[A]) || 0, [B]: Number(uj.pont?.[B]) || 0 }, z: { [A]: uj.z[A], [B]: uj.z[B] } };
-    if (tavoli && uj.uz && Date.now() - allapot.ts < 15000) uzenet(String(uj.uz).slice(0, 120));
+    if (tavoli && uj.uz && Date.now() - allapot.ts < 15000) { uzenet(String(uj.uz).slice(0, 120)); hang(/🏁|🏆/.test(uj.uz) ? 'dicsoseg' : 'jel'); }
   }
   function valtoztat(fn, uz) {
     const uj = JSON.parse(JSON.stringify(allapot));
@@ -134,7 +135,7 @@ export function inditCtf({ C, scene, seta, kozos, uzenet, getMod, jatekBe, szove
     uj.ts = Math.max(Date.now(), allapot.ts + 1);
     if (uz) uj.uz = uz;
     alkalmaz(uj, false);
-    if (uz) uzenet(uz);
+    if (uz) { uzenet(uz); hang(/🏁|🏆/.test(uz) ? 'dicsoseg' : 'jel'); }
     kozos?.kuldR?.(uj);
   }
   const nev = () => kozos?.nev() || 'Én';
@@ -244,5 +245,11 @@ export function inditCtf({ C, scene, seta, kozos, uzenet, getMod, jatekBe, szove
     // újraéledés: a saját bázison
     ujraHely: () => { const s = jatszik() && csapat(); return s ? { x: cs[s].bazis.x, y: cs[s].bazis.y } : null; },
     extra: () => { const s = jatszik() && csapat(); return s ? { cs: s, ca: valasztas === 'auto' ? 1 : 0 } : { cs: 0 }; },
+    // új meccs: pontok nullázása, zászlók haza (ha már nulla és otthon van minden, nem küldünk semmit)
+    nullaz: uz => {
+      if (!allapot.pont[A] && !allapot.pont[B] && allapot.z[A].a === 'bazis' && allapot.z[B].a === 'bazis') return;
+      valtoztat(s2 => { s2.pont = { [A]: 0, [B]: 0 }; s2.z = { [A]: { a: 'bazis' }, [B]: { a: 'bazis' } }; }, uz);
+    },
+    csapatok: () => [A, B],
   };
 }

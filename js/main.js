@@ -12,6 +12,8 @@ import { inditKutyak } from './kutyak.js';
 import { inditCivilek } from './civilek.js';
 import { inditKuldetes } from './kuldetes.js';
 import { inditKillcam } from './killcam.js';
+import { inditMeccs } from './meccs.js';
+import { hangInit, hang } from './hang.js';
 
 const C = window.RAKTAR_CONFIG;
 const D = window.RAKTAR_ADATOK;
@@ -1512,6 +1514,24 @@ $('kapcsFolyoso').addEventListener('change', e => { folyosoCsoport.visible = e.t
 $('kapcsFalak').addEventListener('change', e => { falCsoport.visible = e.target.checked; });
 $('szinezes').addEventListener('change', e => { szinezesMod = e.target.value; szinez(); });
 
+// Gyengébb gép (alacsony grafika): kisebb felbontás, rövidebb látótáv belső nézetben, a pontfények
+// (lidérc, robbanás) nélkül. Telefonon alapból be van kapcsolva; a választás ezen a gépen megmarad.
+const GYENGE_TAROL = 'raktar3d.grafika';
+let gyenge = (() => { try { const v = localStorage.getItem(GYENGE_TAROL); return v == null ? ERINTES : v === 'alacsony'; } catch { return ERINTES; } })();
+function grafikaBeallit() {
+  renderer.setPixelRatio(gyenge ? 1 : Math.min(devicePixelRatio, 2));
+  renderer.setSize(innerWidth, innerHeight);
+  camera.far = gyenge && mod === 'seta' ? 80 : 3000;
+  camera.updateProjectionMatrix();
+  scene.traverse(o => { if (o.isPointLight) o.visible = !gyenge; });
+}
+$('kapcsGyenge').checked = gyenge;
+$('kapcsGyenge').addEventListener('change', e => {
+  gyenge = e.target.checked;
+  try { localStorage.setItem(GYENGE_TAROL, gyenge ? 'alacsony' : 'normal'); } catch { /* nincs tárhely */ }
+  grafikaBeallit();
+});
+
 // ---------------------------------------------------------------------
 // Indítás
 // ---------------------------------------------------------------------
@@ -1534,7 +1554,8 @@ addEventListener('hashchange', () => {
   if (!kijelolt || decodeURIComponent(location.hash.slice(1)) !== kijelolt.kod) hashbolNyit();
 });
 
-let elozo = performance.now();
+let elozo = performance.now(), csipogIdo = 0;
+hangInit({ C, camera });
 renderer.setAnimationLoop(() => {
   const most = performance.now();
   const dt = Math.min(0.1, (most - elozo) / 1000);
@@ -1547,6 +1568,13 @@ renderer.setAnimationLoop(() => {
   targoncak?.frissit(dt);
   civilek?.frissit(dt);
   kuldetes?.frissit(dt);
+  meccs?.frissit(dt);
+  // a közeli targoncák csipognak (másfél másodpercenként, a legközelebbi)
+  if (mod === 'seta' && targoncak?.targoncak?.length && most - (csipogIdo || 0) > 1500) {
+    let leg = null, ld = 14;
+    for (const tg of targoncak.targoncak) { const d = Math.hypot(tg.x - seta.x, tg.y - seta.y); if (d < ld) { ld = d; leg = tg; } }
+    if (leg) { csipogIdo = most; hang('csipog', { x: leg.x, y: 1.5, z: leg.y }, 0.7); }
+  }
   ejszaka?.frissit(dt);
   ctf?.frissit(dt);
   kocsi?.frissit(dt);
@@ -1561,12 +1589,15 @@ renderer.setAnimationLoop(() => {
     kijelolAnyag.opacity = mod === 'seta' ? 0.06 + 0.14 * puls : 0.25 + 0.35 * puls;
   }
   killcam?.frissit(dt); // halál után: a kamera a tettes szemszögéből (felülírja a fentit)
+  // alacsony grafikán rövidebb a látótáv: a köd elfedi, ami a kamera távolsága mögé esik
+  if (gyenge && scene.fog) { scene.fog.far = Math.min(scene.fog.far, 75); scene.fog.near = Math.min(scene.fog.near, 40); }
+  if (gyenge && (camera.far === 80) !== (mod === 'seta')) { camera.far = mod === 'seta' ? 80 : 3000; camera.updateProjectionMatrix(); }
   renderer.render(scene, camera);
 });
 $('betoltes').hidden = true;
 
 // Közös nézet: a többi látogató pálcikaemberként (config.js: kozos); rá épül a játék (jatek)
-let kozos = null, jatek = null, targoncak = null, ejszaka = null, ctf = null, kocsi = null, liderc = null, kutyak = null, civilek = null, kuldetes = null, killcam = null;
+let kozos = null, jatek = null, targoncak = null, ejszaka = null, ctf = null, kocsi = null, liderc = null, kutyak = null, civilek = null, kuldetes = null, killcam = null, meccs = null;
 try {
   const k2 = v => Math.round(v * 100) / 100;
   kozos = inditKozos({
@@ -1574,7 +1605,7 @@ try {
     allapot: () => (mod === 'seta'
       ? { x: k2(seta.x), y: k2(seta.y), z: k2(seta.z), yaw: k2(seta.yaw), g: seta.guggol ? 1 : 0, m: 'seta' }
       : { x: k2(controls.target.x), y: k2(controls.target.z), z: 0, yaw: 0, g: 0, m: 'felul' }),
-    extra: () => ({ ...(jatek?.extra() ?? {}), ...(ejszaka?.extra() ?? {}), ...(ctf?.extra() ?? {}), ...(kutyak?.extra() ?? {}) }),
+    extra: () => ({ ...(jatek?.extra() ?? {}), ...(ejszaka?.extra() ?? {}), ...(ctf?.extra() ?? {}), ...(kutyak?.extra() ?? {}), ...(meccs?.extra() ?? {}) }),
     esemeny: e => { jatek?.esemeny(e); kuldetes?.esemeny(e); },
     allando: (a, tema) => (tema === 'kocsi' ? kocsi?.fogad(a) : ctf?.fogad(a)),
   });
@@ -1601,6 +1632,12 @@ try {
   civilek = inditCivilek({ C, M, scene, szovegSprite, seta, getMod: () => mod, targoncak });
 } catch (e) {
   console.warn('[civilek]', e);
+}
+// Meccsek: mindenkinél egyszerre induló, időre menő meccsek összesítéssel (config.js: meccs)
+try {
+  meccs = inditMeccs({ C, jatek, kozos, getCtf: () => ctf, uzenet, getMod: () => mod });
+} catch (e) {
+  console.warn('[meccs]', e);
 }
 // Killcam: halálkor visszajátszás a tettes szemszögéből (config.js: killcam)
 try {
@@ -1645,5 +1682,6 @@ try {
 } catch (e) {
   console.warn('[felmosókocsi]', e);
 }
+grafikaBeallit(); // a modulok fényei már a jelenetben vannak
 hashbolNyit();
-window.raktar = { M, scene, camera, controls, seta, kijelol, helyhezMegy, modValt, lep: setaLeptet, ugras, lenyomva, jatek, kozos, targoncak, ejszaka, ctf, kocsi, liderc, kutyak, civilek, kuldetes, killcam }; // hibakereséshez
+window.raktar = { M, scene, camera, controls, seta, kijelol, helyhezMegy, modValt, lep: setaLeptet, ugras, lenyomva, jatek, kozos, targoncak, ejszaka, ctf, kocsi, liderc, kutyak, civilek, kuldetes, killcam, meccs }; // hibakereséshez

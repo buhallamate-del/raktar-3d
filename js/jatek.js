@@ -17,6 +17,7 @@
 //   {t:'raketa', id, x, y, z, dx, dy, dz} – bazookarakéta indult
 //   {t:'akna', id, x, y, z}             – taposóaknát raktak le
 import * as THREE from 'three';
+import { hang } from './hang.js';
 
 const TAROL = 'raktar3d.jatek';
 const OK_SZOVEG = { lokes: 'meglökték', palack: 'palack találta el', eses: 'leesett', targonca: 'elütötte egy targonca', loves: 'lelőtték', granat: 'felrobbantották', raketa: 'bazookával felrobbantották', akna: 'aknára lépett', katana: 'katanával levágták', liderc: 'elkapta a lidérc', kutya: 'széttépték a vad kutyák' };
@@ -163,6 +164,7 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
     if (!serulhet()) return;
     hp = Math.max(0, hp - n);
     villanas();
+    hang(hp > 0 ? 'talalat' : 'halal');
     kozos?.frissitAllapot();
     if (hp <= 0) meghal(ok);
   }
@@ -212,6 +214,7 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
     }
     if (!leg) { uzenet('Nincs senki előtted, akit meglökhetnél'); return; }
     kozos.kuldE({ t: 'lokes', cel: leg.t.id, dx: leg.dx, dy: leg.dy, nev: kozos.nev() });
+    hang('lokes');
     kozos.villant(leg.t.id);
     uzenet(`Meglökted: ${leg.t.nev}`);
   }
@@ -234,6 +237,7 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
     const b = palackok.get(id);
     if (!b) return;
     scene.remove(b.mesh);
+    hang('uveg', hol || b.p);
     palackok.delete(id);
     const pos = hol || b.p;
     for (let i = 0; i < 7; i++) {
@@ -330,6 +334,7 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
     const a = f && nalam[f], c = f && fCfg[f];
     if (!a || a.toltesIg || a.tarban >= c.tar || a.tartalek <= 0) return;
     a.toltesIg = most() + c.toltes;
+    hang('tolt');
     if (f === 'puska') celzas = false;
   }
   function valt() {
@@ -357,6 +362,7 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
   function vag() {
     if (!szabad() || most() - vagasIdo < ktCfg.szunet) return;
     vagasIdo = most();
+    hang('katana');
     const fx = -Math.sin(seta.yaw), fy = -Math.cos(seta.yaw);
     // aki előttünk van karnyújtásnyira (egy csapással egyet)
     let leg = null, legD = ktCfg.tav;
@@ -414,6 +420,7 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
     d.x += (Math.random() - 0.5) * sz; d.y += (Math.random() - 0.5) * sz; d.z += (Math.random() - 0.5) * sz; d.normalize();
     const h = lovedekHossz(o, d, c.tav);
     nyomjelzo(o, d, h, f === 'puska');
+    hang(f === 'puska' ? 'puska' : 'ak');
     rugas = 1;
     seta.pitch = Math.min(1.45, seta.pitch + (f === 'puska' ? 0.03 : 0.003)); // felrúgás
     const k = v => +v.toFixed(3);
@@ -456,6 +463,7 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
       b.p[ax] += b.v[ax] * dt;
       if (akadalyban(b.p)) {
         b.p[ax] = elotte;
+        if (Math.abs(b.v[ax]) > 1.5) hang('koppan', b.p, 0.6);
         b.v[ax] *= -0.35;
         if (ax === 'y') { b.v.x *= 0.7; b.v.z *= 0.7; }
       }
@@ -473,6 +481,7 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
   function raketaInditas(p, d) {
     const id = `${kozos?.id || 'helyi'}-r${++szamlalo}`;
     inditRaketa(id, p, d, true);
+    hang('bazooka');
     rugas = 1;
     seta.pitch = Math.min(1.45, seta.pitch + 0.05);
     const k = v => +v.toFixed(3);
@@ -503,6 +512,7 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
     if (most() - aknaIdo < 1000) return;
     if (seta.z - M.racs.talaj(seta.x, seta.y, seta.z) > 0.05) { uzenet('Aknát csak a földre lehet rakni'); return; }
     aknaIdo = most();
+    hang('kattan');
     akna--;
     const id = `${kozos?.id || 'helyi'}-a${++szamlalo}`;
     const k = v => +v.toFixed(2);
@@ -526,6 +536,7 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
     gomb.position.copy(pos); gomb.scale.setScalar(0.2);
     scene.add(gomb);
     robbanasok.push({ gomb, ido: most(), sugar: rc.sugar });
+    hang('robbanas', pos);
     robbanFeny.position.copy(pos).setY(pos.y + 0.5); robbanFeny.intensity = 40;
     for (let i = 0; i < 10; i++) {
       const s2 = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.05, 0.05), new THREE.MeshLambertMaterial({ color: '#33302b' }));
@@ -602,6 +613,7 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
       kozos?.kuldE({ t: 'csomag', idx: c.idx, ig: c.ig });
       kozos?.frissitAllapot();
       uzenet(`➕ Életerőcsomag: +${Math.round(hp - elotte)} HP`);
+      hang('felvesz');
       return;
     }
   }
@@ -612,6 +624,7 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
       if (e.cel === kozos.id) {
         if (!serulhet()) return;
         tamado = { id: e.tol, nev: e.nev || 'Valaki', ido: most() };
+        hang('lokes');
         seta.kvx = (Number(e.dx) || 0) * 6;
         seta.kvy = (Number(e.dy) || 0) * 6;
         seta.vz = Math.max(seta.vz || 0, 2.5);
@@ -626,7 +639,7 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
       if (e.cel !== kozos.id) kozos.villant(e.cel);
     } else if (e.t === 'loves') {
       const o = new THREE.Vector3(+e.x, +e.y, +e.z), d = new THREE.Vector3(+e.dx, +e.dy, +e.dz);
-      if ([o.x, o.y, o.z, d.x, d.y, d.z, +e.h].every(Number.isFinite)) nyomjelzo(o, d.normalize(), Math.min(+e.h, fCfg.puska.tav), e.fp === 'puska');
+      if ([o.x, o.y, o.z, d.x, d.y, d.z, +e.h].every(Number.isFinite)) { nyomjelzo(o, d.normalize(), Math.min(+e.h, fCfg.puska.tav), e.fp === 'puska'); hang(e.fp === 'puska' ? 'puska' : 'ak', o); }
       if (serulhet() && !tars(e.tol) && lovesTalal(e)) {
         tamado = { id: e.tol, nev: e.nev || 'Valaki', ido: most() };
         if (most() - (lovesTalal.uz || 0) > 1500) { uzenet(`${tamado.nev} rád lőtt!`); lovesTalal.uz = most(); }
@@ -650,7 +663,7 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
       if ([p.x, p.y, p.z].every(Number.isFinite)) robbanas(e.id, p, ki, kiNev || 'Valaki', fajta);
     } else if (e.t === 'raketa') {
       const p = new THREE.Vector3(+e.x, +e.y, +e.z), d = new THREE.Vector3(+e.dx, +e.dy, +e.dz);
-      if ([p.x, p.y, p.z, d.x, d.y, d.z].every(Number.isFinite) && d.lengthSq() > 1e-6) inditRaketa(e.id, p, d, false);
+      if ([p.x, p.y, p.z, d.x, d.y, d.z].every(Number.isFinite) && d.lengthSq() > 1e-6) { inditRaketa(e.id, p, d, false); hang('bazooka', p); }
     } else if (e.t === 'akna') {
       if ([+e.x, +e.y, +e.z].every(Number.isFinite)) inditAkna(e.id, +e.x, +e.y, +e.z, e.tol, e.nev || 'Valaki');
     } else if (e.t === 'lada') {
@@ -777,6 +790,7 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
         fegyverValaszt = f; celzas = false;
         c.ig = ido + c.ujraMp * 1000;
         kozos?.kuldE({ t: 'lada', idx: c.idx, ig: c.ig });
+        hang('felvesz');
         kozos?.frissitAllapot();
         const gSz = (gr ? ` · +${gr} gránát (T = dobás)` : '') + (ak3 ? ` · +${ak3} akna (X = lerakás)` : '');
         uzenet(uj
@@ -874,10 +888,11 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
 
   return {
     // a lidérc hozzáért: azonnali halál
-    liderc: () => { if (!serulhet()) return; tamado = null; sebzes(100000, 'liderc'); },
+    liderc: () => { if (!serulhet()) return; tamado = null; hang('sikoly'); sebzes(100000, 'liderc'); },
     // egy kutya megharapott (dx, dy: merről jött – egy kicsit meglök)
     harapas: (n, dx, dy) => {
       if (!serulhet()) return;
+      hang('harapas');
       tamado = null;
       seta.kvx = (seta.kvx || 0) + dx * 2; seta.kvy = (seta.kvy || 0) + dy * 2;
       if (most() - (harapasUz || 0) > 1500) { uzenet(`🐕 Megharapott egy kutya! −${n} HP`); harapasUz = most(); }
