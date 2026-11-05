@@ -82,6 +82,13 @@ A közös nézetben játszani is lehet (a ☰ menü „Játék” kapcsolójáva
   távcső (4× nagyítás, távcsővel szinte pontos). Q = váltás AK / puska / palack. Beállítás: `config.js` → `puska`, `puskaLadak`.
 - **Gránát:** a fegyverládák 2-2 gránátot adnak (legfeljebb 4). T = dobás (telefonon „Gránát”); pattog, 2,5 mp múlva
   robban, 5 m-en belül a távolsággal csökkenő sebzés (középen 100 HP), a dobót is sebzi. Beállítás: `config.js` → `granat`.
+- **Bazooka:** egy láda a komissiózó előtérben (a két bázis között). A rakéta egyenesen repül, falba, padlóba vagy
+  játékosba csapódva robban: 4 m-en belül sebez, közvetlen találatnál −100 HP. 1 rakéta a csőben, 4 összesen.
+  Beállítás: `config.js` → `bazooka`, `bazookaLadak`.
+- **Taposóakna:** a fegyverládák 1-1 aknát is adnak (legfeljebb 2). X = lerakás a lábad elé (telefonon „Akna”);
+  2 mp múlva éles (pirosan villog), aki rálép, felrobbantja – a lerakóját is. 3 perc után eltűnik. Beállítás: `config.js` → `akna`.
+- **Killcam:** ha egy másik játékos öl meg, a halál előtti ~3 másodpercet az ő szemszögéből látod visszajátszva.
+  Beállítás: `config.js` → `killcam`.
 - **Civilek:** két raktáros békát húz a folyosókon (mint a targoncák, mindenkinél ugyanott); a rakományon „ELFÉJSZ?” felirat. A béka rakománya a sor teljes
   szélességét elállja – kikerülni nem lehet, de fel lehet ugrani rá, és vele lehet utazni. Útban állót maga előtt tol.
   Beállítás: `config.js` → `civilek`.
@@ -94,7 +101,7 @@ A közös nézetben játszani is lehet (a ☰ menü „Játék” kapcsolójáva
   (kicsit gyorsabban a felmosókocsinál) végiglebeg a raktár összes folyosóján; ha a végére ér, visszaindul. Akihez
   hozzáér, az azonnal meghal (a felmosókocsin ülő is). Mindenkinél ugyanott jár (a gép órájából számolódik).
   Beállítás: `config.js` → `liderc`.
-- **Életerőcsomag** a logisztikai irodában (fehér doboz piros kereszttel): rámész, és +50 HP (legfeljebb 100).
+- **Életerőcsomag** a logisztikai irodában és a fóliázógép mellett (fehér doboz piros kereszttel): rámész, és +50 HP (legfeljebb 100).
   Utána 30 mp-ig nincs a helyén, mindenkinél. Hely és érték: `config.js` → `eletcsomagok` (több is lehet).
 - **0 HP = halál:** 3 mp múlva újraéledsz a kiindulóponton. A **pontlista** (a fejléc 👥 gombja) mutatja, ki hányszor halt
   meg (☠) és hányszor ölt (🎯); a saját pontjaid a böngésződben megmaradnak, a menüben nullázhatók.
@@ -126,6 +133,7 @@ kizárt folyosók, további utak; a `mag` átírásával más útvonalakat járn
 | `js/targonca.js` | targoncák: folyosóhálózat, véletlen körutak, elütés |
 | `js/ctf.js` | zászlófoglalás: csapatok, bázisok, zászlók, közös állás |
 | `js/kocsi.js` | vezethető felmosókocsi |
+| `js/killcam.js` | killcam: visszajátszás a tettes szemszögéből |
 | `js/kuldetes.js` | küldetés: komissiózás időre |
 | `js/civilek.js` | békát húzó raktárosok (mozgó akadály) |
 | `js/kutyak.js` | vad kutyák a raktáron kívül |

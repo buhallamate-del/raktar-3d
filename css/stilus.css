@@ -107,6 +107,9 @@ code { background: #eef1f5; padding: 0 4px; border-radius: 4px; }
 #lokesGomb { right: 118px; bottom: 60px; }
 #dobasGomb { right: 118px; bottom: 148px; }
 #lampaGomb { right: 30px; bottom: 336px; }
+#aknaGomb { right: 206px; bottom: 236px; background: rgba(90, 74, 42, 0.85); }
+#killcamSav { position: fixed; top: 120px; left: 50%; transform: translateX(-50%); z-index: 9; pointer-events: none;
+  background: rgba(160, 20, 20, 0.88); color: #fff; padding: 6px 16px; border-radius: 10px; font-size: 16px; font-weight: 800; letter-spacing: 0.04em; }
 #granatGomb { right: 206px; bottom: 60px; background: rgba(63, 90, 42, 0.85); }
 #tavcsoGomb { right: 206px; bottom: 148px; }
 /* távcső: kör alakú látómező, célkereszttel */

@@ -289,7 +289,7 @@ window.RAKTAR_CONFIG = {
     lokesSebzes: 10,      // HP
     palackSebzes: 25,     // HP
     esesSebzes: true,     // kb. 4 m fölötti esés sebez
-    ujraeledesMp: 3,      // halál után ennyi másodperc múlva újraéledés a kiindulóponton
+    ujraeledesMp: 4,      // halál után ennyi másodperc múlva újraéledés (közben a killcam)
     palackSebesseg: 14,   // m/s
   },
   // AK a játékban: felvehető a fegyverládákon; bal egérgomb = lövés, R = újratöltés, Q = váltás AK/palack
@@ -307,6 +307,18 @@ window.RAKTAR_CONFIG = {
     { nev: 'Galéria', x: -8.5, y: 11.0, z: 3.0, ujraMp: 60 },
     { nev: 'Áruátvétel', x: 2.5, y: 91.0, z: 0, ujraMp: 60 },
   ],
+  // Bazooka: a rakéta egyenesen repül (raketaSebesseg m/s), becsapódáskor robban (sugar m, középen sebzes HP);
+  // a tárban 1 rakéta, összesen loszer db
+  bazooka: { raketaSebesseg: 28, sugar: 4, sebzes: 100, loszer: 4, ujratoltesMp: 2.5, lovesPerMp: 0.5, hatotav: 80 },
+  // a bazooka ládája középen, a komissiózó előtérben (a két bázistól nagyjából egyforma messze)
+  bazookaLadak: [
+    { nev: 'Komissiózó előtér', x: 2.0, y: 12.0, z: 0, ujraMp: 90 },
+  ],
+  // Taposóakna: a fegyverládákon jár (ladankent db, legfeljebb max); X = lerakás a lábunk elé; elesitesMp
+  // múlva éles, aki erzekelesSugar m-en belül rálép, felrobbantja (a lerakóját is); elettartamMp után eltűnik
+  akna: { max: 2, ladankent: 1, elesitesMp: 2, elettartamMp: 180, erzekelesSugar: 0.7, sugar: 3, sebzes: 100 },
+  // Killcam: ha egy másik játékos öl meg, mp másodpercnyi visszajátszás az ő szemszögéből
+  killcam: { bekapcsolva: true, mp: 3.2 },
   // Gránát: a fegyverládákon jár (ladankent db, legfeljebb max); T = dobás; gyujtoMp után robban,
   // a sugar m-en belül a távolsággal csökkenő sebzés (középen sebzes HP)
   granat: { max: 4, ladankent: 2, sebzes: 100, sugar: 5, gyujtoMp: 2.5, dobasSebesseg: 13 },
@@ -357,6 +369,7 @@ window.RAKTAR_CONFIG = {
   // mindenkinél. x, y: a táblázat koordinátáiban.
   eletcsomagok: [
     { nev: 'Logisztikai iroda', x: 3.5, y: -4.0, hp: 50, ujraMp: 30 },
+    { nev: 'Fóliázógép', x: 17.8, y: 51.6, hp: 50, ujraMp: 30 },
   ],
 
   // Targoncák: véletlenszerű, zárt körutakon járnak a széles folyosókon (mindenkinél ugyanott,

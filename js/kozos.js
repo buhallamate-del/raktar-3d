@@ -23,7 +23,7 @@ function veletlenSzin() {
 }
 
 // Egyszerű pálcikaember: fej, törzs, karok, lábak; a lábak lépés közben lengenek.
-function palcikaember(szin, nev, szovegSprite, mezSzin) {
+export function palcikaember(szin, nev, szovegSprite, mezSzin) {
   const anyag = new THREE.MeshLambertMaterial({ color: szin });
   const g = new THREE.Group();
   const test = new THREE.Group();
@@ -50,6 +50,10 @@ function palcikaember(szin, nev, szovegSprite, mezSzin) {
   kMark.position.z = 0.03; kard.add(kMark);
   kard.position.set(0.28, 1.1, -0.1); kard.rotation.x = 0.6;
   kard.visible = false;
+  // bazooka a vállán (f = 4)
+  const bz = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 1.0, 12), new THREE.MeshLambertMaterial({ color: '#4d5a2c' }));
+  bz.rotation.x = Math.PI / 2; bz.position.set(0.2, 1.5, -0.15);
+  bz.visible = false;
   // zseblámpa fénykúpja (éjszaka, ha be van kapcsolva)
   const lampa = new THREE.Mesh(new THREE.ConeGeometry(1.3, 6, 18, 1, true),
     new THREE.MeshBasicMaterial({ color: '#fff4dc', transparent: true, opacity: 0.1, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending }));
@@ -64,7 +68,7 @@ function palcikaember(szin, nev, szovegSprite, mezSzin) {
   // „orr”: merre néz
   const orr = new THREE.Mesh(new THREE.ConeGeometry(0.05, 0.14, 8), anyag);
   orr.rotation.x = -Math.PI / 2; orr.position.set(0, 1.62, -0.17);
-  test.add(fej, torzs, vall, balLab, jobbLab, balKar, jobbKar, orr, puska, kard, lampa, mez);
+  test.add(fej, torzs, vall, balLab, jobbLab, balKar, jobbKar, orr, puska, kard, bz, lampa, mez);
   g.add(test);
   const felirat = szovegSprite(nev, 0.32, { hatter: szin, szin: '#fff', meret: 44, depthTest: false });
   felirat.position.y = 2.05;
@@ -77,7 +81,7 @@ function palcikaember(szin, nev, szovegSprite, mezSzin) {
   const hpHatter = csik('#3a0d0d'), hpEloter = csik('#3ddc5a');
   hpHatter.position.set(-0.4, 2.3, 0); hpEloter.position.set(-0.4, 2.3, 0); hpEloter.renderOrder = 12;
   g.add(hpHatter, hpEloter);
-  g.userData = { test, balLab, jobbLab, balKar, jobbKar, felirat, fazis: 0, anyag, hpHatter, hpEloter, villan: 0, puska, kard, lampa, mez };
+  g.userData = { test, balLab, jobbLab, balKar, jobbKar, felirat, fazis: 0, anyag, hpHatter, hpEloter, villan: 0, puska, kard, bz, lampa, mez };
   return g;
 }
 
@@ -256,6 +260,7 @@ export function inditKozos({ C, scene, szovegSprite, allapot, uzenet, extra, ese
       const jatszik = !!u.j && u.m !== 'felul';
       d.puska.visible = jatszik && (u.f === 1 || u.f === 2) && !u.hal;
       d.kard.visible = jatszik && u.f === 3 && !u.hal;
+      d.bz.visible = jatszik && u.f === 4 && !u.hal;
       d.lampa.visible = jatszik && !!u.l && !u.hal;
       d.mez.visible = jatszik && !!t.mez;
       d.hpHatter.visible = d.hpEloter.visible = jatszik;
@@ -285,6 +290,7 @@ export function inditKozos({ C, scene, szovegSprite, allapot, uzenet, extra, ese
   return {
     frissit, tobbiek, id: b.id,
     nev: () => b.nev,
+    szin: () => b.szin,
     kapcsolodva: () => kapcsolodva && !!kliens,
     lathato: () => b.lathato,
     kuldR: (a, tema = 'ctf') => { if (kliens && kapcsolodva) kliens.publish(`${csatorna}/${tema}`, JSON.stringify(a), { qos: 0, retain: true }); },
