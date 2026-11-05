@@ -126,6 +126,14 @@ code { background: #eef1f5; padding: 0 4px; border-radius: 4px; }
 #ctfHud .ctfNalad { color: #ffd84d; margin-top: 2px; }
 #kuldetesHud { position: fixed; top: 116px; left: 50%; transform: translateX(-50%); z-index: 7; pointer-events: none; white-space: nowrap;
   background: rgba(20, 70, 40, 0.85); color: #fff; padding: 3px 10px; border-radius: 10px; font-size: 13px; font-weight: 600; }
+#meccsHud { position: fixed; top: 64px; right: 12px; z-index: 7; pointer-events: none; background: rgba(20, 24, 32, 0.8); color: #fff;
+  padding: 3px 10px; border-radius: 10px; font-size: 12px; font-weight: 700; }
+#meccsHud.vege { background: rgba(170, 30, 30, 0.88); }
+@media (max-width: 640px) { #meccsHud { top: 186px; right: 8px; } }
+#meccsVege { position: fixed; inset: 0; z-index: 9; display: flex; align-items: center; justify-content: center; pointer-events: none; background: rgba(0, 0, 0, 0.35); }
+#meccsVege .meccsDoboz { background: rgba(255, 255, 255, 0.96); color: #1d2430; border-radius: 14px; padding: 14px 20px; min-width: min(360px, calc(100% - 32px)); max-height: 80vh; overflow: auto; box-shadow: 0 10px 40px rgba(0,0,0,.35); }
+#meccsVege h3 { margin: 0 0 8px; }
+.meccsCsapat { margin: 10px 0 0; font-weight: 600; }
 #kuldetesHud .nyil { display: inline-block; font-size: 15px; }
 @media (max-width: 640px) { #kuldetesHud { top: 160px; white-space: normal; max-width: calc(100% - 32px); text-align: center; } }
 @media (max-width: 640px) { #ctfHud { top: 130px; white-space: normal; max-width: calc(100% - 32px); } }
@@ -167,4 +175,27 @@ body.seta.erintes #infoPanel { bottom: auto; top: 110px; max-height: 45vh; }
   #menuPanel { top: auto; bottom: 0; right: 0; left: 0; width: 100%; max-height: 70vh; border-radius: 12px 12px 0 0; }
   #infoPanel { left: 8px; right: 8px; bottom: 8px; width: auto; max-height: 45vh; }
   #uzenet { top: 100px; }
+}
+
+/* Telefonon (keskeny kijelzőn): kisebb gombok rendezett rácsban a jobb alsó sarokban, hogy ne
+   lógjanak egymásra és a joystickra; az életerősáv a legalján, a koordináta-kijelző rejtve */
+@media (max-width: 640px) {
+  #pozicio { display: none; }
+  #hpSav { bottom: 4px; width: calc(100% - 24px); height: 18px; }
+  #joystick { left: 16px; bottom: 32px; width: 120px; height: 120px; }
+  #ugrasGomb, .setaGomb { width: 56px; height: 56px; font-size: 10px; }
+  /* 1. oszlop (jobb szél): mozgás */
+  #ugrasGomb { right: 12px; bottom: 32px; }
+  #guggolGomb { right: 12px; bottom: 96px; }
+  #maszGomb { right: 12px; bottom: 160px; }
+  #lampaGomb { right: 12px; bottom: 224px; }
+  /* 2. oszlop: harc */
+  #lovesGomb { right: 76px; bottom: 32px; }
+  #lokesGomb { right: 76px; bottom: 96px; }
+  #dobasGomb { right: 76px; bottom: 160px; }
+  #kocsiGomb { right: 76px; bottom: 224px; }
+  /* 3. oszlop: robbanószerek, távcső */
+  #granatGomb { right: 140px; bottom: 32px; }
+  #aknaGomb { right: 140px; bottom: 96px; }
+  #tavcsoGomb { right: 140px; bottom: 160px; }
 }

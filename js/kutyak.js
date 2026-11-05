@@ -4,6 +4,7 @@
 // Mindenki a saját falkáját számolja; a helyüket a pozíció mellett küldi ({kd: 'x,y,yaw;…'}),
 // így a többiek is látják, ki elől menekül.
 import * as THREE from 'three';
+import { hang } from './hang.js';
 
 function kutyaModell(szin) {
   const g = new THREE.Group();
@@ -67,7 +68,8 @@ export function inditKutyak({ C, M, scene, seta, kozos, uzenet, getMod, jatek })
       const [x, y] = szabad[i];
       g.position.set(x, 0, y);
       scene.add(g);
-      sajat.push({ g, x, y, yaw: 0, harap: 0, seb: seb * (0.96 + 0.04 * i) });
+      sajat.push({ g, x, y, yaw: 0, harap: 0, seb: seb * (0.96 + 0.04 * i), ugat: performance.now() + 600 + Math.random() * 2500 });
+      if (i === 0) hang('ugatas', { x, y: 0.6, z: y });
     }
   }
   function eltuntet(lista) {
@@ -130,6 +132,8 @@ export function inditKutyak({ C, M, scene, seta, kozos, uzenet, getMod, jatek })
       k.g.position.set(k.x, 0, k.y);
       k.g.rotation.y = k.yaw;
       animal(k.g, v, dt, t);
+      // kergetés közben időnként ugatnak
+      if (t > k.ugat) { k.ugat = t + 1800 + Math.random() * 2600; hang('ugatas', { x: k.x, y: 0.6, z: k.y }, 0.8); }
       // harapás: ha utolért (és nem vagyunk magasan, pl. egy konténer tetején)
       if (jatszik && d < 0.8 && seta.z < 0.9 && !bazisnal(seta.x, seta.y) && t - k.harap > Number(K.harapasMp ?? 1) * 1000) {
         k.harap = t;

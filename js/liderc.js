@@ -2,6 +2,7 @@
 // folyosóján; ha a végére ér, visszaindul. Akihez hozzáér, az meghal. A helye a gép órájából és
 // az éjszaka kezdetéből számolódik, így mindenkinél ugyanott jár (mint a targoncák).
 import * as THREE from 'three';
+import { hang, hurok } from './hang.js';
 
 // lebegő alak: szakadt lepel, sápadt fej, hosszú ősz haj, előrenyújtott karok, világító szemek
 function lidercModell() {
@@ -98,6 +99,7 @@ export function inditLiderc({ C, scene, seta, getMod, ejszaka, targoncak, jatek,
     szak.push({ a, b, s0: hossz, l });
     hossz += l;
   }
+  const suttog = hurok('liderc');
   const g = lidercModell();
   g.visible = false;
   scene.add(g);
@@ -117,7 +119,7 @@ export function inditLiderc({ C, scene, seta, getMod, ejszaka, targoncak, jatek,
     const eltelt = ejszaka.ejjelEltelt(), k = ejszaka.k();
     const lathato = eltelt != null && k > 0.05 && szak.length > 0;
     g.visible = lathato;
-    if (!lathato) { volt = false; g.userData.feny.intensity = 0; return; }
+    if (!lathato) { volt = false; g.userData.feny.intensity = 0; suttog.allit(null); return; }
     if (!volt) { volt = true; if (eltelt < 20000) uzenet('👻 Leszállt az éj – a lidérc kiszabadult a pohármosóból! Ne érjen hozzád!'); }
     const t = performance.now();
     const h = hely(Math.max(0, eltelt) / 1000 * seb);
@@ -133,6 +135,7 @@ export function inditLiderc({ C, scene, seta, getMod, ejszaka, targoncak, jatek,
     g.userData.karok.forEach((kar, i) => { kar.rotation.x = -1.25 + 0.12 * Math.sin(t / 380 + i * 2); });
     g.userData.lepelAnyag.opacity = 0.82 * Math.min(1, k * 1.2);
     g.userData.feny.intensity = 1.2 * k;
+    suttog.allit({ x: h.x, y: lebeg + 1.8, z: h.y }, k); // suttogás és mély zúgás, a távolsággal halkul
     // érintés: aki hozzáér (a lepel alaprajzán belül, a lebegő test magasságában), meghal
     if (getMod() !== 'seta' || seta.halott || !jatek?.jatekBe?.() || t - erintesIdo < 2000) return;
     const test = seta.guggol ? 1.0 : 1.8;

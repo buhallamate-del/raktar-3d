@@ -317,6 +317,10 @@ window.RAKTAR_CONFIG = {
   // Taposóakna: a fegyverládákon jár (ladankent db, legfeljebb max); X = lerakás a lábunk elé; elesitesMp
   // múlva éles, aki erzekelesSugar m-en belül rálép, felrobbantja (a lerakóját is); elettartamMp után eltűnik
   akna: { max: 2, ladankent: 1, elesitesMp: 2, elettartamMp: 180, erzekelesSugar: 0.7, sugar: 3, sebzes: 100 },
+  // Hangok: a böngészőben készülnek (nincs hangfájl); a menüben ki-be kapcsolható, a hangerő állítható
+  hang: { bekapcsolva: true, hangero: 0.6, maxTavolsag: 60 },
+  // Meccsek (a játékban): a gép órája szerint percek hosszú meccsek, köztük szunetMp szünet az összesítővel
+  meccs: { bekapcsolva: true, percek: 10, szunetMp: 15 },
   // Killcam: ha egy másik játékos öl meg, mp másodpercnyi visszajátszás az ő szemszögéből
   killcam: { bekapcsolva: true, mp: 3.2 },
   // Gránát: a fegyverládákon jár (ladankent db, legfeljebb max); T = dobás; gyujtoMp után robban,
