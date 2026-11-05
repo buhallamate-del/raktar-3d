@@ -99,6 +99,7 @@ const RECEPTEK = {
   jel(k, t) { hangjegy(burok(k, t, 0.25, 0.01, 0.25), t, 0.25, 'triangle', 880); hangjegy(burok(k, t + 0.12, 0.2, 0.01, 0.3), t + 0.12, 0.3, 'triangle', 1320); },
   dicsoseg(k, t) { [523, 659, 784, 1047].forEach((f, i) => hangjegy(burok(k, t + i * 0.12, 0.3, 0.01, 0.35), t + i * 0.12, 0.35, 'triangle', f)); },
   kurt(k, t) { for (const f of [220, 277, 330]) hangjegy(burok(k, t, 0.18, 0.05, 0.9), t, 0.95, 'sawtooth', f); },
+  szirena(k, t) { const o = ctx.createOscillator(); o.type = 'sawtooth'; o.frequency.setValueAtTime(600, t); o.frequency.linearRampToValueAtTime(1150, t + 0.6); o.frequency.linearRampToValueAtTime(600, t + 1.2); o.connect(burok(k, t, 0.22, 0.05, 1.15)); o.start(t); o.stop(t + 1.3); },
   sikoly(k, t) { hangjegy(burok(k, t, 0.4, 0.05, 1.0), t, 1.0, 'sawtooth', 500, 1300); zaj(burok(k, t, 0.3, 0.05, 1.0), t, 1.0, 'bandpass', 1500, 3000, 4); },
 };
 

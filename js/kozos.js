@@ -23,7 +23,31 @@ function veletlenSzin() {
 }
 
 // Egyszerű pálcikaember: fej, törzs, karok, lábak; a lábak lépés közben lengenek.
-export function palcikaember(szin, nev, szovegSprite, mezSzin) {
+// Kinézetek (menü → Közös nézet): [azonosító, név, ennyi teljesített küldetés kell hozzá]
+export const KINEZETEK = [['', 'nincs', 0], ['sapka', 'baseballsapka', 0], ['melleny', 'láthatósági mellény', 0], ['sisak', 'védősisak', 3], ['korona', 'korona', 10]];
+
+// a fejre / testre kerülő kiegészítő
+function kiegeszito(kn, mezSzin) {
+  const g = new THREE.Group();
+  const a = szin => new THREE.MeshLambertMaterial({ color: szin });
+  if (kn === 'sapka') {
+    const t = new THREE.Mesh(new THREE.SphereGeometry(0.148, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2), a('#c62828')); t.position.y = 1.66; g.add(t);
+    const e = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.02, 0.14), a('#c62828')); e.position.set(0, 1.67, -0.18); g.add(e);
+  } else if (kn === 'sisak') {
+    const t = new THREE.Mesh(new THREE.SphereGeometry(0.165, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2), a('#f2c230')); t.position.y = 1.66; g.add(t);
+    const k = new THREE.Mesh(new THREE.CylinderGeometry(0.21, 0.21, 0.02, 18), a('#f2c230')); k.position.y = 1.67; g.add(k);
+  } else if (kn === 'korona') {
+    const arany = new THREE.MeshLambertMaterial({ color: '#f5c518', emissive: '#4a3a00' });
+    const k = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.13, 0.07, 16, 1, true), arany); k.position.y = 1.78; g.add(k);
+    for (let i = 0; i < 6; i++) { const c = new THREE.Mesh(new THREE.ConeGeometry(0.03, 0.08, 6), arany); const sz = i / 6 * Math.PI * 2; c.position.set(Math.sin(sz) * 0.12, 1.85, Math.cos(sz) * 0.12); g.add(c); }
+  } else if (kn === 'melleny' && !mezSzin) {
+    const m = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.5, 0.2), a('#d9f03a')); m.position.y = 1.2; g.add(m);
+    for (const y of [1.08, 1.3]) { const c = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.04, 0.21), a('#e8eef2')); c.position.y = y; g.add(c); }
+  }
+  return g;
+}
+
+export function palcikaember(szin, nev, szovegSprite, mezSzin, kn = '') {
   const anyag = new THREE.MeshLambertMaterial({ color: szin });
   const g = new THREE.Group();
   const test = new THREE.Group();
@@ -68,7 +92,7 @@ export function palcikaember(szin, nev, szovegSprite, mezSzin) {
   // „orr”: merre néz
   const orr = new THREE.Mesh(new THREE.ConeGeometry(0.05, 0.14, 8), anyag);
   orr.rotation.x = -Math.PI / 2; orr.position.set(0, 1.62, -0.17);
-  test.add(fej, torzs, vall, balLab, jobbLab, balKar, jobbKar, orr, puska, kard, bz, lampa, mez);
+  test.add(fej, torzs, vall, balLab, jobbLab, balKar, jobbKar, orr, puska, kard, bz, lampa, mez, kiegeszito(kn, mezSzin));
   g.add(test);
   const felirat = szovegSprite(nev, 0.32, { hatter: szin, szin: '#fff', meret: 44, depthTest: false });
   felirat.position.y = 2.05;
@@ -81,7 +105,7 @@ export function palcikaember(szin, nev, szovegSprite, mezSzin) {
   const hpHatter = csik('#3a0d0d'), hpEloter = csik('#3ddc5a');
   hpHatter.position.set(-0.4, 2.3, 0); hpEloter.position.set(-0.4, 2.3, 0); hpEloter.renderOrder = 12;
   g.add(hpHatter, hpEloter);
-  g.userData = { test, balLab, jobbLab, balKar, jobbKar, felirat, fazis: 0, anyag, hpHatter, hpEloter, villan: 0, puska, kard, bz, lampa, mez };
+  g.userData = { test, balLab, jobbLab, balKar, jobbKar, felirat, fazis: 0, anyag, hpHatter, hpEloter, villan: 0, puska, kard, bz, lampa, mez, integ: 0, buborek: null };
   return g;
 }
 
@@ -105,6 +129,15 @@ export function inditKozos({ C, scene, szovegSprite, allapot, uzenet, extra, ese
 
   // --- felület ---
   el('kozosNev').value = b.nev;
+  // kinézet: a feloldottak választhatók (a küldetések száma ezen a gépen)
+  const kuldetesDb = () => { try { return Number(JSON.parse(localStorage.getItem('raktar3d.kuldetes'))?.db) || 0; } catch { return 0; } };
+  const kinezetLista = () => {
+    const db = kuldetesDb();
+    el('kozosKinezet').innerHTML = KINEZETEK.map(([id, nev, kell]) =>
+      `<option value="${id}"${db < kell ? ' disabled' : ''}>${nev}${db < kell ? ` (🔒 ${kell} küldetés kell, eddig ${db})` : ''}</option>`).join('');
+    if (KINEZETEK.some(([id, , kell]) => id === b.kn && db >= kell)) el('kozosKinezet').value = b.kn; else { b.kn = ''; el('kozosKinezet').value = ''; }
+  };
+  if (el('kozosKinezet')) { kinezetLista(); el('kozosKinezet').addEventListener('focus', kinezetLista); }
   el('kozosSzin').value = b.szin;
   el('kozosLathato').checked = b.lathato;
   el('kozosBe').checked = K.bekapcsolva !== false && b.be !== false;
@@ -121,6 +154,7 @@ export function inditKozos({ C, scene, szovegSprite, allapot, uzenet, extra, ese
     b.szin = el('kozosSzin').value;
     b.lathato = el('kozosLathato').checked;
     b.be = el('kozosBe').checked;
+    if (el('kozosKinezet')) b.kn = el('kozosKinezet').value;
     ment(b);
     utolsoAllapot = null; // azonnal küldjük az újat
     if (!b.lathato) kuld(null);
@@ -128,7 +162,7 @@ export function inditKozos({ C, scene, szovegSprite, allapot, uzenet, extra, ese
     if (!b.be && kliens) lekapcsol();
     allapotKiir();
   };
-  for (const id of ['kozosNev', 'kozosSzin', 'kozosLathato', 'kozosBe']) el(id).addEventListener('change', beallitasValt);
+  for (const id of ['kozosNev', 'kozosSzin', 'kozosLathato', 'kozosBe', 'kozosKinezet']) el(id)?.addEventListener('change', beallitasValt);
 
   // --- kapcsolat ---
   const temaSajat = `${csatorna}/poz/${b.id}`;
@@ -154,6 +188,8 @@ export function inditKozos({ C, scene, szovegSprite, allapot, uzenet, extra, ese
       kliens.subscribe(`${csatorna}/e`);
       kliens.subscribe(`${csatorna}/ctf`);
       kliens.subscribe(`${csatorna}/kocsi`);
+      kliens.subscribe(`${csatorna}/kocsi/+`);
+      kliens.subscribe(`${csatorna}/rang/+`);
       utolsoAllapot = null;
       allapotKiir();
     });
@@ -164,8 +200,9 @@ export function inditKozos({ C, scene, szovegSprite, allapot, uzenet, extra, ese
         try { const e = JSON.parse(adat.toString()); if (e && e.tol !== b.id) esemeny?.(e); } catch { /* hibás üzenet */ }
         return;
       }
-      if (tema === `${csatorna}/ctf` || tema === `${csatorna}/kocsi`) {
-        try { allando?.(JSON.parse(adat.toString()), tema.split('/').pop()); } catch { /* hibás üzenet */ }
+      if (tema === `${csatorna}/ctf` || tema === `${csatorna}/kocsi` || tema.startsWith(`${csatorna}/kocsi/`) || tema.startsWith(`${csatorna}/rang/`)) {
+        // a téma csatorna utáni része: 'ctf', 'kocsi', 'kocsi/<jármű>', 'rang/<hét>'
+        try { allando?.(JSON.parse(adat.toString()), tema.slice(csatorna.length + 1)); } catch { /* hibás üzenet */ }
         return;
       }
       const id = tema.split('/').pop();
@@ -197,12 +234,13 @@ export function inditKozos({ C, scene, szovegSprite, allapot, uzenet, extra, ese
     const szin = /^#[0-9a-f]{6}$/i.test(u.szin) ? u.szin : '#888888';
     let t = tobbiek.get(id);
     const mez = (C.ctf?.csapatok || []).find(c => c.id === u.cs)?.szin || null;
-    if (t && (t.nev !== nev || t.szin !== szin || t.mez !== mez)) { eltavolit(id); t = null; }
+    const kn = KINEZETEK.some(([k]) => k === u.kn) ? u.kn : '';
+    if (t && (t.nev !== nev || t.szin !== szin || t.mez !== mez || t.kn !== kn)) { eltavolit(id); t = null; }
     if (!t) {
-      const g = palcikaember(szin, nev, szovegSprite, mez);
+      const g = palcikaember(szin, nev, szovegSprite, mez, kn);
       g.position.set(u.x, u.z || 0, u.y);
       scene.add(g);
-      t = { id, g, nev, szin, mez, cel: u, utolso: 0 };
+      t = { id, g, nev, szin, mez, kn, cel: u, utolso: 0 };
       tobbiek.set(id, t);
       if (tobbiek.size <= 5) uzenet?.(`${nev} is nézi a modellt`);
       allapotKiir();
@@ -234,7 +272,7 @@ export function inditKozos({ C, scene, szovegSprite, allapot, uzenet, extra, ese
       a.ex = ex2;
       if (mozdult || valtozott || most - utolsoKuld > EL_MS) {
         const { ex, ...pozAdat } = a;
-        kuld({ nev: b.nev, szin: b.szin, ...pozAdat, ...ex });
+        kuld({ nev: b.nev, szin: b.szin, kn: b.kn || '', ...pozAdat, ...ex });
         utolsoAllapot = a;
         utolsoKuld = most;
       }
@@ -282,6 +320,11 @@ export function inditKozos({ C, scene, szovegSprite, allapot, uzenet, extra, ese
       const leng = Math.min(1, seb / 1.2) * 0.55 * Math.sin(d.fazis);
       d.balLab.rotation.x = leng; d.jobbLab.rotation.x = -leng;
       d.balKar.rotation.x = -leng * 0.8; d.jobbKar.rotation.x = leng * 0.8;
+      // integetés: a jobb kar fent, jobbra-balra leng
+      if (most - d.integ < 2200) { d.jobbKar.rotation.x = 0; d.jobbKar.rotation.z = 2.6 + 0.35 * Math.sin(most / 110); }
+      else d.jobbKar.rotation.z = 0;
+      // szövegbuborék a feje fölött
+      if (d.buborek && most > d.buborek.ig) { g.remove(d.buborek.s); d.buborek.s.material.map?.dispose(); d.buborek = null; }
     }
   }
 
@@ -296,6 +339,17 @@ export function inditKozos({ C, scene, szovegSprite, allapot, uzenet, extra, ese
     kuldR: (a, tema = 'ctf') => { if (kliens && kapcsolodva) kliens.publish(`${csatorna}/${tema}`, JSON.stringify(a), { qos: 0, retain: true }); },
     kuldE: e => { if (kliens && kapcsolodva) kliens.publish(`${csatorna}/e`, JSON.stringify({ ...e, tol: b.id }), { qos: 0 }); },
     villant: id => { const t = tobbiek.get(id); if (t) t.g.userData.villan = 0.25; },
+    integet: id => { const t = tobbiek.get(id); if (t) t.g.userData.integ = performance.now(); },
+    buborek: (id, szoveg) => {
+      const t = tobbiek.get(id);
+      if (!t) return;
+      const d = t.g.userData;
+      if (d.buborek) { t.g.remove(d.buborek.s); d.buborek.s.material.map?.dispose(); }
+      const s2 = szovegSprite(szoveg, 0.3, { hatter: '#ffffff', szin: '#1d2430', meret: 44 }); // a falon át nem látszik
+      s2.material.userData.vilagit = true;
+      s2.position.y = 2.7; t.g.add(s2);
+      d.buborek = { s: s2, ig: performance.now() + 3500 };
+    },
     frissitAllapot: () => { utolsoAllapot = null; },
   };
 }

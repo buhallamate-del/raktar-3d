@@ -12,7 +12,8 @@ const ment = a => { try { localStorage.setItem(TAROL, JSON.stringify(a)); } catc
 const ido = ms => { const s = Math.max(0, Math.round(ms / 1000)); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
 
 // jutalom(): a teljesítés jutalma (a játék adja: katana, ha már van, teljes életerő)
-export function inditKuldetes({ C, M, scene, camera, seta, getMod, uzenet, kozos, szovegSprite, lerako, jutalom }) {
+// eredmeny(ms): a teljesítés ideje (a heti ranglistának)
+export function inditKuldetes({ C, M, scene, camera, seta, getMod, uzenet, kozos, szovegSprite, lerako, jutalom, eredmeny }) {
   const K = C.kuldetes || {};
   const db = Math.max(1, Math.round(Number(K.db ?? 3))), sugar = Number(K.celSugar ?? 1.5), lerakoSugar = Number(K.lerakoSugar ?? 2.5);
   const el = id => document.getElementById(id);
@@ -79,6 +80,7 @@ export function inditKuldetes({ C, M, scene, camera, seta, getMod, uzenet, kozos
     uzenet(`🏁 Küldetés teljesítve ${ido(t)} alatt!${rekord ? ' 🏆 Új egyéni rekord!' : ` (legjobb: ${ido(tar.legjobb)})`}`);
     kozos?.kuldE({ t: 'kuldetes', nev: kozos.nev(), ido: Math.round(t), db: k.celok.length });
     hang('dicsoseg');
+    eredmeny?.(t);
     k = null;
     jelolKi();
     allapotKiir();

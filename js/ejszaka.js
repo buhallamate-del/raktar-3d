@@ -21,6 +21,7 @@ export function inditEjszaka({ C, scene, camera, fenyek, getMod, jatekBe, ledAny
 
   const eredeti = { hatter: scene.background?.clone(), hemi: fenyek.hemi.intensity, nap: fenyek.nap.intensity };
   let k = 0; // 0 = nappal, 1 = teljes sötét
+  let kulso = 0; // áramszünet
 
   // Nem fényre reagáló anyagok (feliratok, címkék, jelölők): éjszaka elsötétülnek; ami világít
   // (userData.vilagit: pl. kapufeliratok, a targoncák kék pöttye), az nem.
@@ -52,7 +53,9 @@ export function inditEjszaka({ C, scene, camera, fenyek, getMod, jatekBe, ledAny
   function frissit(dt) {
     const c = ciklus();
     const aktiv = jatekBe() && getMod() === 'seta';
-    const celK = aktiv ? c.cel : 0;
+    // áramszünet (esemenyek.js): nappal is sötét
+    const aram = aktiv ? kulso : 0;
+    const celK = aktiv ? Math.max(c.cel, aram) : 0;
     k += (celK - k) * Math.min(1, dt * 3);
     if (Math.abs(k - celK) < 0.002) k = celK;
     fenyek.hemi.intensity = eredeti.hemi * (1 - k) + 0.05 * k;
@@ -68,7 +71,7 @@ export function inditEjszaka({ C, scene, camera, fenyek, getMod, jatekBe, ledAny
     const lepcsos = Math.round(k * 20) / 20;
     if (lepcsos !== utolsoHalvany) { halvanyit(lepcsos); utolsoHalvany = lepcsos; }
     // zseblámpa: éjszaka magától be, nappal ki (ha nem kapcsolták kézzel)
-    if (!lampaKezi) lampaBe = c.ejszakaVan;
+    if (!lampaKezi) lampaBe = c.ejszakaVan || aram > 0.5;
     if (!c.ejszakaVan && c.hatra < 1000) lampaKezi = false;
     lampa.intensity = aktiv && lampaBe ? 30 * Math.max(0.15, k) : 0;
     // targoncák fényszórója
@@ -81,7 +84,7 @@ export function inditEjszaka({ C, scene, camera, fenyek, getMod, jatekBe, ledAny
       kij.textContent = c.ejszakaVan ? `🌙 Éjszaka · világosodásig ${szoveg}${lampaBe ? '' : ' · L = lámpa'}` : `☀ Nappal · sötétedésig ${szoveg}`;
       kij.classList.toggle('ejjel', c.ejszakaVan);
     }
-    el('lampaGomb').hidden = !(aktiv && c.ejszakaVan && document.body.classList.contains('erintes'));
+    el('lampaGomb').hidden = !(aktiv && (c.ejszakaVan || aram > 0.5) && document.body.classList.contains('erintes'));
   }
 
   function kapcsol() {
@@ -94,6 +97,8 @@ export function inditEjszaka({ C, scene, camera, fenyek, getMod, jatekBe, ledAny
   return {
     frissit, kapcsol,
     sotet: () => k > 0.5,
+    // külső sötétítés 0–1 (áramszünet)
+    aramszunet: v => { kulso = Math.max(0, Math.min(1, Number(v) || 0)); },
     k: () => k,
     // éjszaka: hány ms telt el a sötétedés kezdete óta (nappal null)
     ejjelEltelt: () => { const t = Date.now() % (nappal + ejjel); return t >= nappal ? t - nappal : null; },
