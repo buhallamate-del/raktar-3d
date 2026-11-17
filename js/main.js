@@ -21,6 +21,7 @@ import { inditRang } from './rang.js';
 import { inditNezo } from './nezo.js';
 import { inditEsemenyek } from './esemenyek.js';
 import { inditJarmu } from './jarmu.js';
+import { inditFeketeLyuk } from './feketelyuk.js';
 
 const C = window.RAKTAR_CONFIG;
 const D = window.RAKTAR_ADATOK;
@@ -1601,6 +1602,7 @@ renderer.setAnimationLoop(() => {
   rang?.frissit(dt);
   esemenyek?.frissit(dt);
   jarmu?.frissit(dt);
+  feketeLyuk?.frissit(dt);
   // a közeli targoncák csipognak (másfél másodpercenként, a legközelebbi)
   if (mod === 'seta' && targoncak?.targoncak?.length && most - (csipogIdo || 0) > 1500) {
     let leg = null, ld = 14;
@@ -1753,7 +1755,14 @@ try {
 } catch (e) {
   console.warn('[események]', e);
 }
+// Fekete lyuk a pohármosóban: kapu az Eseményhorizontba (easter egg, csak séta közben látszik)
+let feketeLyuk = null;
+try {
+  feketeLyuk = inditFeketeLyuk({ C, scene, seta, getMod: () => mod, uzenet, jatekBe: () => !!jatek?.jatekBe?.() });
+} catch (e) {
+  console.warn('[fekete lyuk]', e);
+}
 grafikaBeallit(); // a modulok fényei már a jelenetben vannak
 beallitasMenu({}); // a látószöget a jatek.js képkockánként követi
 hashbolNyit();
-window.raktar = { M, scene, camera, controls, seta, kijelol, helyhezMegy, modValt, lep: setaLeptet, ugras, lenyomva, jatek, kozos, targoncak, ejszaka, ctf, kocsi, liderc, kutyak, civilek, kuldetes, killcam, meccs, minimap, uzenetek, rang, nezo, esemenyek, jarmu }; // hibakereséshez
+window.raktar = { M, scene, camera, controls, seta, kijelol, helyhezMegy, modValt, lep: setaLeptet, ugras, lenyomva, jatek, kozos, targoncak, ejszaka, ctf, kocsi, liderc, kutyak, civilek, kuldetes, killcam, meccs, minimap, uzenetek, rang, nezo, esemenyek, jarmu, feketeLyuk }; // hibakereséshez

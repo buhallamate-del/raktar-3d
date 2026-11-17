@@ -341,3 +341,10 @@ A modell feltevéseit a ☰ menü sárga „Modell saját feltételezései” r�
    nyilvános lesz, az anonimizált adatok ellenére érdemes ezt mérlegelni.
 
 Ezután minden `main`-re küldött módosítás (pl. a `config.js` átírása) kb. egy percen belül megjelenik az oldalon.
+
+
+## Három univerzum (easter egg)
+
+Ha a menüben be van kapcsolva a **Játék**, séta közben a pohármosó ajtajában (X ≈ 7 m, Y ≈ 98,9 m) egy apró fekete lyuk lebeg. Aki belesétál, átlép a szerző másik játékába, az [Eseményhorizontba](https://buhallamate-del.github.io/Esemenyhorizont/). Kikapcsolt játéknál és felülnézetben nem látszik, a munkához használt bejárást nem zavarja (kikapcsolható: `config.js` → `feketeLyuk: { be: false }`).
+
+A három játék (Eseményhorizont, [Kísérleti Lőtér](https://buhallamate-del.github.io/Kiserleti_robbantas/), Raktár 3D) közös naplót vezet a böngésző tárhelyében (`univerzum-naplo`): ha az Eseményhorizontban már jártál a raktár buborékjában, a raktár „emlékszik” rád. Kód: `js/feketelyuk.js`.
