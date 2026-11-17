@@ -142,7 +142,7 @@ export function inditKozos({ C, scene, szovegSprite, allapot, uzenet, extra, ese
   el('kozosLathato').checked = b.lathato;
   el('kozosBe').checked = K.bekapcsolva !== false && b.be !== false;
   const allapotKiir = () => {
-    const n = tobbiek.size;
+    let n = 0; for (const t of tobbiek.values()) if (!t.bot) n++; // a botok (botok.js) nem látogatók
     el('kozosAllapot').textContent = !el('kozosBe').checked ? 'Kikapcsolva.'
       : kapcsolodva ? `Kapcsolódva · ${n ? n + ' másik látogató' : 'most egyedül vagy'}` : 'Kapcsolódás…';
     el('kozosJelzo').hidden = !el('kozosBe').checked;
@@ -229,7 +229,8 @@ export function inditKozos({ C, scene, szovegSprite, allapot, uzenet, extra, ese
   addEventListener('pagehide', () => kuld(null));
 
   // --- a többiek ---
-  function fogad(id, u) {
+  // bot = true: helyi, gép vezérelte játékos (botok.js) – ugyanúgy jelenik meg, de nem látogató
+  function fogad(id, u, bot = false) {
     const nev = String(u.nev || 'Látogató').slice(0, 24);
     const szin = /^#[0-9a-f]{6}$/i.test(u.szin) ? u.szin : '#888888';
     let t = tobbiek.get(id);
@@ -240,9 +241,9 @@ export function inditKozos({ C, scene, szovegSprite, allapot, uzenet, extra, ese
       const g = palcikaember(szin, nev, szovegSprite, mez, kn);
       g.position.set(u.x, u.z || 0, u.y);
       scene.add(g);
-      t = { id, g, nev, szin, mez, kn, cel: u, utolso: 0 };
+      t = { id, g, nev, szin, mez, kn, cel: u, utolso: 0, bot };
       tobbiek.set(id, t);
-      if (tobbiek.size <= 5) uzenet?.(`${nev} is nézi a modellt`);
+      if (!bot && tobbiek.size <= 5) uzenet?.(`${nev} is nézi a modellt`);
       allapotKiir();
     }
     t.cel = u;
@@ -332,6 +333,11 @@ export function inditKozos({ C, scene, szovegSprite, allapot, uzenet, extra, ese
   if (el('kozosBe').checked) kapcsol();
   return {
     frissit, tobbiek, id: b.id,
+    // helyi botok (botok.js): képkockánként frissítik magukat; nem mennek ki a hálózatra
+    botFogad: (id, u) => fogad(id, u, true),
+    botTorol: id => eltavolit(id),
+    // vannak-e valódi (hálózaton át jövő) játékosok
+    valodiak: () => { for (const t of tobbiek.values()) if (!t.bot) return true; return false; },
     nev: () => b.nev,
     szin: () => b.szin,
     kapcsolodva: () => kapcsolodva && !!kliens,

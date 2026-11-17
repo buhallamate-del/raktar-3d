@@ -22,6 +22,7 @@ import { inditNezo } from './nezo.js';
 import { inditEsemenyek } from './esemenyek.js';
 import { inditJarmu } from './jarmu.js';
 import { inditFeketeLyuk } from './feketelyuk.js';
+import { inditBotok } from './botok.js';
 
 const C = window.RAKTAR_CONFIG;
 const D = window.RAKTAR_ADATOK;
@@ -1603,6 +1604,7 @@ renderer.setAnimationLoop(() => {
   esemenyek?.frissit(dt);
   jarmu?.frissit(dt);
   feketeLyuk?.frissit(dt);
+  botok?.frissit(dt);
   // a közeli targoncák csipognak (másfél másodpercenként, a legközelebbi)
   if (mod === 'seta' && targoncak?.targoncak?.length && most - (csipogIdo || 0) > 1500) {
     let leg = null, ld = 14;
@@ -1762,7 +1764,15 @@ try {
 } catch (e) {
   console.warn('[fekete lyuk]', e);
 }
+// Botok: gép vezérelte játékosok, ha egyedül vagy (egyjátékos mód)
+let botok = null;
+try {
+  botok = inditBotok({ C, M, seta, kozos, jatek, getCtf: () => ctf, getMeccs: () => meccs, getEjszaka: () => ejszaka, uzenet,
+    getMod: () => mod, kiindulo: D.kulcsok.kiindulo });
+} catch (e) {
+  console.warn('[botok]', e);
+}
 grafikaBeallit(); // a modulok fényei már a jelenetben vannak
 beallitasMenu({}); // a látószöget a jatek.js képkockánként követi
 hashbolNyit();
-window.raktar = { M, scene, camera, controls, seta, kijelol, helyhezMegy, modValt, lep: setaLeptet, ugras, lenyomva, jatek, kozos, targoncak, ejszaka, ctf, kocsi, liderc, kutyak, civilek, kuldetes, killcam, meccs, minimap, uzenetek, rang, nezo, esemenyek, jarmu, feketeLyuk }; // hibakereséshez
+window.raktar = { M, scene, camera, controls, seta, kijelol, helyhezMegy, modValt, lep: setaLeptet, ugras, lenyomva, jatek, kozos, targoncak, ejszaka, ctf, kocsi, liderc, kutyak, civilek, kuldetes, killcam, meccs, minimap, uzenetek, rang, nezo, esemenyek, jarmu, feketeLyuk, botok }; // hibakereséshez

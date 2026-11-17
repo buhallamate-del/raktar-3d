@@ -44,6 +44,9 @@ export function inditCtf({ C, scene, seta, kozos, uzenet, getMod, jatekBe, szove
   let valasztas = betolt().cs || 'auto', autoCs = null;
   const indult = performance.now();
   let kapcsIdo = 0, egyenlotlenSince = 0;
+  // Botmód (botok.js): amíg helyi botokkal játszunk, a zászlófoglalás csak nálunk fut – nem küldjük
+  // a közös állapotot, és a közben érkező közös állapotot félretesszük (a botok kilépése után visszaáll).
+  let botMod = false, felretett = null;
   // a többi játékos csapatonként (a saját magunkat nem számolva)
   function letszam() {
     const db = { [A]: 0, [B]: 0 };
@@ -112,7 +115,7 @@ export function inditCtf({ C, scene, seta, kozos, uzenet, getMod, jatekBe, szove
     // csak akkor döntünk, ha már látjuk a többieket (kapcsolódás után kb. 4 mp; szerver nélkül 15 mp)
     if (!autoCs) {
       if (kozos?.kapcsolodva?.()) { if (!kapcsIdo) kapcsIdo = performance.now(); }
-      if (!(kapcsIdo && performance.now() - kapcsIdo > 4000) && performance.now() - indult < 15000) return null;
+      if (!botMod && !(kapcsIdo && performance.now() - kapcsIdo > 4000) && performance.now() - indult < 15000) return null;
       const db = letszam();
       autoCs = db[A] < db[B] ? A : db[B] < db[A] ? B : (Math.random() < 0.5 ? A : B);
       uzenet(`🚩 Zászlófoglalás: a ${cs[autoCs].nev} csapatba kerültél`);
@@ -125,6 +128,7 @@ export function inditCtf({ C, scene, seta, kozos, uzenet, getMod, jatekBe, szove
 
   // --- állapot ---
   function alkalmaz(uj, tavoli) {
+    if (tavoli && botMod) { if (uj && Number(uj.ts) > (felretett?.ts || 0)) felretett = uj; return; }
     if (!uj || !(Number(uj.ts) > allapot.ts) || !uj.z?.[A] || !uj.z?.[B]) return;
     allapot = { ts: Number(uj.ts), pont: { [A]: Number(uj.pont?.[A]) || 0, [B]: Number(uj.pont?.[B]) || 0 }, z: { [A]: uj.z[A], [B]: uj.z[B] } };
     if (tavoli && uj.uz && Date.now() - allapot.ts < 15000) { uzenet(String(uj.uz).slice(0, 120)); hang(/🏁|🏆/.test(uj.uz) ? 'dicsoseg' : 'jel'); }
@@ -136,7 +140,7 @@ export function inditCtf({ C, scene, seta, kozos, uzenet, getMod, jatekBe, szove
     if (uz) uj.uz = uz;
     alkalmaz(uj, false);
     if (uz) { uzenet(uz); hang(/🏁|🏆/.test(uz) ? 'dicsoseg' : 'jel'); }
-    kozos?.kuldR?.(uj);
+    if (!botMod) kozos?.kuldR?.(uj);
   }
   const nev = () => kozos?.nev() || 'Én';
   const enId = () => kozos?.id || 'helyi';
@@ -251,5 +255,24 @@ export function inditCtf({ C, scene, seta, kozos, uzenet, getMod, jatekBe, szove
       valtoztat(s2 => { s2.pont = { [A]: 0, [B]: 0 }; s2.z = { [A]: { a: 'bazis' }, [B]: { a: 'bazis' } }; }, uz);
     },
     csapatok: () => [A, B],
+    // --- botok (botok.js) ---
+    botMod: be => {
+      if (be === botMod) return;
+      if (be) {
+        felretett = allapot;
+        botMod = true;
+        allapot = { ts: allapot.ts + 1, pont: { [A]: 0, [B]: 0 }, z: { [A]: { a: 'bazis' }, [B]: { a: 'bazis' } } };
+      } else {
+        botMod = false;
+        const f = felretett; felretett = null;
+        allapot = { ts: 0, pont: { [A]: 0, [B]: 0 }, z: { [A]: { a: 'bazis' }, [B]: { a: 'bazis' } } };
+        if (f) alkalmaz({ ...f, uz: undefined }, false);
+      }
+    },
+    jatszik,
+    bazis: id => cs[id]?.bazis,
+    masik,
+    gyozelem,
+    valtoztat,
   };
 }
