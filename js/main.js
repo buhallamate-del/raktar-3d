@@ -22,6 +22,7 @@ import { inditNezo } from './nezo.js';
 import { inditEsemenyek } from './esemenyek.js';
 import { inditJarmu } from './jarmu.js';
 import { inditFeketeLyuk } from './feketelyuk.js';
+import { inditJel, multiverzumMenu } from './jel.js';
 import { inditBotok } from './botok.js';
 
 const C = window.RAKTAR_CONFIG;
@@ -1604,6 +1605,7 @@ renderer.setAnimationLoop(() => {
   esemenyek?.frissit(dt);
   jarmu?.frissit(dt);
   feketeLyuk?.frissit(dt);
+  jel?.frissit(dt);
   botok?.frissit(dt);
   // a közeli targoncák csipognak (másfél másodpercenként, a legközelebbi)
   if (mod === 'seta' && targoncak?.targoncak?.length && most - (csipogIdo || 0) > 1500) {
@@ -1764,6 +1766,15 @@ try {
 } catch (e) {
   console.warn('[fekete lyuk]', e);
 }
+// A jel: éjjel, játék közben egy villogó tárhelycímke (Morse: ADD) – a Jeltörő raktári töredéke; és a menü Multiverzum része
+let jel = null;
+try {
+  jel = inditJel({ C, M, scene, seta, getMod: () => mod, jatekBe: () => !!jatek?.jatekBe?.(), ejszaka, uzenet });
+  multiverzumMenu(document.getElementById('multiverzum'));
+  setInterval(() => multiverzumMenu(document.getElementById('multiverzum')), 15000);
+} catch (e) {
+  console.warn('[jel]', e);
+}
 // Botok: gép vezérelte játékosok, ha egyedül vagy (egyjátékos mód)
 let botok = null;
 try {
@@ -1775,4 +1786,4 @@ try {
 grafikaBeallit(); // a modulok fényei már a jelenetben vannak
 beallitasMenu({}); // a látószöget a jatek.js képkockánként követi
 hashbolNyit();
-window.raktar = { M, scene, camera, controls, seta, kijelol, helyhezMegy, modValt, lep: setaLeptet, ugras, lenyomva, jatek, kozos, targoncak, ejszaka, ctf, kocsi, liderc, kutyak, civilek, kuldetes, killcam, meccs, minimap, uzenetek, rang, nezo, esemenyek, jarmu, feketeLyuk, botok }; // hibakereséshez
+window.raktar = { M, scene, camera, controls, seta, kijelol, helyhezMegy, modValt, lep: setaLeptet, ugras, lenyomva, jatek, kozos, targoncak, ejszaka, ctf, kocsi, liderc, kutyak, civilek, kuldetes, killcam, meccs, minimap, uzenetek, rang, nezo, esemenyek, jarmu, feketeLyuk, botok, jel }; // hibakereséshez
