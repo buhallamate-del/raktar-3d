@@ -132,18 +132,23 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
   };
   const el = id => document.getElementById(id);
   const tar = betolt();
-  const pont = { d: Number(tar.d) || 0, k: Number(tar.k) || 0 };
+  // kb: ebből botok elleni ölés (a heti ranglistába nem számít)
+  const pont = { d: Number(tar.d) || 0, k: Number(tar.k) || 0, kb: Number(tar.kb) || 0 };
   let be = tar.be ?? (J.bekapcsolva !== false);
   let harapasUz = 0;
   let hp = 100, halott = false, tamado = null, lokesIdo = 0, dobasIdo = 0, szamlalo = 0;
   // katana: a küldetés jutalma; halálkor sem veszik el (ezen a gépen megmarad)
   let katana = !!tar.katana;
   const mentes = () => ment({ ...pont, be, katana });
+  // Helyi címzett (botok.js): a saját eseményeinket a hálózat mellett a helyi botok is megkapják,
+  // így ugyanúgy „áldozatként” dönthetnek a saját életerejükről, mint egy távoli játékos.
+  let helyi = null;
+  const kuldE = e => { kozos?.kuldE(e); helyi?.esemeny?.({ ...e, tol: kozos?.id || 'helyi' }); };
 
   // --- felület ---
   el('jatekBe').checked = be;
   el('jatekBe').addEventListener('change', () => { be = el('jatekBe').checked; mentes(); kozos?.frissitAllapot(); });
-  el('jatekNullaz').addEventListener('click', () => { pont.d = pont.k = 0; mentes(); kozos?.frissitAllapot(); listaFrissit(); });
+  el('jatekNullaz').addEventListener('click', () => { pont.d = pont.k = pont.kb = 0; mentes(); kozos?.frissitAllapot(); listaFrissit(); });
   el('kozosJelzo').addEventListener('click', () => { el('pontPanel').hidden = !el('pontPanel').hidden; listaFrissit(); });
   el('pontBezar').addEventListener('click', () => { el('pontPanel').hidden = true; });
 
@@ -178,7 +183,7 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
     mentes();
     const tettes = tamado && most() - tamado.ido < 6000 ? tamado : null;
     const ok2 = tettes && ok === 'eses' ? (tettes.id === 'targonca' ? 'targonca' : 'lokes') : ok;
-    kozos?.kuldE({ t: 'halal', cel: kozos.id, celNev: kozos.nev(), tol2: tettes?.id, tol2Nev: tettes?.nev, ok: ok2 });
+    kuldE({ t: 'halal', cel: kozos.id, celNev: kozos.nev(), tol2: tettes?.id, tol2Nev: tettes?.nev, ok: ok2 });
     el('halalSzoveg').textContent = tettes
       ? `${tettes.nev} ${ok2 === 'raketa' ? 'eltalált a bazookájával' : ok2 === 'akna' ? 'aknájára léptél' : ok2 === 'katana' ? 'levágott a katanájával' : ok2 === 'palack' ? 'eltalált egy palackkal' : ok2 === 'targonca' ? 'elütött' : ok2 === 'loves' ? 'lelőtt' : ok2 === 'granat' ? 'felrobbantott' : 'meglökött'}.`
       : ok2 === 'tuz' ? '🔥 Füstmérgezés – bent maradtál a tűzriadó alatt.' : ok2 === 'granat' || ok2 === 'raketa' ? '💥 Felrobbantál.' : ok2 === 'akna' ? '💥 Aknára léptél.' : ok2 === 'liderc' ? '👻 Elkapott a lidérc.' : ok2 === 'kutya' ? '🐕 Széttéptek a vad kutyák.' : OK_SZOVEG[ok2] === 'leesett' ? 'Leestél.' : 'Elfogyott az életerőd.';
@@ -214,7 +219,7 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
       leg = { t, dx: dx / d, dy: dy / d }; legD = d;
     }
     if (!leg) { uzenet('Nincs senki előtted, akit meglökhetnél'); return; }
-    kozos.kuldE({ t: 'lokes', cel: leg.t.id, dx: leg.dx, dy: leg.dy, nev: kozos.nev() });
+    kuldE({ t: 'lokes', cel: leg.t.id, dx: leg.dx, dy: leg.dy, nev: kozos.nev() });
     hang('lokes');
     kozos.villant(leg.t.id);
     uzenet(`Meglökted: ${leg.t.nev}`);
@@ -257,7 +262,7 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
     const v = v3.clone().multiplyScalar(cfg.palackSeb).add(new THREE.Vector3(0, 1.5, 0));
     const id = `${kozos?.id || 'helyi'}-${++szamlalo}`;
     inditPalack(id, p, v, kozos?.id, kozos?.nev(), true);
-    kozos?.kuldE({ t: 'dobas', id, x: +p.x.toFixed(2), y: +p.y.toFixed(2), z: +p.z.toFixed(2),
+    kuldE({ t: 'dobas', id, x: +p.x.toFixed(2), y: +p.y.toFixed(2), z: +p.z.toFixed(2),
       vx: +v.x.toFixed(2), vy: +v.y.toFixed(2), vz: +v.z.toFixed(2), nev: kozos.nev() });
   }
   // van-e akadály (fal, állvány, padló) a világ egy pontjában (x, fel, z)
@@ -385,7 +390,7 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
     }
     const kutya = kozelharc?.(seta.x, seta.y, fx, fy, ktCfg.tav) || 0; // a vad kutyákat is lehet
     if (leg) {
-      kozos.kuldE({ t: 'vagas', cel: leg.id, s: ktCfg.sebzes, nev: kozos.nev() });
+      kuldE({ t: 'vagas', cel: leg.id, s: ktCfg.sebzes, nev: kozos.nev() });
       kozos.villant(leg.id);
       uzenet(`🗡 Megvágtad: ${leg.nev}`);
     } else if (kutya) uzenet(kutya > 1 ? `🗡 ${kutya} kutyát levágtál!` : '🗡 Levágtál egy kutyát!');
@@ -433,7 +438,7 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
     rugas = 1;
     seta.pitch = Math.min(1.45, seta.pitch + (f === 'puska' ? 0.03 : 0.003)); // felrúgás
     const k = v => +v.toFixed(3);
-    kozos?.kuldE({ t: 'loves', x: k(o.x), y: k(o.y), z: k(o.z), dx: k(d.x), dy: k(d.y), dz: k(d.z), h: +h.toFixed(2), s: c.sebzes, fp: f, nev: kozos.nev() });
+    kuldE({ t: 'loves', x: k(o.x), y: k(o.y), z: k(o.z), dx: k(d.x), dy: k(d.y), dz: k(d.z), h: +h.toFixed(2), s: c.sebzes, fp: f, nev: kozos.nev() });
     if (a.tarban === 0) ujratolt();
   }
 
@@ -461,7 +466,7 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
     const id = `${kozos?.id || 'helyi'}-g${++szamlalo}`;
     inditGranat(id, p, v, kozos?.id, kozos?.nev(), true);
     const k = x => +x.toFixed(2);
-    kozos?.kuldE({ t: 'granat', id, x: k(p.x), y: k(p.y), z: k(p.z), vx: k(v.x), vy: k(v.y), vz: k(v.z), nev: kozos.nev() });
+    kuldE({ t: 'granat', id, x: k(p.x), y: k(p.y), z: k(p.z), vx: k(v.x), vy: k(v.y), vz: k(v.z), nev: kozos.nev() });
     uzenet(`💣 Gránát elhajítva! (${granat} maradt)`);
   }
   // pattog: tengelyenként mozgatjuk, és ahol akadályba ütközne, ott visszapattan
@@ -494,7 +499,7 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
     rugas = 1;
     seta.pitch = Math.min(1.45, seta.pitch + 0.05);
     const k = v => +v.toFixed(3);
-    kozos?.kuldE({ t: 'raketa', id, x: k(p.x), y: k(p.y), z: k(p.z), dx: k(d.x), dy: k(d.y), dz: k(d.z), nev: kozos.nev() });
+    kuldE({ t: 'raketa', id, x: k(p.x), y: k(p.y), z: k(p.z), dx: k(d.x), dy: k(d.y), dz: k(d.z), nev: kozos.nev() });
   }
   // a saját rakétánk: falba, padlóba vagy egy másik játékosba csapódva robban
   function raketaTalal(p) {
@@ -526,7 +531,7 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
     const id = `${kozos?.id || 'helyi'}-a${++szamlalo}`;
     const k = v => +v.toFixed(2);
     inditAkna(id, seta.x, seta.y, seta.z, kozos?.id, kozos?.nev());
-    kozos?.kuldE({ t: 'akna', id, x: k(seta.x), y: k(seta.y), z: k(seta.z), nev: kozos.nev() });
+    kuldE({ t: 'akna', id, x: k(seta.x), y: k(seta.y), z: k(seta.z), nev: kozos.nev() });
     uzenet(`💣 Taposóakna lerakva (${akcfgMp()} mp múlva éles; ${akna} maradt) – vigyázz, a sajátod is felrobban!`);
   }
   const akcfgMp = () => Math.round(akCfg2.elesites / 1000);
@@ -619,7 +624,7 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
       const elotte = hp;
       hp = Math.min(100, hp + c.hp);
       c.ig = Date.now() + c.ujraMp * 1000;
-      kozos?.kuldE({ t: 'csomag', idx: c.idx, ig: c.ig });
+      kuldE({ t: 'csomag', idx: c.idx, ig: c.ig });
       kozos?.frissitAllapot();
       uzenet(`➕ Életerőcsomag: +${Math.round(hp - elotte)} HP`);
       hang('felvesz');
@@ -682,7 +687,7 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
       const c = csomagok[Number(e.idx)];
       if (c && Number.isFinite(+e.ig)) c.ig = Math.max(c.ig, +e.ig);
     } else if (e.t === 'halal') {
-      if (e.tol2 && e.tol2 === kozos.id) { pont.k++; mentes(); kozos.frissitAllapot(); }
+      if (e.tol2 && e.tol2 === kozos.id) { pont.k++; if (e.bot) pont.kb++; mentes(); kozos.frissitAllapot(); }
       const kie = e.tol2Nev ? ` – ${e.tol2 === kozos.id ? 'te' : e.tol2Nev}` : '';
       uzenet(`☠ ${e.celNev || 'Valaki'} meghalt (${OK_SZOVEG[e.ok] || 'elfogyott az életereje'})${kie}`);
       listaFrissit();
@@ -748,13 +753,21 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
           const test = seta.guggol ? 1.0 : 1.8;
           if (Math.hypot(b.p.x - seta.x, b.p.z - seta.y) < 0.4 && b.p.y > seta.z && b.p.y < seta.z + test + 0.2) {
             tamado = { id: b.tol, nev: b.nev || 'Valaki', ido: t };
-            kozos?.kuldE({ t: 'talalat', id, cel: kozos.id });
+            kuldE({ t: 'talalat', id, cel: kozos.id });
             torik(id);
             uzenet(`${tamado.nev} eltalált egy palackkal!`);
             sebzes(cfg.palack, 'palack');
             utkozott = true;
             break;
           }
+        }
+        // a saját palackunk eltalált-e egy helyi botot
+        const bot = b.sajat && helyi?.talal?.(b.p, b.tol);
+        if (bot) {
+          kuldE({ t: 'talalat', id, cel: bot, s: cfg.palack });
+          torik(id);
+          utkozott = true;
+          break;
         }
         if (akadalyban(b.p)) { torik(id); utkozott = true; }
       }
@@ -798,7 +811,7 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
         akna += ak3;
         fegyverValaszt = f; celzas = false;
         c.ig = ido + c.ujraMp * 1000;
-        kozos?.kuldE({ t: 'lada', idx: c.idx, ig: c.ig });
+        kuldE({ t: 'lada', idx: c.idx, ig: c.ig });
         hang('felvesz');
         kozos?.frissitAllapot();
         const gSz = (gr ? ` · +${gr} gránát (T = dobás)` : '') + (ak3 ? ` · +${ak3} akna (X = lerakás)` : '');
@@ -845,7 +858,7 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
       r.g.position.copy(r.p);
       if (robban) {
         const k = x => +x.toFixed(2);
-        kozos?.kuldE({ t: 'robban', id, x: k(r.p.x), y: k(r.p.y), z: k(r.p.z), fj: 'raketa', nev: kozos.nev() });
+        kuldE({ t: 'robban', id, x: k(r.p.x), y: k(r.p.y), z: k(r.p.z), fj: 'raketa', nev: kozos.nev() });
         robbanas(id, r.p.clone(), kozos?.id, kozos?.nev(), 'raketa');
       }
     }
@@ -856,7 +869,7 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
       if (kor > akCfg2.elet) { scene.remove(a.g); aknak.delete(id); continue; }
       if (kor > akCfg2.elesites && serulhet() && Math.hypot(seta.x - a.x, seta.y - a.y) < akCfg2.erzekel && Math.abs(seta.z - a.z) < 0.5) {
         const k = x => +x.toFixed(2);
-        kozos?.kuldE({ t: 'robban', id, x: k(a.x), y: k(a.z + 0.1), z: k(a.y), fj: 'akna', gazda: a.gazda, gazdaNev: a.gazdaNev, nev: kozos.nev() });
+        kuldE({ t: 'robban', id, x: k(a.x), y: k(a.z + 0.1), z: k(a.y), fj: 'akna', gazda: a.gazda, gazdaNev: a.gazdaNev, nev: kozos.nev() });
         robbanas(id, new THREE.Vector3(a.x, a.z + 0.1, a.y), a.gazda, a.gazdaNev, 'akna');
       }
     }
@@ -878,7 +891,7 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
       b.g.rotation.x += dt * 8 * Math.min(1, b.v.length() / 3);
       if (b.sajat && t - b.ido > grCfg.gyujto) {
         const k = x => +x.toFixed(2);
-        kozos?.kuldE({ t: 'robban', id, x: k(b.p.x), y: k(b.p.y), z: k(b.p.z), nev: kozos.nev() });
+        kuldE({ t: 'robban', id, x: k(b.p.x), y: k(b.p.y), z: k(b.p.z), nev: kozos.nev() });
         robbanas(id, b.p.clone(), kozos?.id, kozos?.nev());
       } else if (!b.sajat && t - b.ido > grCfg.gyujto + 4000) { scene.remove(b.g); granatok.delete(id); }
     }
@@ -910,6 +923,13 @@ export function inditJatek({ C, M, scene, camera, seta, kozos, uzenet, getMod, k
       if (most() - (harapasUz || 0) > 1500) { uzenet(`🐕 Megharapott egy kutya! −${n} HP`); harapasUz = most(); }
       sebzes(n, 'kutya');
     },
+    // botok (botok.js): helyi címzett, sugárkövetés, beállítások
+    helyiBe: h => { helyi = h; },
+    lovedekHossz, akadalyban,
+    granatPoz: id => granatok.get(id)?.p || null,
+    sebzesek: () => ({ lokes: cfg.lokes, palack: cfg.palack, ak: fCfg.ak.sebzes, puska: fCfg.puska.sebzes, robban: robbCfg, granatGyujto: grCfg.gyujto }),
+    // a heti ranglistába csak a valódi játékosok elleni ölések számítanak
+    valodiOlesek: () => pont.k - pont.kb,
     frissit, lokes, dobas, eses, esemeny, utes, csomagok, ujratolt, valt, celoz, granatDob, aknaLe, valaszt, fegyverKezben, jutalom, vag, jatekBe: () => be,
     katanaVan: () => katana,
     lovesTeszt: (le) => { lovesLe = le; }, akAllapot: () => nalam.ak, fegyverAllapot: () => ({ ...nalam, valaszt: fegyverValaszt, granat, akna, celzas }),

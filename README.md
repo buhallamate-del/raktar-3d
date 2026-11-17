@@ -91,6 +91,14 @@ A közös nézetben játszani is lehet (a ☰ menü „Játék” kapcsolójáva
 - **Meccsek:** 10 percenként új meccs indul (a gép órája szerint, mindenkinél egyszerre), utána 15 mp szünet
   összesítő táblával: ki ölt a legtöbbet, melyik csapat nyert zászlófoglalásban. Fent jobbra a hátralévő idő és a
   meccsbeli ölések/halálok; új meccsnél a zászlófoglalás pontjai nullázódnak. Beállítás: `config.js` → `meccs`.
+- **Egyjátékos mód – botok:** ha egyedül vagy a modellben, gép vezérelte játékosok jönnek (menü → Közös nézet →
+  Játék → Botok: 0–7 bot, könnyű / közepes / nehéz). Járhatósági rácson keresnek utat (A*), csak akkor lőnek,
+  ha látnak (falak, állványok takarnak), sorozatokban, szórással; fedezék mögé gránátot dobnak (közepes, nehéz),
+  sérülten életerőcsomagért mennek, éjszaka rövidebbet látnak. Zászlófoglalásban csapattársként és ellenfélként
+  játszanak (támadó: zászlót visz, védő: a bázist őrzi, a zászlóvivőt üldözi); ha nem játszol zászlófoglalást,
+  mindenki mindenki ellen. A pontlista, a meccs-összesítő, a minimap és a killcam ugyanúgy kezeli őket, mint egy
+  valódi játékost. Ha valódi játékos érkezik, kilépnek; amíg botokkal játszol, a zászlófoglalás állása csak nálad
+  fut (nem írja felül a közöset). A botok elleni ölések a heti ranglistába nem számítanak.
 - **Hangok:** lövés, puska, bazooka, robbanás, palacktörés, lökés, találat, halál, felvétel, újratöltés, katana,
   kutyaugatás és harapás, akna, gránátpattanás, targoncacsipogás, a lidérc suttogása, küldetés- és meccshangok.
   Minden hang a böngészőben készül (nincs hangfájl), a távolsággal halkul, és jobbra-balra szól, merre van.
@@ -166,6 +174,7 @@ kizárt folyosók, további utak; a `mag` átírásával más útvonalakat járn
 | `js/esemenyek.js` | véletlen események |
 | `js/jarmu.js` | vezethető targonca emelhető villával |
 | `js/meccs.js` | meccsek időre, összesítő tábla |
+| `js/botok.js` | botok (egyjátékos mód): útkeresés, látás, harc, zászlófoglalás |
 | `js/hang.js` | szintetizált hangok (Web Audio) |
 | `js/killcam.js` | killcam: visszajátszás a tettes szemszögéből |
 | `js/kuldetes.js` | küldetés: komissiózás időre |

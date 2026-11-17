@@ -47,17 +47,20 @@ export function inditRang({ kozos, jatek }) {
   }
   function kuldetes(ms) {
     if (!(ms > 0)) return;
-    if (!sajat.ido || ms < sajat.ido) { sajat.ido = Math.round(ms); ment(); kuld(); }
+    if (!sajat.ido || ms < sajat.ido) { sajat.ido = Math.round(ms); ment(); kuld(); rajzol(); }
   }
   function rajzol() {
     const d = el('rangLista');
     if (!d) return;
-    const en = kozos?.id;
+    const en = kozos?.id || 'helyi';
+    // a közös lista a saját (esetleg még el nem küldött) eredményünkkel összefésülve – kapcsolat nélkül is látszik
+    const l = fesul();
+    const offline = !kozos?.kapcsolodva?.();
     const tabla = (cim, sorok, ertek) => `<h4>${cim}</h4>` + (sorok.length
       ? `<ol>${sorok.map(s => `<li class="${s.id === en ? 'en' : ''}">${esc(s.nev)}${s.id === en ? ' (te)' : ''} – <b>${ertek(s)}</b></li>`).join('')}</ol>`
       : '<p class="halvany kicsi">Még senki.</p>');
-    d.innerHTML = `<p class="halvany kicsi">${het} hét · hétfőn új lista indul</p>`
-      + tabla('📋 Leggyorsabb küldetés', lista.kuldetes, s => ido(s.ido)) + tabla('🎯 Legtöbb ölés', lista.olesek, s => s.k);
+    d.innerHTML = `<p class="halvany kicsi">${het} hét · hétfőn új lista indul${offline ? ' · nincs kapcsolat: csak a saját eredményed' : ''}</p>`
+      + tabla('📋 Leggyorsabb küldetés', l.kuldetes, s => ido(s.ido)) + tabla('🎯 Legtöbb ölés', l.olesek, s => s.k);
   }
 
   function frissit() {
@@ -65,9 +68,10 @@ export function inditRang({ kozos, jatek }) {
     const h = hetKulcs();
     if (h !== het) { het = h; lista = { ts: 0, kuldetes: [], olesek: [] }; sajat = { het }; ment(); rajzol(); }
     // ölések: az összesített számláló növekménye ezen a héten
-    const k = Number(jatek?.extra?.().k);
+    // (a botok elleni ölések nem számítanak – azok csak gyakorlás)
+    const k = Number(jatek?.valodiOlesek ? (jatek.extra?.().j ? jatek.valodiOlesek() : NaN) : jatek?.extra?.().k);
     if (Number.isFinite(k)) {
-      if (elozoK != null && k > elozoK) { sajat.k = (sajat.k || 0) + (k - elozoK); ment(); kuld(); }
+      if (elozoK != null && k > elozoK) { sajat.k = (sajat.k || 0) + (k - elozoK); ment(); kuld(); rajzol(); }
       elozoK = k;
     }
     const t = performance.now();
