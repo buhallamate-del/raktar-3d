@@ -63,6 +63,7 @@ const VILAGOK = [
   ['me:jart', 'Mélység', '../Melyseg/', 'Fúrás a Föld közepe felé.'],
   ['jt:jart', 'Jeltörő', '../Jel-toro/', 'Egy lehallgatóállomás. Az egyik adása ebből a raktárból jön.'],
   ['tt:jart', 'Toldaléktorony', '../Toldalektorony/', 'Minden tárhelykód egy kis torony: sor, állvány, szint, hely.'],
+  ['ku:jart', 'Kurta szimulátor', '../Kurta-SIM-/', 'A legjobb vevőnk: kóla- és Bika-raklapok, a spréjtet viszont visszaküldi.'],
 ];
 export function multiverzumMenu(el) {
   if (!el) return;
